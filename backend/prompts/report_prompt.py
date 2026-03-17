@@ -188,8 +188,15 @@ RULES:
 5. Content must be DEEPLY technical and specific to the document — no vague filler. Quote exact names, numbers, component names, and decisions verbatim from the source.
 6. Sidebar nav must group links with `<div class="section-label">Category</div>` headings — minimum 3 categories.
 7. Hero h1 must highlight the key subject in a `<span>` tag.
-8. Generate a MINIMUM of 6 fully-written content sections (not counting the hero). Each section must have substantial content — multiple paragraphs, tables, diagrams, or component lists derived from the source.
-9. Use at least ONE box diagram, ONE table, and ONE callout per report.
+8. Generate a MINIMUM of 9 fully-written content sections (not counting the hero). Each section must have substantial content — multiple paragraphs, tables, diagrams, or component lists derived from the source.
+9. REQUIRED SECTIONS (always include these regardless of document type):
+   - **Architecture Overview** (id="architecture") — box flow diagram of system components/layers
+   - **Key Components** or **Technical Design** (id="components") — detailed component breakdown
+   - **Data Flow** or **Sequence Diagram** (id="data-flow") — use .seq-diagram for request/response flows
+   - **Risks & Mitigations** (id="risks") — callout cards for each risk
+   - **Implementation Approach** (id="implementation") — timeline or approach cards
+   For documents that don't explicitly describe all of the above, derive them from context or flag gaps with callout-warn blocks.
+10. Use at least ONE box diagram, ONE sequence diagram, ONE table, and TWO callouts per report.
 
 COMPLETE CSS (use this VERBATIM in your <style> tag — accent color is already set):
 ```
