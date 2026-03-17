@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 
@@ -13,6 +13,14 @@ export function UploadModal({ onClose }: Props) {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dragCounterRef = useRef(0)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [])
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
@@ -21,7 +29,7 @@ export function UploadModal({ onClose }: Props) {
       await api.documents.uploadFiles(Array.from(files))
       qc.invalidateQueries({ queryKey: ['documents'] })
       setStatus('done')
-      setTimeout(onClose, 800)
+      timeoutRef.current = setTimeout(onClose, 800)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Upload failed')
       setStatus('error')
@@ -30,12 +38,24 @@ export function UploadModal({ onClose }: Props) {
 
   const handleUrl = async () => {
     if (!url.trim()) return
+    try {
+      const parsed = new URL(url.trim())
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        setError('Only http:// and https:// URLs are allowed')
+        setStatus('error')
+        return
+      }
+    } catch {
+      setError('Please enter a valid URL')
+      setStatus('error')
+      return
+    }
     setStatus('uploading')
     try {
       await api.documents.fetchUrl(url.trim())
       qc.invalidateQueries({ queryKey: ['documents'] })
       setStatus('done')
-      setTimeout(onClose, 800)
+      timeoutRef.current = setTimeout(onClose, 800)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Fetch failed')
       setStatus('error')
@@ -49,7 +69,7 @@ export function UploadModal({ onClose }: Props) {
       await api.documents.paste(paste.trim())
       qc.invalidateQueries({ queryKey: ['documents'] })
       setStatus('done')
-      setTimeout(onClose, 800)
+      timeoutRef.current = setTimeout(onClose, 800)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Save failed')
       setStatus('error')
@@ -62,12 +82,12 @@ export function UploadModal({ onClose }: Props) {
            onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-[#e6edf3] font-semibold">Add Document</h2>
-          <button onClick={onClose} className="text-[#8b949e] hover:text-[#e6edf3]">✕</button>
+          <button onClick={onClose} aria-label="Close" className="text-[#8b949e] hover:text-[#e6edf3]">✕</button>
         </div>
 
         <div className="flex gap-1 mb-4 bg-[#0d1117] rounded-lg p-1">
           {(['file', 'url', 'paste'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
+            <button key={t} onClick={() => { setTab(t); setStatus('idle'); setError('') }}
               className={`flex-1 py-1.5 text-xs rounded-md transition-colors capitalize ${
                 tab === t ? 'bg-[#21262d] text-[#e6edf3]' : 'text-[#8b949e] hover:text-[#e6edf3]'
               }`}>{t === 'file' ? '📁 Upload File' : t === 'url' ? '🔗 URL' : '📋 Paste'}</button>
@@ -76,9 +96,15 @@ export function UploadModal({ onClose }: Props) {
 
         {tab === 'file' && (
           <div
-            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files) }}
+            onDragEnter={e => { e.preventDefault(); dragCounterRef.current++; setDragOver(true) }}
+            onDragLeave={e => { e.preventDefault(); dragCounterRef.current--; if (dragCounterRef.current === 0) setDragOver(false) }}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => {
+              e.preventDefault()
+              dragCounterRef.current = 0
+              setDragOver(false)
+              handleFiles(e.dataTransfer.files)
+            }}
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
               dragOver ? 'border-[#388bfd] bg-[#0f1a2e]' : 'border-[#30363d] hover:border-[#388bfd]'

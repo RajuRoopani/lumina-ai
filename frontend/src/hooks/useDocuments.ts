@@ -8,5 +8,5 @@ export function useDocuments() {
     mutationFn: (id: string) => api.documents.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['documents'] }),
   })
-  return { documents: list.data ?? [], isLoading: list.isLoading, deleteDoc: del.mutate }
+  return { documents: list.data ?? [], isLoading: list.isLoading, deleteDoc: del.mutate, deleteError: del.error }
 }

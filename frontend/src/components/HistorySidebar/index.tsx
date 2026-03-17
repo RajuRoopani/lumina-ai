@@ -19,8 +19,8 @@ interface Props {
 export function HistorySidebar({
   selectedDocIds, onDocSelect, onReportOpen, onGenerateReport, onUploadClick, activeReportId
 }: Props) {
-  const { documents } = useDocuments()
-  const { reports } = useReports()
+  const { documents, isLoading: docsLoading } = useDocuments()
+  const { reports, isLoading: reportsLoading } = useReports()
   const [tab, setTab] = useState<'docs' | 'reports'>('docs')
 
   return (
@@ -55,46 +55,54 @@ export function HistorySidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1">
-        {tab === 'docs' && documents.map((doc: Document) => (
-          <label key={doc.id}
-            className={`flex items-start gap-2 rounded-md p-2 cursor-pointer border transition-colors ${
-              selectedDocIds.has(doc.id)
-                ? 'bg-[#161b22] border-[#388bfd]'
-                : 'border-transparent hover:bg-[#161b22] hover:border-[#30363d]'
-            }`}
-          >
-            <input type="checkbox" className="mt-0.5 accent-[#388bfd]"
-              checked={selectedDocIds.has(doc.id)}
-              onChange={e => onDocSelect(doc.id, e.target.checked)} />
-            <div className="min-w-0">
-              <div className="text-[10px] text-[#8b949e] truncate">
-                {SOURCE_ICON[doc.source_type]} {doc.filename}
+        {tab === 'docs' && (
+          docsLoading ? (
+            <div className="text-[#484f58] text-xs text-center py-4">Loading...</div>
+          ) : documents.map((doc: Document) => (
+            <label key={doc.id}
+              className={`flex items-start gap-2 rounded-md p-2 cursor-pointer border transition-colors ${
+                selectedDocIds.has(doc.id)
+                  ? 'bg-[#161b22] border-[#388bfd]'
+                  : 'border-transparent hover:bg-[#161b22] hover:border-[#30363d]'
+              }`}
+            >
+              <input type="checkbox" className="mt-0.5 accent-[#388bfd]"
+                checked={selectedDocIds.has(doc.id)}
+                onChange={e => onDocSelect(doc.id, e.target.checked)} />
+              <div className="min-w-0">
+                <div className="text-[10px] text-[#8b949e] truncate">
+                  {SOURCE_ICON[doc.source_type] ?? '📄'} {doc.filename}
+                </div>
+                <div className="text-[9px] text-[#484f58]">
+                  {new Date(doc.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            </label>
+          ))
+        )}
+
+        {tab === 'reports' && (
+          reportsLoading ? (
+            <div className="text-[#484f58] text-xs text-center py-4">Loading...</div>
+          ) : reports.map((r: ReportMeta) => (
+            <button key={r.id} onClick={() => onReportOpen(r.id)}
+              className={`w-full text-left rounded-md p-2 border transition-colors ${
+                activeReportId === r.id
+                  ? 'bg-[#161b22] border-[#388bfd]'
+                  : 'border-transparent hover:bg-[#161b22] hover:border-[#30363d]'
+              }`}
+            >
+              <div className="flex items-center gap-1 mb-0.5">
+                <div className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: r.signature_color }} />
+                <div className="text-[10px] text-[#e6edf3] truncate">{r.title}</div>
               </div>
               <div className="text-[9px] text-[#484f58]">
-                {new Date(doc.created_at).toLocaleDateString()}
+                {new Date(r.created_at).toLocaleDateString()} · {r.document_ids.length} doc{r.document_ids.length > 1 ? 's' : ''}
               </div>
-            </div>
-          </label>
-        ))}
-
-        {tab === 'reports' && reports.map((r: ReportMeta) => (
-          <button key={r.id} onClick={() => onReportOpen(r.id)}
-            className={`w-full text-left rounded-md p-2 border transition-colors ${
-              activeReportId === r.id
-                ? 'bg-[#161b22] border-[#388bfd]'
-                : 'border-transparent hover:bg-[#161b22] hover:border-[#30363d]'
-            }`}
-          >
-            <div className="flex items-center gap-1 mb-0.5">
-              <div className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{ background: r.signature_color }} />
-              <div className="text-[10px] text-[#e6edf3] truncate">{r.title}</div>
-            </div>
-            <div className="text-[9px] text-[#484f58]">
-              {new Date(r.created_at).toLocaleDateString()} · {r.document_ids.length} doc{r.document_ids.length > 1 ? 's' : ''}
-            </div>
-          </button>
-        ))}
+            </button>
+          ))
+        )}
       </div>
     </aside>
   )

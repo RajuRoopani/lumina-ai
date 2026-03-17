@@ -8,5 +8,5 @@ export function useReports() {
     mutationFn: (id: string) => api.reports.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['reports'] }),
   })
-  return { reports: list.data ?? [], isLoading: list.isLoading, deleteReport: del.mutate }
+  return { reports: list.data ?? [], isLoading: list.isLoading, deleteReport: del.mutate, deleteError: del.error }
 }
