@@ -49,18 +49,23 @@ export function ChatPanel({ reportId, onSectionUpdate, onNewReport, iframeRef }:
           if (!res.body) return
           const reader = res.body.getReader()
           const decoder = new TextDecoder()
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            for (const line of decoder.decode(value, { stream: true }).split('\n')) {
-              if (!line.startsWith('data: ')) continue
-              try {
-                const p = JSON.parse(line.slice(6))
-                if (p.event === 'done') onNewReport(p.data.id)
-              } catch { /* skip */ }
+          try {
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+              for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+                if (!line.startsWith('data: ')) continue
+                try {
+                  const p = JSON.parse(line.slice(6))
+                  if (p.event === 'done') onNewReport(p.data.id)
+                } catch { /* skip malformed */ }
+              }
             }
+          } finally {
+            reader.releaseLock()
           }
         })
+        .catch(err => console.error('compareStream error:', err))
     }
   }, [reportId, onSectionUpdate, onNewReport, iframeRef, qc])
 
