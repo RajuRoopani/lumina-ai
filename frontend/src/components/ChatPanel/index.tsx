@@ -14,12 +14,11 @@ const QUICK_ACTIONS = [
 
 interface Props {
   reportId: string | undefined
-  onSectionUpdate?: (sectionId: string, html: string) => void
   onNewReport?: (reportId: string) => void
   iframeRef?: React.RefObject<HTMLIFrameElement | null>
 }
 
-export function ChatPanel({ reportId, onSectionUpdate, onNewReport, iframeRef }: Props) {
+export function ChatPanel({ reportId, onNewReport, iframeRef }: Props) {
   const [tab, setTab] = useState<'chat' | 'annotations'>('chat')
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -28,14 +27,17 @@ export function ChatPanel({ reportId, onSectionUpdate, onNewReport, iframeRef }:
   const { messages, streaming, streamingText, sendMessage } = useChat(reportId)
 
   const handleAction = useCallback((action: Record<string, unknown>) => {
-    if (action.action === 'section_update' && onSectionUpdate) {
-      // Note: target origin must be '*' because srcdoc iframes have opaque (null) origin
-      const iframeWindow = iframeRef?.current?.contentWindow
-      iframeWindow?.postMessage({
-        type: 'UPDATE_SECTION',
-        sectionId: action.section_id,
-        html: action.html,
-      }, '*')
+    if (action.action === 'section_update') {
+      // Directly manipulate iframe DOM — avoids postMessage origin complexity with srcdoc iframes
+      const iframeDocument = iframeRef?.current?.contentDocument
+      if (iframeDocument) {
+        const target = iframeDocument.querySelector(`[data-section-id="${action.section_id as string}"]`)
+        if (target) {
+          const tmp = iframeDocument.createElement('div')
+          tmp.innerHTML = action.html as string
+          target.replaceWith(tmp.firstElementChild ?? target)
+        }
+      }
       // Persist to backend
       if (reportId) {
         api.reports.updateSection(reportId, action.section_id as string, action.html as string)
@@ -67,7 +69,7 @@ export function ChatPanel({ reportId, onSectionUpdate, onNewReport, iframeRef }:
         })
         .catch(err => console.error('compareStream error:', err))
     }
-  }, [reportId, onSectionUpdate, onNewReport, iframeRef, qc])
+  }, [reportId, onNewReport, iframeRef, qc])
 
   const handleSend = async () => {
     if (!input.trim() || !reportId || streaming) return

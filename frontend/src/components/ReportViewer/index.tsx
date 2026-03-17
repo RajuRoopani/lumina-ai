@@ -24,25 +24,6 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
     if (report) onReportLoaded?.(report)
   }, [report, onReportLoaded])
 
-  // Listen for section update messages from parent
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.source !== iframeRef.current?.contentWindow) return
-      if (e.data?.type === 'UPDATE_SECTION' && iframeRef.current?.contentDocument) {
-        const { sectionId, html } = e.data
-        const target = iframeRef.current.contentDocument
-          .querySelector(`[data-section-id="${sectionId}"]`)
-        if (target) {
-          const tmp = document.createElement('div')
-          tmp.innerHTML = html
-          target.replaceWith(tmp.firstElementChild ?? target)
-        }
-      }
-    }
-    window.addEventListener('message', handler)
-    return () => window.removeEventListener('message', handler)
-  }, [])
-
   const copyShareLink = () => {
     navigator.clipboard.writeText(window.location.origin + api.reports.shareUrl(reportId))
     setCopied(true)

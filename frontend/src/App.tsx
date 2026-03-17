@@ -23,17 +23,25 @@ export default function App() {
     })
   }
 
+  const hadError = useRef(false)
+
   const handleGenerateReport = useCallback(async () => {
     if (!selectedDocIds.size) return
     setGenerating(true)
+    hadError.current = false
     setGenProgress('Starting...')
     const reader_holder: { reader?: ReadableStreamDefaultReader } = {}
     try {
       const res = await api.reports.generateStream(Array.from(selectedDocIds))
-      if (!res.body) return
+      if (!res.body) {
+        hadError.current = true
+        setGenProgress('Error: No response stream')
+        return
+      }
       const reader = res.body.getReader()
       reader_holder.reader = reader
       const decoder = new TextDecoder()
+      let streamDone = false
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -47,18 +55,24 @@ export default function App() {
               setActiveReportId(payload.data.id)
               setSelectedDocIds(new Set())
               qc.invalidateQueries({ queryKey: ['reports'] })
+              streamDone = true
             }
-            if (payload.event === 'error') setGenProgress(`Error: ${payload.data}`)
+            if (payload.event === 'error') {
+              hadError.current = true
+              setGenProgress(`Error: ${payload.data}`)
+            }
           } catch { /* skip malformed */ }
         }
+        if (streamDone) break
       }
     } catch (err) {
+      hadError.current = true
       console.error('Report generation error:', err)
       setGenProgress('Generation failed')
     } finally {
       reader_holder.reader?.releaseLock()
       setGenerating(false)
-      if (!genProgress.startsWith('Error')) setGenProgress('')
+      if (!hadError.current) setGenProgress('')
     }
   }, [selectedDocIds, qc])
 
