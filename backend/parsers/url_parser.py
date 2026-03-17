@@ -21,7 +21,7 @@ def parse_url(url: str) -> str:
     for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
         tag.decompose()
 
-    title = soup.title.string.strip() if soup.title else ""
+    title = soup.title.get_text(strip=True) if soup.title else ""
     main = soup.find("main") or soup.find("article") or soup.find("body")
     text = (
         main.get_text(separator="\n", strip=True)
