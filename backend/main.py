@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from database import engine, get_db, Base
 from models import ReportORM
+from routers import documents, reports, chat
 
 Base.metadata.create_all(bind=engine)
 
@@ -19,10 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers will be added in Task 5
-# app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
-# app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
-# app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
+app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
 @app.get("/share/{report_id}", response_class=HTMLResponse)
 def share_report(report_id: str, db: Session = Depends(get_db)):
