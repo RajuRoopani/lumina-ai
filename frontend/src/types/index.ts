@@ -3,6 +3,7 @@ export interface Document {
   filename: string
   source_type: 'pdf' | 'docx' | 'url' | 'markdown' | 'text' | 'image'
   source_url?: string
+  file_path?: string
   extracted_text: string
   created_at: string
 }
@@ -25,7 +26,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'annotation'
   content: string
   action?: string
-  action_data?: Record<string, unknown>
+  action_data: Record<string, unknown>
   created_at: string
 }
 
