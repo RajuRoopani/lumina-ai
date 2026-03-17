@@ -1,4 +1,6 @@
 import json
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,7 +12,7 @@ from routers import documents, reports, chat
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="DocViz")
+app = FastAPI(title="Lumina")
 
 app.add_middleware(
     CORSMiddleware,

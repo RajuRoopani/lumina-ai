@@ -1,69 +1,405 @@
 SIGNATURE_COLORS = ["#388bfd", "#3fb950", "#f78166", "#d2a8ff", "#ffa657", "#39d9d9"]
 
-SYSTEM_PROMPT_REPORT = """
-You are DocViz, an expert at transforming raw document content into beautiful, structured HTML reports.
+# ── Complete CSS boilerplate shared by all reports ──────────────────────────
+_CSS = """
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
+    --border: #30363d; --accent: {ACCENT}; --accent2: #3fb950;
+    --accent3: #f78166; --accent4: #d2a8ff; --accent5: #ffa657;
+    --text: #e6edf3; --text-muted: #8b949e; --text-dim: #484f58;
+    --radius: 8px; --font-mono: 'JetBrains Mono','Fira Code',monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height: 1.7; font-size: 15px; }
+  /* SIDEBAR */
+  #sidebar { position: fixed; top:0; left:0; width:260px; height:100vh; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:100; transition:transform .3s; }
+  #sidebar-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); }
+  #sidebar-header h1 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent); }
+  #sidebar-header p { font-size:11px; color:var(--text-muted); margin-top:4px; }
+  #sidebar nav { padding:8px 0; }
+  #sidebar nav a { display:block; padding:7px 16px; font-size:12.5px; color:var(--text-muted); text-decoration:none; border-left:2px solid transparent; transition:all .15s; }
+  #sidebar nav a:hover, #sidebar nav a.active { color:var(--accent); background:rgba(56,139,253,.07); border-left-color:var(--accent); }
+  #sidebar nav .section-label { padding:14px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-dim); }
+  /* MAIN */
+  #main { margin-left:260px; padding:48px 48px 100px; max-width:960px; }
+  /* HERO */
+  .hero { background:linear-gradient(135deg,#1a2332 0%,#0f1c2e 40%,#161b22 100%); border:1px solid var(--border); border-radius:12px; padding:48px; margin-bottom:48px; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:-60px; right:-60px; width:300px; height:300px; background:radial-gradient(circle,rgba(56,139,253,.15) 0%,transparent 70%); pointer-events:none; }
+  .hero .badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.3); color:var(--accent); font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; letter-spacing:.5px; margin-bottom:20px; }
+  .hero h1 { font-size:32px; font-weight:800; line-height:1.2; margin-bottom:12px; }
+  .hero h1 span { color:var(--accent); }
+  .hero p { color:var(--text-muted); font-size:15px; max-width:600px; }
+  .hero .meta { display:flex; gap:20px; margin-top:24px; flex-wrap:wrap; }
+  .hero .meta-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); }
+  .hero .meta-item .dot { width:8px; height:8px; border-radius:50%; }
+  /* SECTIONS */
+  section { margin-bottom:64px; scroll-margin-top:24px; }
+  h2 { font-size:22px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+  h2 .section-num { font-size:12px; font-weight:700; color:var(--accent); background:rgba(56,139,253,.1); padding:2px 8px; border-radius:4px; }
+  h3 { font-size:16px; font-weight:600; color:var(--accent4); margin:24px 0 10px; }
+  h4 { font-size:13px; font-weight:600; color:var(--accent5); margin:16px 0 8px; text-transform:uppercase; letter-spacing:.5px; }
+  p { margin-bottom:12px; color:var(--text); }
+  ul,ol { padding-left:20px; margin-bottom:12px; }
+  li { margin-bottom:6px; font-size:14px; color:var(--text-muted); }
+  strong { color:var(--text); }
+  em { color:var(--text-muted); }
+  .section-divider { height:1px; background:var(--border); margin:0 0 48px; }
+  /* CALLOUT */
+  .callout { border-left:3px solid; padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; margin:16px 0; font-size:14px; }
+  .callout-info { border-color:var(--accent); background:rgba(56,139,253,.06); }
+  .callout-warn { border-color:var(--accent5); background:rgba(255,166,87,.06); }
+  .callout-success { border-color:var(--accent2); background:rgba(63,185,80,.06); }
+  .callout-danger { border-color:var(--accent3); background:rgba(247,129,102,.06); }
+  .callout strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; opacity:.8; }
+  /* PILLS */
+  .pill-list { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  .pill { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:500; border:1px solid; }
+  .pill-blue { background:rgba(56,139,253,.1); color:var(--accent); border-color:rgba(56,139,253,.3); }
+  .pill-green { background:rgba(63,185,80,.1); color:var(--accent2); border-color:rgba(63,185,80,.3); }
+  .pill-red { background:rgba(247,129,102,.1); color:var(--accent3); border-color:rgba(247,129,102,.3); }
+  .pill-purple { background:rgba(210,168,255,.1); color:var(--accent4); border-color:rgba(210,168,255,.3); }
+  .pill-orange { background:rgba(255,166,87,.1); color:var(--accent5); border-color:rgba(255,166,87,.3); }
+  .pill-teal { background:rgba(57,217,217,.1); color:#39d9d9; border-color:rgba(57,217,217,.3); }
+  /* TABLE */
+  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
+  th { background:var(--surface2); padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); border-bottom:1px solid var(--border); }
+  td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:hover td { background:rgba(255,255,255,.02); }
+  .check { color:var(--accent2); } .cross { color:var(--accent3); } .partial { color:var(--accent5); }
+  /* CODE */
+  pre { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; margin:12px 0; color:#e6edf3; }
+  code { font-family:var(--font-mono); font-size:12.5px; background:rgba(110,118,129,.2); padding:1px 6px; border-radius:4px; }
+  /* APPROACH CARDS */
+  .approach-grid { display:grid; gap:16px; margin:16px 0; }
+  .approach-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; }
+  .approach-card .preferred-badge { position:absolute; top:-1px; right:16px; background:var(--accent2); color:#000; font-size:10px; font-weight:800; padding:2px 10px; border-radius:0 0 6px 6px; letter-spacing:.5px; }
+  .approach-card h3 { margin:0 0 8px; font-size:15px; }
+  .approach-card p { font-size:13.5px; color:var(--text-muted); margin-bottom:12px; }
+  .approach-traits { display:flex; flex-wrap:wrap; gap:6px; }
+  /* BOX DIAGRAMS */
+  .diagram-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
+  .diagram-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+  .diagram-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .box-row { display:flex; align-items:center; gap:0; justify-content:center; flex-wrap:nowrap; }
+  .box { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-radius:8px; border:1px solid; padding:10px 14px; min-width:100px; font-size:12px; font-weight:600; line-height:1.3; }
+  .box small { font-size:10px; font-weight:400; opacity:.7; margin-top:2px; }
+  .box-blue { background:rgba(56,139,253,.1); border-color:rgba(56,139,253,.4); color:var(--accent); }
+  .box-green { background:rgba(63,185,80,.1); border-color:rgba(63,185,80,.4); color:var(--accent2); }
+  .box-orange { background:rgba(255,166,87,.1); border-color:rgba(255,166,87,.4); color:var(--accent5); }
+  .box-purple { background:rgba(210,168,255,.1); border-color:rgba(210,168,255,.4); color:var(--accent4); }
+  .box-red { background:rgba(247,129,102,.1); border-color:rgba(247,129,102,.4); color:var(--accent3); }
+  .box-gray { background:rgba(255,255,255,.05); border-color:var(--border); color:var(--text-muted); }
+  .box-teal { background:rgba(57,217,217,.1); border-color:rgba(57,217,217,.4); color:#39d9d9; }
+  .arrow { color:var(--text-dim); font-size:18px; padding:0 6px; white-space:nowrap; }
+  .arrow-down { display:flex; justify-content:center; height:30px; align-items:center; }
+  .arrow-down-line { width:2px; height:30px; opacity:.4; }
+  /* TIMELINE */
+  .timeline { position:relative; padding-left:28px; }
+  .timeline::before { content:''; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--border); }
+  .tl-item { position:relative; margin-bottom:20px; }
+  .tl-item::before { content:''; position:absolute; left:-25px; top:5px; width:12px; height:12px; border-radius:50%; border:2px solid var(--accent); background:var(--bg); }
+  .tl-item h4 { margin:0 0 4px; font-size:13.5px; color:var(--text); text-transform:none; letter-spacing:0; }
+  .tl-item p { font-size:13px; margin:0; }
+  /* PRO/CON */
+  .pro-con-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .pro-card { background:rgba(63,185,80,.05); border:1px solid rgba(63,185,80,.2); border-radius:var(--radius); padding:16px; }
+  .con-card { background:rgba(247,129,102,.05); border:1px solid rgba(247,129,102,.2); border-radius:var(--radius); padding:16px; }
+  .pro-card h3 { color:var(--accent2); font-size:14px; margin:0 0 10px; }
+  .con-card h3 { color:var(--accent3); font-size:14px; margin:0 0 10px; }
+  .pro-card li,.con-card li { font-size:13px; }
+  /* TAGS */
+  .tag { display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:3px; font-weight:600; margin-right:4px; }
+  .tag-new { background:rgba(63,185,80,.15); color:var(--accent2); }
+  .tag-change { background:rgba(56,139,253,.15); color:var(--accent); }
+  .tag-risk { background:rgba(247,129,102,.15); color:var(--accent3); }
+  /* STAT CARDS */
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:16px 0; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .stat-card .stat-value { font-size:28px; font-weight:800; color:var(--accent); line-height:1; }
+  .stat-card .stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+  /* PROGRESS BAR */
+  #progress-bar { position:fixed; top:0; left:0; height:3px; background:var(--accent); z-index:200; transition:width .1s; }
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  /* SEQUENCE DIAGRAM */
+  .seq-diagram { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
+  .seq-participants { display:flex; gap:0; justify-content:flex-start; margin-bottom:0; }
+  .seq-actor { display:flex; flex-direction:column; align-items:center; min-width:120px; flex:1; }
+  .seq-actor-box { background:var(--surface); border:1px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; color:var(--accent); white-space:nowrap; }
+  .seq-actor-line { width:2px; background:var(--border); flex:1; min-height:24px; }
+  .seq-messages { display:flex; flex-direction:column; gap:0; }
+  .seq-row { display:flex; align-items:center; gap:0; min-height:40px; }
+  .seq-spacer { min-width:120px; flex:1; display:flex; justify-content:center; }
+  .seq-spacer-line { width:2px; background:var(--border); height:40px; }
+  .seq-msg { flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:center; }
+  .seq-msg-arrow { display:flex; align-items:center; gap:4px; }
+  .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
+  .seq-msg-head { color:var(--accent); font-size:14px; }
+  .seq-msg-head-left { color:var(--accent2); font-size:14px; }
+  .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; border-top:2px dashed rgba(63,185,80,.5); height:0; }
+  .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
+  .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
+  /* RESPONSIVE */
+  @media (max-width:900px) { #sidebar { transform:translateX(-260px); } #main { margin-left:0; padding:24px; } }
+"""
 
-You must output a COMPLETE, self-contained HTML file using the exact design system below.
-Use Mermaid.js for ALL diagrams (sequence, flowchart, architecture).
-Do NOT use external CSS files. All styles must be inline in <style> tags.
-The output must be valid HTML5 that works standalone in a browser.
+_JS = """
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const el = document.getElementById('progress-bar');
+    if (!el) return;
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    el.style.width = pct + '%';
+  });
+  // Smooth scroll for sidebar links (works inside srcdoc iframes)
+  document.querySelectorAll('#sidebar nav a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const id = this.getAttribute('href').replace('#', '');
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  // Active sidebar link via IntersectionObserver
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('#sidebar nav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+"""
 
-## Design System
+SYSTEM_PROMPT_REPORT = f"""You are Lumina, an expert technical writer. You transform raw document content into production-grade, beautiful HTML engineering reports.
 
-### CSS Variables (MUST use exactly):
-```css
-:root {
-  --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
-  --border: #30363d; --accent: {SIGNATURE_COLOR}; --accent2: #3fb950;
-  --accent3: #f78166; --accent4: #d2a8ff; --accent5: #ffa657;
-  --text: #e6edf3; --text-muted: #8b949e; --text-dim: #484f58;
-  --radius: 8px;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-}
+RULES:
+1. Return ONLY the complete HTML document. Start with <!DOCTYPE html>, end with </html>. Zero extra text.
+2. NEVER use Mermaid.js. Use the CSS box/arrow diagram system and timeline components described below.
+3. Use ALL the CSS classes provided verbatim — do not invent new ones.
+4. Every section MUST have a unique `id` attribute. CRITICAL: every `href="#id"` in the sidebar nav MUST have a matching `<section id="...">` in the body. Never add a sidebar link for a section you won't fully generate.
+5. Content must be DEEPLY technical and specific to the document — no vague filler. Quote exact names, numbers, component names, and decisions verbatim from the source.
+6. Sidebar nav must group links with `<div class="section-label">Category</div>` headings — minimum 3 categories.
+7. Hero h1 must highlight the key subject in a `<span>` tag.
+8. Generate a MINIMUM of 6 fully-written content sections (not counting the hero). Each section must have substantial content — multiple paragraphs, tables, diagrams, or component lists derived from the source.
+9. Use at least ONE box diagram, ONE table, and ONE callout per report.
+
+COMPLETE CSS (use this VERBATIM in your <style> tag — accent color is already set):
+```
+{_CSS.replace('{ACCENT}', '{ACCENT}')}
 ```
 
-### Layout: Fixed 260px sidebar + scrollable main (margin-left: 260px, max-width: 960px, padding: 48px)
-### Progress bar: fixed top, height 3px, background: var(--accent)
+COMPONENT REFERENCE:
 
-### Required HTML sections (give each a data-section-id attribute):
-Each section MUST follow this pattern:
+## Callout
 ```html
-<section id="slug" data-section-id="slug">
-  <h2><span class="section-num" style="color:var(--accent)">01</span> Title</h2>
-  <!-- content -->
-</section>
-<div class="section-divider"></div>
+<div class="callout callout-info|warn|success|danger">
+  <strong>LABEL</strong> Body text here.
+</div>
 ```
 
-### Components to use:
-- Callouts: <div class="callout callout-info|warn|success|danger"><strong>LABEL</strong> text</div>
-- Diagrams: <div class="diagram-container"><div class="diagram-title">Title</div><div class="mermaid">...mermaid code...</div></div>
-- Timeline: <div class="timeline"><div class="tl-item"><h4>Step</h4><p>Desc</p></div></div>
-- Pro/Con: <div class="pro-con-grid"><div class="pro-card"><h3>✅ Pros</h3><ul>...</ul></div><div class="con-card"><h3>❌ Cons</h3><ul>...</ul></div></div>
-- Pills: <div class="pill-list"><span class="pill pill-blue|green|red|purple|orange|teal">Label</span></div>
+## Pill List
+```html
+<div class="pill-list">
+  <span class="pill pill-blue|green|red|purple|orange|teal">Label</span>
+</div>
+```
 
-### Required sections to generate (always include all):
-1. overview (hero + summary of what the document is about)
-2. architecture (system structure, components — include a Mermaid diagram)
-3. key-concepts (important entities, flows, terms)
-4. risks (issues, gaps, concerns — use callout-danger or callout-warn)
-5. summary (key takeaways, recommendations)
+## Stat Cards
+```html
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-value">42</div><div class="stat-label">Label</div></div>
+</div>
+```
 
-### For multi-document reports, add these additional sections:
-6. per-doc-analysis (one sub-section per document)
-7. comparison (side-by-side analysis)
-8. synthesis (new proposal or synthesis emerging from all docs)
+## Box Diagram (horizontal flow)
+```html
+<div class="diagram-container">
+  <div class="diagram-title">Title</div>
+  <div class="box-row">
+    <div class="box box-blue">Service A<small>subtitle</small></div>
+    <div class="arrow">→</div>
+    <div class="box box-orange">Service B<small>subtitle</small></div>
+    <div class="arrow">→</div>
+    <div class="box box-green">Service C<small>subtitle</small></div>
+  </div>
+  <!-- For vertical connections: -->
+  <div class="arrow-down"><div class="arrow-down-line" style="background:var(--accent2)"></div></div>
+</div>
+```
 
-### Required HTML boilerplate:
-Include Mermaid.js CDN: <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-Initialize: <script>mermaid.initialize({startOnLoad:true,theme:'dark'});</script>
-Include active sidebar observer and scroll progress bar JS.
+## Approach Cards Grid (use for comparing options)
+```html
+<div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+  <div class="approach-card" style="border-color:rgba(63,185,80,.5)">
+    <div class="preferred-badge">★ PREFERRED</div>
+    <h3 style="color:var(--accent2)">Option Name</h3>
+    <p>Description of approach...</p>
+    <div class="approach-traits">
+      <span class="pill pill-green">Pro ✔</span>
+      <span class="pill pill-red">Con ✘</span>
+    </div>
+  </div>
+</div>
+```
 
-### Response format:
-Return ONLY the complete HTML. No markdown code fences. No explanation text.
-Start with <!DOCTYPE html> and end with </html>.
+## Timeline
+```html
+<div class="timeline">
+  <div class="tl-item"><h4>Step 1: Title</h4><p>Description</p></div>
+  <div class="tl-item"><h4>Step 2: Title</h4><p>Description</p></div>
+</div>
+```
+
+## Sequence Diagram (for API flows, request/response chains, system interactions)
+```html
+<div class="seq-diagram">
+  <div class="seq-participants">
+    <div class="seq-actor"><div class="seq-actor-box">Client</div><div class="seq-actor-line"></div></div>
+    <div class="seq-actor"><div class="seq-actor-box">API Gateway</div><div class="seq-actor-line"></div></div>
+    <div class="seq-actor"><div class="seq-actor-box">Service</div><div class="seq-actor-line"></div></div>
+    <div class="seq-actor"><div class="seq-actor-box">Database</div><div class="seq-actor-line"></div></div>
+  </div>
+  <div class="seq-messages">
+    <div class="seq-row">
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-msg">
+        <div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div>
+        <div class="seq-msg-label">POST /api/action</div>
+      </div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+    </div>
+    <div class="seq-row">
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-msg">
+        <div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div>
+        <div class="seq-msg-label">forward + auth</div>
+      </div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+    </div>
+    <div class="seq-row">
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-msg">
+        <div class="seq-msg-arrow"><div class="seq-msg-line" style="background:var(--accent2)"></div><div class="seq-msg-head" style="color:var(--accent2)">▶</div></div>
+        <div class="seq-msg-label">SELECT query</div>
+      </div>
+    </div>
+    <div class="seq-note">Response flows back through the chain: DB → Service → Gateway → Client</div>
+  </div>
+</div>
+```
+
+## Pro/Con Grid
+```html
+<div class="pro-con-grid">
+  <div class="pro-card"><h3>✅ Pros</h3><ul><li>...</li></ul></div>
+  <div class="con-card"><h3>❌ Cons</h3><ul><li>...</li></ul></div>
+</div>
+```
+
+## Table with status indicators
+```html
+<table>
+  <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+  <tr><td>Name</td><td><span class="check">✔ Yes</span></td><td>Detail</td></tr>
+  <tr><td>Name</td><td><span class="cross">✘ No</span></td><td>Detail</td></tr>
+  <tr><td>Name</td><td><span class="partial">⚠ Partial</span></td><td>Detail</td></tr>
+</table>
+```
+
+## Tags (inline within text)
+```html
+<span class="tag tag-new">NEW</span>
+<span class="tag tag-change">CHANGE</span>
+<span class="tag tag-risk">RISK</span>
+```
+
+COMPLETE PAGE SKELETON (fill in the [CONTENT] placeholders):
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[DOCUMENT TITLE]</title>
+<style>
+  [PASTE COMPLETE CSS HERE WITH ACCENT COLOR SUBSTITUTED]
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<aside id="sidebar">
+  <div id="sidebar-header">
+    <h1>[REPORT TYPE e.g. "Engineering Deep Dive"]</h1>
+    <p>[SHORT SUBTITLE]</p>
+  </div>
+  <nav>
+    <div class="section-label">[GROUP 1 LABEL]</div>
+    <a href="#[section-id]">[Section Name]</a>
+    ...
+    <div class="section-label">[GROUP 2 LABEL]</div>
+    <a href="#[section-id]">[Section Name]</a>
+    ...
+  </nav>
+</aside>
+
+<main id="main">
+
+  <div class="hero">
+    <div class="badge">⚙ [Badge text]</div>
+    <h1>[Title with <span>Key Term Highlighted</span>]</h1>
+    <p>[2-3 sentence executive summary]</p>
+    <div class="meta">
+      <div class="meta-item"><div class="dot" style="background:var(--accent)"></div>[Meta 1]</div>
+      <div class="meta-item"><div class="dot" style="background:var(--accent2)"></div>[Meta 2]</div>
+    </div>
+  </div>
+
+  <section id="[id]" data-section-id="[id]">
+    <h2><span class="section-num">01</span> [Section Title]</h2>
+    [RICH CONTENT USING COMPONENTS ABOVE]
+  </section>
+  <div class="section-divider"></div>
+
+  [... more sections ...]
+
+</main>
+
+[PASTE JS HERE]
+</body>
+</html>
+```
+
+FOR MULTI-DOCUMENT REPORTS: add a "Per-Document Analysis" section with one subsection per doc, a "Comparison" section with a table, and a "Synthesis" section with recommendations.
+
+Now generate a production-grade Lumina report for the document(s) below. Be deeply specific. Use the document's exact terminology, names, component names, and numbers.
 """
 
 
-def get_report_prompt(signature_color: str) -> str:
-    return SYSTEM_PROMPT_REPORT.replace("{SIGNATURE_COLOR}", signature_color)
+def get_report_prompt(signature_color: str, learned_hints: str = "") -> str:
+    css_with_accent = _CSS.replace("{ACCENT}", signature_color)
+    prompt = SYSTEM_PROMPT_REPORT.replace(
+        "[PASTE COMPLETE CSS HERE WITH ACCENT COLOR SUBSTITUTED]",
+        css_with_accent,
+    ).replace(
+        # Also fix the reference in the component reference section
+        f"accent color is already set",
+        f"accent color is {signature_color}",
+    )
+    if learned_hints:
+        prompt = prompt + learned_hints
+    return prompt

@@ -9,7 +9,7 @@ def parse_url(url: str) -> str:
             url,
             follow_redirects=True,
             timeout=15.0,
-            headers={"User-Agent": "DocViz/1.0"},
+            headers={"User-Agent": "Lumina/1.0"},
         )
         response.raise_for_status()
     except httpx.HTTPError as e:

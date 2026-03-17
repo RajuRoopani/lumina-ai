@@ -85,6 +85,7 @@ export default function App() {
         onGenerateReport={handleGenerateReport}
         onUploadClick={() => setShowUpload(true)}
         activeReportId={activeReportId}
+        onActiveReportDeleted={() => setActiveReportId(undefined)}
       />
 
       <main className="flex-1 flex overflow-hidden">
@@ -99,8 +100,9 @@ export default function App() {
         )}
         {!generating && !activeReportId && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
-            <div className="text-5xl">📄</div>
-            <h1 className="text-xl font-semibold text-[#e6edf3]">DocViz</h1>
+            <div className="text-5xl">✦</div>
+            <h1 className="text-2xl font-bold text-[#e6edf3] tracking-tight">Lumina</h1>
+            <p className="text-[#8b949e] text-xs font-medium uppercase tracking-widest mb-1">AI Document Intelligence</p>
             <p className="text-[#8b949e] text-sm max-w-xs">
               Upload documents, select one or more, then click<br />
               <span className="text-[#388bfd]">Generate Report</span> to create a rich visual analysis.
@@ -116,7 +118,6 @@ export default function App() {
       <ChatPanel
         reportId={activeReportId}
         onNewReport={setActiveReportId}
-        iframeRef={iframeRef}
       />
 
       {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
