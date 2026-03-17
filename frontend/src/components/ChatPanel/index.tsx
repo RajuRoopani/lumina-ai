@@ -216,6 +216,16 @@ export function ChatPanel({ reportId, onNewReport }: Props) {
                 </div>
               )}
               {messages.map((m: ChatMessage) => <MessageBubble key={m.id} m={m} />)}
+              {streaming && !streamingText && (
+                <div className="bg-[#0f1a2e] border border-[#388bfd]/30 rounded-lg p-2 text-xs text-[#cdd9e5]">
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="text-[#388bfd] text-[9px] font-medium tracking-wide uppercase mr-1">✦ Lumina</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#388bfd] animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#388bfd] animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#388bfd] animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              )}
               {streaming && streamingText && (
                 <div className="bg-[#0f1a2e] border border-[#388bfd]/30 rounded-lg p-2 text-xs text-[#cdd9e5] leading-relaxed">
                   <span dangerouslySetInnerHTML={{ __html: renderMarkdown(streamingText) }} />
