@@ -42,15 +42,29 @@ Then **chat with your document**. Ask *"what are the main risks?"* and get a pre
 </td>
 <td align="center" width="50%">
 
-**Report View — AI-generated architecture diagram**
+**Report View — photographic memory design**
 
-![Lumina Report](docs/screenshot-report-view.png)
+![Lumina Report](docs/screenshot-report-components.png)
+
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+
+**Insight strips + growth metrics**
+
+![Lumina Insights](docs/screenshot-report-insights.png)
+
+</td>
+<td align="center" width="50%">
+
+**Full report — stat cards, timelines, callouts**
+
+![Lumina Full Report](docs/screenshot-report-visual.png)
 
 </td>
 </tr>
 </table>
-
-> Reports include: architecture box diagrams, sequence flows, timeline cards, stat grids, risk callouts, comparison tables — all generated from your document content.
 
 ---
 
@@ -59,6 +73,7 @@ Then **chat with your document**. Ask *"what are the main risks?"* and get a pre
 | | Feature | What it does |
 |---|---------|-------------|
 | ⚡ | **Instant Reports** | Claude generates a complete styled HTML report with sidebar, sections, and diagrams in ~3 seconds |
+| 🧠 | **Photographic Memory Design** | Reports built on picture superiority effect — icon lists, insight strips, data bars, step flows, visual summaries |
 | 💬 | **Live AI Chat** | Stream answers in real time — user messages appear instantly, no blank flashes |
 | ✏️ | **Section Editing** | Say *"add a sequence diagram to architecture"* — Claude calls a native tool to rewrite the section |
 | 🏗️ | **Architecture Diagrams** | CSS-native box flow diagrams — no Mermaid, no external dependencies, works offline |
@@ -67,6 +82,117 @@ Then **chat with your document**. Ask *"what are the main risks?"* and get a pre
 | 🔁 | **Retro Loop** | System learns from every interaction — each report is better than the last |
 | 🗑️ | **Delete & Manage** | Delete documents and reports with hover-reveal controls |
 | ↔️ | **Resizable Chat Panel** | Drag the handle to resize the AI chat panel — zero-jank, direct DOM mutation |
+
+---
+
+## 🧠 Photographic Memory Design
+
+> *People remember images 60,000× faster than text. Lumina is engineered around this.*
+
+Most AI document tools dump dense paragraphs. Lumina applies the **picture superiority effect** — a cognitive science principle that images are processed and retained far more effectively than words alone. Every report section opens with a visual component, never a bare paragraph.
+
+### The Visual Component System
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+**At-a-Glance Summary Cards**
+```
+┌──────────────────┐
+│ 🎯              │
+│ LABEL           │
+│ Value           │
+│ sub-context     │
+└──────────────────┘
+```
+Instantly scannable KPIs and key facts — the first thing readers see.
+
+</td>
+<td width="33%" valign="top">
+
+**Insight Strips**
+```
+🚨 Critical Finding
+   Detailed explanation
+   with context
+
+⚡ Key Observation
+   Supporting detail
+```
+Color-coded by severity: red=risk, orange=warning, blue=info, green=success.
+
+</td>
+<td width="33%" valign="top">
+
+**Step Flows**
+```
+① → Title
+    Description
+
+② → Title
+    Description
+
+③ → Title
+    Description
+```
+Sequential processes rendered as numbered visual flows, not numbered lists.
+
+</td>
+</tr>
+<tr>
+<td width="33%" valign="top">
+
+**Data Bars**
+```
+Name A  ████████░░  80%
+Name B  █████░░░░░  50%
+Name C  ███████████ 100%
+```
+Relative comparisons rendered visually — instant comprehension vs. a table of numbers.
+
+</td>
+<td width="33%" valign="top">
+
+**Icon Lists**
+```
+🔵 Title  Description
+🟢 Title  Description
+🟡 Title  Description
+```
+Every bullet gets an icon anchor. Reduces cognitive load vs. plain `-` lists.
+
+</td>
+<td width="33%" valign="top">
+
+**Highlight Band**
+```
+┌─────────────────────┐
+│ 🏆 Key Decision     │
+│ The recommendation  │
+│ and reasoning...    │
+└─────────────────────┘
+```
+Gradient callout for the single most important insight per section.
+
+</td>
+</tr>
+</table>
+
+### Color Semantics
+
+Every color in a Lumina report means something:
+
+| Color | Meaning | Used For |
+|-------|---------|----------|
+| 🔵 Blue | Informational | Architecture, context, background |
+| 🟢 Green | Positive / Success | Benefits, achievements, solutions |
+| 🟠 Orange | Caution / Warning | Risks, considerations, tradeoffs |
+| 🔴 Red | Critical / Danger | Blockers, failures, urgent issues |
+| 🟣 Purple | Technical | Implementation details, code, APIs |
+| 🩵 Teal | External | Third-party services, dependencies |
+
+The result: readers navigate complex technical documents at a glance — the same way the brain is wired to process visual information.
 
 ---
 
@@ -142,6 +268,13 @@ Reports use a **pure CSS component system** — no Mermaid, no CDN, no external 
 
 | Component | CSS Class | Use When |
 |-----------|-----------|----------|
+| Visual Summary Cards | `.visual-summary .vs-card` | At-a-glance section openers, KPI grids |
+| Icon List | `.icon-list .il-icon` | Any bullet list — adds emoji anchors for scanability |
+| Insight Strip | `.insight-strip .insight-card` | Color-coded findings, alerts, highlights |
+| Step Flow | `.step-flow .step-item` | Numbered processes, how-it-works flows |
+| Data Bars | `.data-bar-list .data-bar-fill` | Relative comparisons, coverage metrics |
+| Highlight Band | `.highlight-band` | Single most-important decision or recommendation |
+| Takeaway | `.takeaway` | Section-closing key insight |
 | Box Flow Diagram | `.box-row .box .arrow` | Service architecture, data pipelines |
 | Sequence Diagram | `.seq-diagram .seq-actor .seq-msg` | API call chains, request/response flows |
 | Timeline | `.timeline .tl-item` | Implementation phases, milestones |

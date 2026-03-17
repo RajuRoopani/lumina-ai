@@ -1,19 +1,19 @@
 {
   "report_stats": {
-    "total_generated": 2,
-    "avg_section_count": 7.0,
+    "total_generated": 4,
+    "avg_section_count": 7.8,
     "component_usage": {
-      "callout": 2,
-      "pill": 2,
-      "box-row": 2,
-      "box": 2,
-      "arrow": 2,
-      "timeline": 2,
-      "approach-card": 2,
-      "stat-grid": 2,
-      "pro-con-grid": 2,
-      "tag": 2,
-      "seq-row": 2
+      "callout": 4,
+      "pill": 4,
+      "box-row": 4,
+      "box": 4,
+      "arrow": 4,
+      "timeline": 4,
+      "approach-card": 4,
+      "stat-grid": 4,
+      "pro-con-grid": 4,
+      "tag": 4,
+      "seq-row": 4
     }
   },
   "chat_stats": {
@@ -25,10 +25,10 @@
     "qa_count": 3
   },
   "prompt_hints": [
-    "DEPTH: Good \u2014 keep 7.0+ sections per report.",
+    "DEPTH: Good \u2014 keep 7.8+ sections per report.",
     "VARIETY: These CSS components have NEVER appeared \u2014 use them: .seq-block.",
     "RICHNESS: Users most often ask AI to improve: architecture. Make these sections exceptionally detailed in the initial report."
   ],
   "version": 1,
-  "last_updated": "2026-03-17T22:17:34.430059+00:00"
+  "last_updated": "2026-03-17T22:29:37.977037+00:00"
 }
