@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import type { Report } from '../../types'
@@ -6,10 +6,12 @@ import type { Report } from '../../types'
 interface Props {
   reportId: string
   onReportLoaded?: (report: Report) => void
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>
 }
 
-export function ReportViewer({ reportId, onReportLoaded }: Props) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef }: Props) {
+  const internalRef = useRef<HTMLIFrameElement>(null)
+  const iframeRef = externalRef ?? internalRef
   const [copied, setCopied] = useState(false)
 
   const { data: report, isLoading } = useQuery({
