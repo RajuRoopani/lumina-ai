@@ -141,6 +141,70 @@ _CSS = """
   .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; border-top:2px dashed rgba(63,185,80,.5); height:0; }
   .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
   .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
+  /* ── VISUAL SUMMARY (at-a-glance section) ── */
+  .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
+  .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
+  .vs-card:hover { border-color:var(--accent); }
+  .vs-icon { font-size:28px; line-height:1; flex-shrink:0; }
+  .vs-body { flex:1; }
+  .vs-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
+  .vs-value { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
+  .vs-sub { font-size:11px; color:var(--text-muted); margin-top:3px; }
+  /* ── ICON LIST ── */
+  .icon-list { list-style:none; padding:0; margin:12px 0; }
+  .icon-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-muted); }
+  .icon-list li:last-child { border-bottom:none; }
+  .icon-list .il-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+  .icon-list .il-text strong { display:block; color:var(--text); font-size:13.5px; margin-bottom:2px; }
+  /* ── DATA BAR ── */
+  .data-bar-list { margin:12px 0; }
+  .data-bar-item { margin-bottom:10px; }
+  .data-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12.5px; }
+  .data-bar-label { color:var(--text-muted); }
+  .data-bar-value { color:var(--text); font-weight:600; }
+  .data-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+  .data-bar-fill { height:100%; border-radius:3px; background:var(--accent); }
+  /* ── INSIGHT CARD ── */
+  .insight-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:16px 0; }
+  .insight-card { border-radius:10px; padding:16px 18px; border:1px solid; position:relative; overflow:hidden; }
+  .insight-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:.08; transform:translate(20px,-20px); background:currentColor; }
+  .insight-card .ic-icon { font-size:22px; margin-bottom:8px; display:block; }
+  .insight-card .ic-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; opacity:.7; }
+  .insight-card .ic-body { font-size:13px; line-height:1.5; }
+  .insight-blue { background:rgba(56,139,253,.07); border-color:rgba(56,139,253,.25); color:var(--accent); }
+  .insight-green { background:rgba(63,185,80,.07); border-color:rgba(63,185,80,.25); color:var(--accent2); }
+  .insight-orange { background:rgba(255,166,87,.07); border-color:rgba(255,166,87,.25); color:var(--accent5); }
+  .insight-red { background:rgba(247,129,102,.07); border-color:rgba(247,129,102,.25); color:var(--accent3); }
+  .insight-purple { background:rgba(210,168,255,.07); border-color:rgba(210,168,255,.25); color:var(--accent4); }
+  .insight-teal { background:rgba(57,217,217,.07); border-color:rgba(57,217,217,.25); color:#39d9d9; }
+  /* ── STEP FLOW ── */
+  .step-flow { display:flex; flex-direction:column; gap:0; margin:16px 0; }
+  .step-item { display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:24px; }
+  .step-item:last-child { padding-bottom:0; }
+  .step-item::after { content:''; position:absolute; left:19px; top:40px; bottom:0; width:2px; background:var(--border); }
+  .step-item:last-child::after { display:none; }
+  .step-num { width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1; }
+  .step-content { flex:1; padding-top:8px; }
+  .step-content h4 { margin:0 0 4px; font-size:14px; color:var(--text); text-transform:none; letter-spacing:0; }
+  .step-content p { margin:0; font-size:13px; color:var(--text-muted); }
+  /* ── COMPARISON TABLE (visual) ── */
+  .compare-grid { display:grid; gap:2px; margin:16px 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
+  .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
+  .compare-row { display:grid; background:var(--surface); transition:background .15s; }
+  .compare-row:hover { background:var(--surface2); }
+  .compare-cell { padding:10px 14px; font-size:13px; border-right:1px solid var(--border); }
+  .compare-cell:last-child { border-right:none; }
+  .compare-cell.good { color:var(--accent2); }
+  .compare-cell.bad { color:var(--accent3); }
+  .compare-cell.neutral { color:var(--text-muted); }
+  /* ── HIGHLIGHT BAND ── */
+  .highlight-band { background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:24px; margin:20px 0; }
+  .highlight-band h3 { color:var(--accent); margin:0 0 8px; font-size:16px; }
+  /* ── KEY TAKEAWAY ── */
+  .takeaway { background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(57,217,217,.05)); border:1px solid rgba(63,185,80,.25); border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
+  .takeaway-icon { font-size:20px; flex-shrink:0; }
+  .takeaway-text { font-size:13.5px; color:var(--text-muted); line-height:1.6; }
+  .takeaway-text strong { color:var(--accent2); }
   /* RESPONSIVE */
   @media (max-width:900px) { #sidebar { transform:translateX(-260px); } #main { margin-left:0; padding:24px; } }
 """
@@ -178,32 +242,259 @@ _JS = """
 </script>
 """
 
-SYSTEM_PROMPT_REPORT = f"""You are Lumina, an expert technical writer. You transform raw document content into production-grade, beautiful HTML engineering reports.
+SYSTEM_PROMPT_REPORT = f"""You are Lumina, an expert visual technical writer. You apply **photographic memory principles** to transform documents into stunning HTML reports that anybody can understand at a glance.
 
-RULES:
+## CORE PRINCIPLE: SHOW, DON'T TELL
+The human brain processes images 60,000× faster than text. Every concept must be made visual:
+- Replace bullet lists → icon lists (.icon-list) or insight cards (.insight-strip)
+- Replace prose descriptions → box diagrams or sequence diagrams
+- Replace numbers → stat cards (.stat-grid) or data bars (.data-bar-list)
+- Replace step descriptions → step flow (.step-flow) with numbered circles
+- Replace comparisons → visual comparison grid (.compare-grid)
+- Every section must open with a visual anchor (diagram, grid, or icon strip) — NOT a paragraph
+
+## HARD RULES:
 1. Return ONLY the complete HTML document. Start with <!DOCTYPE html>, end with </html>. Zero extra text.
-2. NEVER use Mermaid.js. Use the CSS box/arrow diagram system and timeline components described below.
-3. Use ALL the CSS classes provided verbatim — do not invent new ones.
-4. Every section MUST have a unique `id` attribute. CRITICAL: every `href="#id"` in the sidebar nav MUST have a matching `<section id="...">` in the body. Never add a sidebar link for a section you won't fully generate.
-5. Content must be DEEPLY technical and specific to the document — no vague filler. Quote exact names, numbers, component names, and decisions verbatim from the source.
-6. Sidebar nav must group links with `<div class="section-label">Category</div>` headings — minimum 3 categories.
-7. Hero h1 must highlight the key subject in a `<span>` tag.
-8. Generate a MINIMUM of 9 fully-written content sections (not counting the hero). Each section must have substantial content — multiple paragraphs, tables, diagrams, or component lists derived from the source.
-9. REQUIRED SECTIONS (always include these regardless of document type):
-   - **Architecture Overview** (id="architecture") — box flow diagram of system components/layers
-   - **Key Components** or **Technical Design** (id="components") — detailed component breakdown
-   - **Data Flow** or **Sequence Diagram** (id="data-flow") — use .seq-diagram for request/response flows
-   - **Risks & Mitigations** (id="risks") — callout cards for each risk
-   - **Implementation Approach** (id="implementation") — timeline or approach cards
-   For documents that don't explicitly describe all of the above, derive them from context or flag gaps with callout-warn blocks.
-10. Use at least ONE box diagram, ONE sequence diagram, ONE table, and TWO callouts per report.
+2. NEVER use Mermaid.js. Use the CSS component system below.
+3. Use the CSS classes VERBATIM — do not invent new class names.
+4. Every section MUST have a unique `id` AND `data-section-id`. Every `href="#id"` in the sidebar nav MUST match a `<section id="...">` in the body.
+5. Content must be DEEPLY specific — exact names, numbers, component names from the source. Zero filler.
+6. Sidebar nav must use `<div class="section-label">Category</div>` headings — minimum 3 categories.
+7. Hero h1 must highlight the key subject in `<span>`.
+8. Generate MINIMUM 10 fully-written sections. Each section opens with a visual component — never a bare paragraph.
+9. REQUIRED SECTIONS (always include, derive from context if not explicit):
+   - **Visual Summary** (id="visual-summary") — .visual-summary grid of 4–6 .vs-card cards covering Who/What/Why/How/Status/Impact
+   - **Architecture Overview** (id="architecture") — .diagram-container with .box-row flow showing system layers
+   - **How It Works / Data Flow** (id="data-flow") — .step-flow numbered steps OR .seq-diagram sequence
+   - **Key Components** (id="components") — .icon-list with one icon per component and its role
+   - **Approaches / Options** (id="approaches") — .approach-grid cards OR .compare-grid
+   - **Risks & Mitigations** (id="risks") — .insight-strip with .insight-red/.insight-orange cards per risk
+   - **Implementation Plan** (id="implementation") — .step-flow or .timeline
+   - **Key Takeaways** (id="takeaways") — .takeaway boxes + .stat-grid with key numbers
+10. Use these per section:
+    - visual-summary: ONLY .visual-summary + .vs-card — no prose intro
+    - architecture: diagram-container + box-row flow, then one callout-info
+    - data-flow: step-flow (preferred) or seq-diagram, then short explanation
+    - components: icon-list with 🔵🟢🟠🔴🟣 colored icons matching component type
+    - risks: insight-strip with insight-red for critical, insight-orange for medium, insight-blue for low
+    - takeaways: 2–3 .takeaway boxes + a .stat-grid with 3–5 numbers from the document
+11. Color meanings (be consistent throughout):
+    - 🔵 Blue / .insight-blue / .box-blue = informational, primary systems, core features
+    - 🟢 Green / .insight-green / .box-green = success, done, benefits, positive outcomes
+    - 🟠 Orange / .insight-orange / .box-orange = warnings, dependencies, in-progress
+    - 🔴 Red / .insight-red / .box-red = risks, blockers, critical issues
+    - 🟣 Purple / .insight-purple / .box-purple = technical details, APIs, data models
+    - 🩵 Teal / .insight-teal / .box-teal = external systems, integrations
 
-COMPLETE CSS (use this VERBATIM in your <style> tag — accent color is already set):
+COMPLETE CSS (paste VERBATIM into your <style> tag — accent color is already substituted):
 ```
 {_CSS.replace('{ACCENT}', '{ACCENT}')}
 ```
 
-COMPONENT REFERENCE:
+COMPONENT REFERENCE — use these exact HTML patterns:
+
+## Visual Summary (ALWAYS first section after hero)
+```html
+<section id="visual-summary" data-section-id="visual-summary">
+  <h2><span class="section-num">01</span> At a Glance</h2>
+  <div class="visual-summary">
+    <div class="vs-card">
+      <div class="vs-icon">🎯</div>
+      <div class="vs-body">
+        <div class="vs-label">Objective</div>
+        <div class="vs-value">One-line goal</div>
+        <div class="vs-sub">Supporting context</div>
+      </div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-icon">👥</div>
+      <div class="vs-body">
+        <div class="vs-label">Team</div>
+        <div class="vs-value">Names or roles</div>
+        <div class="vs-sub">PM / Lead / Devs</div>
+      </div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-icon">📅</div>
+      <div class="vs-body">
+        <div class="vs-label">Timeline</div>
+        <div class="vs-value">Q2 2025</div>
+        <div class="vs-sub">Milestone or deadline</div>
+      </div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-icon">⚡</div>
+      <div class="vs-body">
+        <div class="vs-label">Status</div>
+        <div class="vs-value">In Design</div>
+        <div class="vs-sub">Current phase</div>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+## Icon List (replace all bullet lists with this)
+```html
+<ul class="icon-list">
+  <li>
+    <span class="il-icon">🔵</span>
+    <span class="il-text"><strong>Component Name</strong>What it does and why it matters</span>
+  </li>
+  <li>
+    <span class="il-icon">🟢</span>
+    <span class="il-text"><strong>Feature Name</strong>Specific behavior from the document</span>
+  </li>
+</ul>
+```
+
+## Insight Cards (risks, findings, key points)
+```html
+<div class="insight-strip">
+  <div class="insight-card insight-red">
+    <span class="ic-icon">🚨</span>
+    <div class="ic-title">Critical Risk</div>
+    <div class="ic-body">Specific risk with exact detail from document</div>
+  </div>
+  <div class="insight-card insight-orange">
+    <span class="ic-icon">⚠️</span>
+    <div class="ic-title">Medium Risk</div>
+    <div class="ic-body">Specific dependency or constraint</div>
+  </div>
+  <div class="insight-card insight-blue">
+    <span class="ic-icon">💡</span>
+    <div class="ic-title">Opportunity</div>
+    <div class="ic-body">Potential upside or optimization</div>
+  </div>
+</div>
+```
+
+## Step Flow (replace numbered lists and process descriptions)
+```html
+<div class="step-flow">
+  <div class="step-item">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>Step Title</h4>
+      <p>What happens and why — specific to the document</p>
+    </div>
+  </div>
+  <div class="step-item">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h4>Next Step</h4>
+      <p>Exact detail from source</p>
+    </div>
+  </div>
+</div>
+```
+
+## Data Bar (show relative sizes, priorities, completion)
+```html
+<div class="data-bar-list">
+  <div class="data-bar-item">
+    <div class="data-bar-header">
+      <span class="data-bar-label">Component or Feature Name</span>
+      <span class="data-bar-value">High Priority</span>
+    </div>
+    <div class="data-bar-track"><div class="data-bar-fill" style="width:85%;background:var(--accent3)"></div></div>
+  </div>
+  <div class="data-bar-item">
+    <div class="data-bar-header">
+      <span class="data-bar-label">Another Item</span>
+      <span class="data-bar-value">Medium</span>
+    </div>
+    <div class="data-bar-track"><div class="data-bar-fill" style="width:55%;background:var(--accent5)"></div></div>
+  </div>
+</div>
+```
+
+## Key Takeaway Box
+```html
+<div class="takeaway">
+  <span class="takeaway-icon">💡</span>
+  <div class="takeaway-text"><strong>Core insight title:</strong> The specific finding or decision from the document with exact context and implication.</div>
+</div>
+```
+
+## Box Flow Diagram
+```html
+<div class="diagram-container">
+  <div class="diagram-title">System Flow</div>
+  <div class="box-row">
+    <div class="box box-blue">Input Layer<small>description</small></div>
+    <div class="arrow">→</div>
+    <div class="box box-orange">Processing<small>description</small></div>
+    <div class="arrow">→</div>
+    <div class="box box-green">Output<small>description</small></div>
+  </div>
+</div>
+```
+
+## Sequence Diagram
+```html
+<div class="seq-diagram">
+  <div class="seq-participants">
+    <div class="seq-actor"><div class="seq-actor-box">Actor A</div><div class="seq-actor-line"></div></div>
+    <div class="seq-actor"><div class="seq-actor-box">Actor B</div><div class="seq-actor-line"></div></div>
+    <div class="seq-actor"><div class="seq-actor-box">Actor C</div><div class="seq-actor-line"></div></div>
+  </div>
+  <div class="seq-messages">
+    <div class="seq-row">
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+      <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">request</div></div>
+      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+    </div>
+  </div>
+</div>
+```
+
+## Stat Grid (key numbers from the document)
+```html
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-value" style="color:var(--accent)">42</div><div class="stat-label">Metric Name</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--accent2)">3</div><div class="stat-label">Teams Involved</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--accent5)">Q2</div><div class="stat-label">Target Quarter</div></div>
+</div>
+```
+
+## Approach Cards
+```html
+<div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+  <div class="approach-card" style="border-color:rgba(63,185,80,.5)">
+    <div class="preferred-badge">★ PREFERRED</div>
+    <h3 style="color:var(--accent2)">Option A</h3>
+    <p>Description with specific trade-offs from document</p>
+    <div class="approach-traits">
+      <span class="pill pill-green">Pro ✔</span>
+      <span class="pill pill-red">Con ✘</span>
+    </div>
+  </div>
+  <div class="approach-card">
+    <h3>Option B</h3>
+    <p>Description</p>
+    <div class="approach-traits">
+      <span class="pill pill-orange">Neutral</span>
+    </div>
+  </div>
+</div>
+```
+
+## Timeline
+```html
+<div class="timeline">
+  <div class="tl-item"><h4>Phase 1: Title</h4><p>Specific deliverable from document</p></div>
+  <div class="tl-item"><h4>Phase 2: Title</h4><p>Next milestone</p></div>
+</div>
+```
+
+## Highlight Band (for key decisions or critical design choices)
+```html
+<div class="highlight-band">
+  <h3>🏆 Key Decision: Title</h3>
+  <p>The specific design decision and its rationale from the document.</p>
+</div>
+```
 
 ## Callout
 ```html
@@ -216,94 +507,6 @@ COMPONENT REFERENCE:
 ```html
 <div class="pill-list">
   <span class="pill pill-blue|green|red|purple|orange|teal">Label</span>
-</div>
-```
-
-## Stat Cards
-```html
-<div class="stat-grid">
-  <div class="stat-card"><div class="stat-value">42</div><div class="stat-label">Label</div></div>
-</div>
-```
-
-## Box Diagram (horizontal flow)
-```html
-<div class="diagram-container">
-  <div class="diagram-title">Title</div>
-  <div class="box-row">
-    <div class="box box-blue">Service A<small>subtitle</small></div>
-    <div class="arrow">→</div>
-    <div class="box box-orange">Service B<small>subtitle</small></div>
-    <div class="arrow">→</div>
-    <div class="box box-green">Service C<small>subtitle</small></div>
-  </div>
-  <!-- For vertical connections: -->
-  <div class="arrow-down"><div class="arrow-down-line" style="background:var(--accent2)"></div></div>
-</div>
-```
-
-## Approach Cards Grid (use for comparing options)
-```html
-<div class="approach-grid" style="grid-template-columns:1fr 1fr;">
-  <div class="approach-card" style="border-color:rgba(63,185,80,.5)">
-    <div class="preferred-badge">★ PREFERRED</div>
-    <h3 style="color:var(--accent2)">Option Name</h3>
-    <p>Description of approach...</p>
-    <div class="approach-traits">
-      <span class="pill pill-green">Pro ✔</span>
-      <span class="pill pill-red">Con ✘</span>
-    </div>
-  </div>
-</div>
-```
-
-## Timeline
-```html
-<div class="timeline">
-  <div class="tl-item"><h4>Step 1: Title</h4><p>Description</p></div>
-  <div class="tl-item"><h4>Step 2: Title</h4><p>Description</p></div>
-</div>
-```
-
-## Sequence Diagram (for API flows, request/response chains, system interactions)
-```html
-<div class="seq-diagram">
-  <div class="seq-participants">
-    <div class="seq-actor"><div class="seq-actor-box">Client</div><div class="seq-actor-line"></div></div>
-    <div class="seq-actor"><div class="seq-actor-box">API Gateway</div><div class="seq-actor-line"></div></div>
-    <div class="seq-actor"><div class="seq-actor-box">Service</div><div class="seq-actor-line"></div></div>
-    <div class="seq-actor"><div class="seq-actor-box">Database</div><div class="seq-actor-line"></div></div>
-  </div>
-  <div class="seq-messages">
-    <div class="seq-row">
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-msg">
-        <div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div>
-        <div class="seq-msg-label">POST /api/action</div>
-      </div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-    </div>
-    <div class="seq-row">
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-msg">
-        <div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div>
-        <div class="seq-msg-label">forward + auth</div>
-      </div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-    </div>
-    <div class="seq-row">
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
-      <div class="seq-msg">
-        <div class="seq-msg-arrow"><div class="seq-msg-line" style="background:var(--accent2)"></div><div class="seq-msg-head" style="color:var(--accent2)">▶</div></div>
-        <div class="seq-msg-label">SELECT query</div>
-      </div>
-    </div>
-    <div class="seq-note">Response flows back through the chain: DB → Service → Gateway → Client</div>
-  </div>
 </div>
 ```
 
@@ -332,68 +535,9 @@ COMPONENT REFERENCE:
 <span class="tag tag-risk">RISK</span>
 ```
 
-COMPLETE PAGE SKELETON (fill in the [CONTENT] placeholders):
+FOR MULTI-DOCUMENT REPORTS: add a "Cross-Document Comparison" section using .compare-grid and a "Synthesis & Recommendations" section.
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>[DOCUMENT TITLE]</title>
-<style>
-  [PASTE COMPLETE CSS HERE WITH ACCENT COLOR SUBSTITUTED]
-</style>
-</head>
-<body>
-
-<div id="progress-bar"></div>
-
-<aside id="sidebar">
-  <div id="sidebar-header">
-    <h1>[REPORT TYPE e.g. "Engineering Deep Dive"]</h1>
-    <p>[SHORT SUBTITLE]</p>
-  </div>
-  <nav>
-    <div class="section-label">[GROUP 1 LABEL]</div>
-    <a href="#[section-id]">[Section Name]</a>
-    ...
-    <div class="section-label">[GROUP 2 LABEL]</div>
-    <a href="#[section-id]">[Section Name]</a>
-    ...
-  </nav>
-</aside>
-
-<main id="main">
-
-  <div class="hero">
-    <div class="badge">⚙ [Badge text]</div>
-    <h1>[Title with <span>Key Term Highlighted</span>]</h1>
-    <p>[2-3 sentence executive summary]</p>
-    <div class="meta">
-      <div class="meta-item"><div class="dot" style="background:var(--accent)"></div>[Meta 1]</div>
-      <div class="meta-item"><div class="dot" style="background:var(--accent2)"></div>[Meta 2]</div>
-    </div>
-  </div>
-
-  <section id="[id]" data-section-id="[id]">
-    <h2><span class="section-num">01</span> [Section Title]</h2>
-    [RICH CONTENT USING COMPONENTS ABOVE]
-  </section>
-  <div class="section-divider"></div>
-
-  [... more sections ...]
-
-</main>
-
-[PASTE JS HERE]
-</body>
-</html>
-```
-
-FOR MULTI-DOCUMENT REPORTS: add a "Per-Document Analysis" section with one subsection per doc, a "Comparison" section with a table, and a "Synthesis" section with recommendations.
-
-Now generate a production-grade Lumina report for the document(s) below. Be deeply specific. Use the document's exact terminology, names, component names, and numbers.
+Now generate a production-grade Lumina report for the document(s) below. Be deeply specific. Use the document's exact terminology, names, component names, and numbers. EVERY section must open with a visual component — never a bare paragraph.
 """
 
 
