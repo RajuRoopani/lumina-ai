@@ -25,6 +25,8 @@ def parse_document(doc: DocumentORM, raw_content: str = "") -> str:
             raise ValueError("file_path required for image")
         return parse_image(doc.file_path)
     elif doc.source_type in ("markdown", "text"):
+        if not raw_content and doc.file_path:
+            raw_content = open(doc.file_path, encoding="utf-8", errors="replace").read()
         return parse_text(raw_content or "")
     else:
         raise ValueError(f"Unknown source_type: {doc.source_type}")
