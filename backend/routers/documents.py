@@ -40,6 +40,7 @@ async def upload_files(files: list[UploadFile] = File(...), db: Session = Depend
             "pdf" if "pdf" in content_type else
             "docx" if "wordprocessing" in content_type else
             "image" if "image" in content_type else
+            "markdown" if (content_type in ("text/markdown", "text/x-markdown") or safe_name.endswith(".md")) else
             "text"
         )
 

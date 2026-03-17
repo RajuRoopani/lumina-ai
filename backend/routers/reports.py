@@ -4,7 +4,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Body
 from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.orm import Session
-from database import get_db
+from database import get_db, SessionLocal
 from models import DocumentORM, ReportORM, ReportSchema, ReportMetaSchema
 from services.report_service import generate_report_html, pick_signature_color
 
@@ -21,22 +21,28 @@ def _get_report_or_404(report_id: str, db: Session) -> ReportORM:
 @router.post("/generate")
 def generate_report(
     document_ids: list[str] = Body(..., embed=True),
-    db: Session = Depends(get_db),
 ):
-    docs = [
-        db.query(DocumentORM).filter(DocumentORM.id == did).first()
-        for did in document_ids
-    ]
-    docs = [d for d in docs if d is not None]
-    if not docs:
-        raise HTTPException(400, "No valid documents found for given IDs")
+    db = SessionLocal()
+    try:
+        docs = [
+            db.query(DocumentORM).filter(DocumentORM.id == did).first()
+            for did in document_ids
+        ]
+        docs = [d for d in docs if d is not None]
+        if not docs:
+            db.close()
+            raise HTTPException(400, "No valid documents found for given IDs")
+        report_index = db.query(ReportORM).count()
+    except HTTPException:
+        db.close()
+        raise
 
     def event_stream():
-        yield f"data: {{\"event\":\"progress\",\"data\":\"Analyzing {len(docs)} document(s)...\"}}\n\n"
+        done_payload = None
         try:
-            report_index = db.query(ReportORM).count()
+            yield f"data: {json.dumps({'event': 'progress', 'data': f'Analyzing {len(docs)} document(s)...'})}\n\n"
             color = pick_signature_color(report_index)
-            yield f"data: {{\"event\":\"progress\",\"data\":\"Generating rich HTML report...\"}}\n\n"
+            yield f"data: {json.dumps({'event': 'progress', 'data': 'Generating rich HTML report...'})}\n\n"
             html = generate_report_html(docs, signature_color=color)
 
             report_id = str(uuid.uuid4())
@@ -56,9 +62,13 @@ def generate_report(
             )
             db.add(orm)
             db.commit()
-            yield f"data: {{\"event\":\"done\",\"data\":{{\"id\":\"{report_id}\",\"title\":\"{title}\"}}}}\n\n"
+            done_payload = {"id": report_id, "title": title}
         except Exception as e:
-            yield f"data: {{\"event\":\"error\",\"data\":\"{str(e)}\"}}\n\n"
+            yield f"data: {json.dumps({'event': 'error', 'data': str(e)})}\n\n"
+        finally:
+            if done_payload is not None:
+                yield f"data: {json.dumps({'event': 'done', 'data': done_payload})}\n\n"
+            db.close()
 
     return StreamingResponse(
         event_stream(),
