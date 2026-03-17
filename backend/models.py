@@ -92,3 +92,15 @@ class ChatMessageSchema(BaseModel):
     action_data: dict
     created_at: datetime
     model_config = {"from_attributes": True}
+
+    @classmethod
+    def from_orm_model(cls, obj: "ChatMessageORM") -> "ChatMessageSchema":
+        return cls(
+            id=obj.id,
+            report_id=obj.report_id,
+            role=obj.role,
+            content=obj.content,
+            action=obj.action,
+            action_data=json.loads(obj.action_data_json),
+            created_at=obj.created_at,
+        )

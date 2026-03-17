@@ -38,5 +38,6 @@ def health():
 # Serve React SPA (catch-all) — must be last
 try:
     app.mount("/", StaticFiles(directory="../frontend/dist", html=True), name="static")
-except Exception:
-    pass  # Frontend not built yet during development
+except Exception as exc:
+    import warnings
+    warnings.warn(f"Frontend static files not mounted: {exc}", stacklevel=1)
