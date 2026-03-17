@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useChat } from '../../hooks/useChat'
 import { api } from '../../api/client'
@@ -16,9 +16,10 @@ interface Props {
   reportId: string | undefined
   onSectionUpdate?: (sectionId: string, html: string) => void
   onNewReport?: (reportId: string) => void
+  iframeRef?: React.RefObject<HTMLIFrameElement | null>
 }
 
-export function ChatPanel({ reportId, onSectionUpdate, onNewReport }: Props) {
+export function ChatPanel({ reportId, onSectionUpdate, onNewReport, iframeRef }: Props) {
   const [tab, setTab] = useState<'chat' | 'annotations'>('chat')
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -26,11 +27,11 @@ export function ChatPanel({ reportId, onSectionUpdate, onNewReport }: Props) {
 
   const { messages, streaming, streamingText, sendMessage } = useChat(reportId)
 
-  const handleAction = (action: Record<string, unknown>) => {
+  const handleAction = useCallback((action: Record<string, unknown>) => {
     if (action.action === 'section_update' && onSectionUpdate) {
-      // Update section in iframe via postMessage
-      const iframe = document.querySelector('iframe')
-      iframe?.contentWindow?.postMessage({
+      // Note: target origin must be '*' because srcdoc iframes have opaque (null) origin
+      const iframeWindow = iframeRef?.current?.contentWindow
+      iframeWindow?.postMessage({
         type: 'UPDATE_SECTION',
         sectionId: action.section_id,
         html: action.html,
@@ -61,7 +62,7 @@ export function ChatPanel({ reportId, onSectionUpdate, onNewReport }: Props) {
           }
         })
     }
-  }
+  }, [reportId, onSectionUpdate, onNewReport, iframeRef, qc])
 
   const handleSend = async () => {
     if (!input.trim() || !reportId || streaming) return

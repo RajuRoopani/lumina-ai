@@ -29,16 +29,31 @@ export function useChat(reportId: string | undefined) {
     const decoder = new TextDecoder()
     let buffer = ''
 
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const payload = JSON.parse(line.slice(6))
+            if (payload.type === 'chunk') setStreamingText(t => t + payload.text)
+            if (payload.type === 'action' && onAction) onAction(payload.action)
+            if (payload.type === 'done') {
+              setStreaming(false)
+              setStreamingText('')
+              qc.invalidateQueries({ queryKey: ['chat', reportId] })
+            }
+          } catch { /* skip malformed */ }
+        }
+      }
+      // Flush remaining buffer (handles streams without trailing newline)
+      if (buffer.startsWith('data: ')) {
         try {
-          const payload = JSON.parse(line.slice(6))
+          const payload = JSON.parse(buffer.slice(6))
           if (payload.type === 'chunk') setStreamingText(t => t + payload.text)
           if (payload.type === 'action' && onAction) onAction(payload.action)
           if (payload.type === 'done') {
@@ -46,10 +61,14 @@ export function useChat(reportId: string | undefined) {
             setStreamingText('')
             qc.invalidateQueries({ queryKey: ['chat', reportId] })
           }
-        } catch { /* skip malformed */ }
+        } catch { /* skip */ }
       }
+    } catch (err) {
+      console.error('SSE stream error:', err)
+    } finally {
+      setStreaming(false)
+      reader.releaseLock()
     }
-    setStreaming(false)
   }, [reportId, qc])
 
   return { messages, streaming, streamingText, sendMessage }

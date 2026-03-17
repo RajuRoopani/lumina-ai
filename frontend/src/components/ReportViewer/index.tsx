@@ -25,6 +25,7 @@ export function ReportViewer({ reportId, onReportLoaded }: Props) {
   // Listen for section update messages from parent
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      if (e.source !== iframeRef.current?.contentWindow) return
       if (e.data?.type === 'UPDATE_SECTION' && iframeRef.current?.contentDocument) {
         const { sectionId, html } = e.data
         const target = iframeRef.current.contentDocument
