@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA Ch07: Transactions — Deep Dive Report</title>
+  <title>DDIA Chapter 7: Transactions — Technical Report</title>
   <style>
     :root {
       --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
@@ -127,23 +126,6 @@
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
-    /* SEQUENCE DIAGRAM */
-    .seq-diagram { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
-    .seq-participants { display:flex; gap:0; justify-content:flex-start; margin-bottom:0; }
-    .seq-actor { display:flex; flex-direction:column; align-items:center; min-width:120px; flex:1; }
-    .seq-actor-box { background:var(--surface); border:1px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; color:var(--accent); white-space:nowrap; }
-    .seq-actor-line { width:2px; background:var(--border); flex:1; min-height:24px; }
-    .seq-messages { display:flex; flex-direction:column; gap:0; }
-    .seq-row { display:flex; align-items:center; gap:0; min-height:40px; }
-    .seq-spacer { min-width:120px; flex:1; display:flex; justify-content:center; }
-    .seq-spacer-line { width:2px; background:var(--border); height:40px; }
-    .seq-msg { flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:center; }
-    .seq-msg-arrow { display:flex; align-items:center; gap:4px; }
-    .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
-    .seq-msg-head { color:var(--accent); font-size:14px; }
-    .seq-msg-head-left { color:var(--accent2); font-size:14px; }
-    .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
-    .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
     /* VISUAL SUMMARY */
     .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
     .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
@@ -215,594 +197,1174 @@
 <body>
   <div id="progress-bar"></div>
 
-  <div id="sidebar">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
     <div id="sidebar-header">
-      <h1>DDIA Ch07</h1>
+      <h1>📖 DDIA Ch7</h1>
       <p>Transactions Deep Dive</p>
     </div>
     <nav>
       <div class="section-label">Core Concepts</div>
       <a href="#visual-summary">At a Glance</a>
-      <a href="#acid-overview">ACID Overview</a>
-      <a href="#atomicity">Atomicity</a>
-      <a href="#consistency">Consistency</a>
-      <a href="#isolation-intro">Isolation & Concurrency</a>
-      <a href="#durability">Durability</a>
-
-      <div class="section-label">Single vs. Multi-Object</div>
-      <a href="#single-object">Single-Object Operations</a>
-      <a href="#multi-object">Multi-Object Transactions</a>
-
-      <div class="section-label">Isolation Techniques</div>
+      <a href="#acid-properties">ACID Properties</a>
+      <a href="#concurrency-failures">Concurrency Failures</a>
+      <a href="#single-object">Single-Object Ops</a>
+      
+      <div class="section-label">Isolation Levels</div>
+      <a href="#read-committed">Read Committed</a>
+      <a href="#snapshot-isolation">Snapshot Isolation</a>
+      <a href="#isolation-comparison">Level Comparison</a>
+      
+      <div class="section-label">Algorithms</div>
       <a href="#serial-execution">Serial Execution</a>
+      <a href="#two-phase-locking">Two-Phase Locking</a>
+      <a href="#predicate-locks">Predicate Locks</a>
+      <a href="#ssi">Serializable SI</a>
       
-      
-
-      <div class="section-label">Trade-offs & Patterns</div>
-      
-      
-      
+      <div class="section-label">Summary</div>
+      <a href="#implementation-matrix">Implementation Matrix</a>
+      <a href="#key-takeaways">Key Takeaways</a>
     </nav>
-  </div>
+  </aside>
 
-  <div id="main">
+  <!-- MAIN CONTENT -->
+  <main id="main">
     <!-- HERO -->
     <div class="hero">
-      <div class="badge">DISTRIBUTED SYSTEMS DESIGN</div>
-      <h1>DDIA Chapter 7: <span>Transactions</span></h1>
-      <p>From fault tolerance (ACID) through concurrency control to practical isolation semantics. Everything you need to build reliable multi-object operations in databases.</p>
+      <div class="badge">FOUNDATIONAL DATABASE CONCEPTS</div>
+      <h1>DDIA Chapter 7:<br><span>Transactions</span></h1>
+      <p>Comprehensive exploration of ACID properties, isolation levels, concurrency control algorithms, and the trade-offs between safety guarantees and performance in database systems.</p>
       <div class="meta">
-        <div class="meta-item">
-          <span class="dot" style="background:var(--accent);"></span>
-          IBM System R (1975) → 40+ years of proven patterns
-        </div>
-        <div class="meta-item">
-          <span class="dot" style="background:var(--accent3);"></span>
-          Covers MySQL InnoDB, PostgreSQL, Oracle, SQL Server
-        </div>
-        <div class="meta-item">
-          <span class="dot" style="background:var(--accent2);"></span>
-          Deep dives: Serial execution, 2PL, predicate locks
-        </div>
+        <div class="meta-item"><div class="dot" style="background:var(--accent)"></div> Database Theory</div>
+        <div class="meta-item"><div class="dot" style="background:var(--accent2)"></div> Concurrency Control</div>
+        <div class="meta-item"><div class="dot" style="background:var(--accent3)"></div> 40+ Years History</div>
       </div>
     </div>
 
-    <!-- VISUAL SUMMARY -->
+    <!-- SECTION 1: VISUAL SUMMARY -->
     <section id="visual-summary" data-section-id="visual-summary">
       <h2><span class="section-num">01</span> At a Glance</h2>
       <div class="visual-summary">
         <div class="vs-card">
-          <div class="vs-icon">🎯</div>
+          <div class="vs-icon">🔐</div>
           <div class="vs-body">
             <div class="vs-label">Core Purpose</div>
-            <div class="vs-value">All-or-Nothing Semantics</div>
-            <div class="vs-sub">Group reads/writes into atomic units; eliminate partial failures</div>
+            <div class="vs-value">All-or-Nothing</div>
+            <div class="vs-sub">Group reads/writes; commit or abort entirely</div>
           </div>
         </div>
         <div class="vs-card">
-          <div class="vs-icon">⚙️</div>
+          <div class="vs-icon">📋</div>
           <div class="vs-body">
-            <div class="vs-label">ACID Framework</div>
-            <div class="vs-value">4 Properties</div>
-            <div class="vs-sub">Atomicity, Consistency, Isolation, Durability</div>
-          </div>
-        </div>
-        <div class="vs-card">
-          <div class="vs-icon">🔒</div>
-          <div class="vs-body">
-            <div class="vs-label">Primary Challenge</div>
-            <div class="vs-value">Concurrency Control</div>
-            <div class="vs-sub">Racing writes, phantom reads, isolation anomalies</div>
-          </div>
-        </div>
-        <div class="vs-card">
-          <div class="vs-icon">📊</div>
-          <div class="vs-body">
-            <div class="vs-label">Historical Impact</div>
-            <div class="vs-value">~40 Years Stable</div>
-            <div class="vs-sub">Pattern from System R (1975) still dominant</div>
+            <div class="vs-label">Key Framework</div>
+            <div class="vs-value">ACID Model</div>
+            <div class="vs-sub">Since 1983 Härder & Reuter</div>
           </div>
         </div>
         <div class="vs-card">
           <div class="vs-icon">⚡</div>
           <div class="vs-body">
-            <div class="vs-label">Main Trade-off</div>
-            <div class="vs-value">Consistency vs. Performance</div>
-            <div class="vs-sub">Serializability: safe but slow; weak isolation: fast but risky</div>
+            <div class="vs-label">Main Challenge</div>
+            <div class="vs-value">Concurrency</div>
+            <div class="vs-sub">Prevent race conditions & data corruption</div>
           </div>
         </div>
         <div class="vs-card">
-          <div class="vs-icon">🏗️</div>
+          <div class="vs-icon">🎯</div>
           <div class="vs-body">
-            <div class="vs-label">Key Mechanism</div>
-            <div class="vs-value">Two-Phase Locking (2PL)</div>
-            <div class="vs-sub">De facto standard for serializability since ~1990</div>
+            <div class="vs-label">Trade-off</div>
+            <div class="vs-value">Safety vs Speed</div>
+            <div class="vs-sub">Stronger isolation = lower throughput</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🏛️</div>
+          <div class="vs-body">
+            <div class="vs-label">Historical Origin</div>
+            <div class="vs-value">IBM System R</div>
+            <div class="vs-sub">1975 → 40 years unchanged</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">📊</div>
+          <div class="vs-body">
+            <div class="vs-label">Scope</div>
+            <div class="vs-value">Multi-level</div>
+            <div class="vs-sub">Single-object to distributed systems</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ACID OVERVIEW -->
-    <section id="acid-overview" data-section-id="acid-overview">
-      <h2><span class="section-num">02</span> ACID Framework Overview</h2>
+    <!-- SECTION 2: ACID PROPERTIES -->
+    <section id="acid-properties" data-section-id="acid-properties">
+      <h2><span class="section-num">02</span> ACID Properties (1983)</h2>
       <div class="diagram-container">
-        <div class="diagram-title">ACID Properties & Their Responsibilities</div>
-        <div class="box-row" style="flex-direction:column; align-items:stretch; gap:12px;">
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="box box-purple" style="flex:1;">
-              <strong>A: Atomicity</strong>
-              <small>All-or-nothing fault tolerance (crash recovery)</small>
-            </div>
-            <div class="arrow" style="padding:0 4px;">→</div>
-            <div style="flex:1; font-size:12px; color:var(--text-muted);"><strong>Database Responsibility</strong>. Ensures abortability via write-ahead log.</div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="box box-red" style="flex:1;">
-              <strong>C: Consistency</strong>
-              <small>Application-level data invariants (foreign keys, balances)</small>
-            </div>
-            <div class="arrow" style="padding:0 4px;">→</div>
-            <div style="flex:1; font-size:12px; color:var(--text-muted);"><strong>Application Responsibility</strong>. Database cannot enforce user-defined logic.</div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="box box-blue" style="flex:1;">
-              <strong>I: Isolation</strong>
-              <small>Concurrent txns don't interfere (serializability)</small>
-            </div>
-            <div class="arrow" style="padding:0 4px;">→</div>
-            <div style="flex:1; font-size:12px; color:var(--text-muted);"><strong>Database Responsibility</strong>. Via locks, snapshots, or conflict detection.</div>
-          </div>
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="box box-green" style="flex:1;">
-              <strong>D: Durability</strong>
-              <small>Committed data survives hardware failure</small>
-            </div>
-            <div class="arrow" style="padding:0 4px;">→</div>
-            <div style="flex:1; font-size:12px; color:var(--text-muted);"><strong>Database + Infrastructure Responsibility</strong>. Replication + backups.</div>
-          </div>
+        <div class="diagram-title">ACID Guarantee Breakdown</div>
+        <div class="box-row">
+          <div class="box box-blue">Atomicity<small>All-or-nothing</small></div>
+          <div class="arrow">+</div>
+          <div class="box box-orange">Consistency<small>Invariants</small></div>
+          <div class="arrow">+</div>
+          <div class="box box-purple">Isolation<small>No interference</small></div>
+          <div class="arrow">+</div>
+          <div class="box box-green">Durability<small>Survives failure</small></div>
+        </div>
+      </div>
+
+      <h3>🔵 Atomicity: Abortability Guarantee</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">✓</span>
+          <span class="il-text"><strong>All-or-Nothing Behavior</strong>Entire transaction succeeds or fails; no partial writes survive</span>
+        </li>
+        <li>
+          <span class="il-icon">🔄</span>
+          <span class="il-text"><strong>Crash Recovery</strong>Database recovers to pre-transaction state if failure occurs mid-operation</span>
+        </li>
+        <li>
+          <span class="il-icon">⚙️</span>
+          <span class="il-text"><strong>Safe Retries</strong>Application can safely retry failed transaction without worrying about partial state</span>
+        </li>
+        <li>
+          <span class="il-icon">❌</span>
+          <span class="il-text"><strong>NOT about Concurrency</strong>Atomicity ≠ Isolation; concurrency control is a separate concern</span>
+        </li>
+      </ul>
+
+      <div class="callout callout-warn">
+        <strong>TERMINOLOGY NOTE</strong> Atomicity historically means "abortability" — all-or-nothing for multi-write sequences, enabling safe transaction retries. Modern systems sometimes use "atomic" for single-object operations, creating confusion.
+      </div>
+
+      <h3>🟠 Consistency: Application Responsibility</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-red">
+          <span class="ic-icon">⚠️</span>
+          <div class="ic-title">Database Cannot Guarantee Consistency</div>
+          <div class="ic-body">Consistency is application-specific; only database can check constraints (FK, uniqueness, NOT NULL)</div>
+        </div>
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">💭</span>
+          <div class="ic-title">Joe Hellerstein Quote</div>
+          <div class="ic-body">"C in ACID was tossed in to make acronym work" — consistency is invariant preservation, not database guarantee</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🔗</span>
+          <div class="ic-title">What Database Controls</div>
+          <div class="ic-body">Foreign keys, uniqueness constraints, check constraints — but not complex business logic</div>
+        </div>
+      </div>
+
+      <h3>🟣 Isolation: Concurrency Control Mechanism</h3>
+      <p><strong>Goal:</strong> Concurrent transactions execute as if serially despite actual parallelism — called <strong>serializability</strong>.</p>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🎭</span>
+          <span class="il-text"><strong>Serializability Ideal</strong>Transactions behave identically whether executed sequentially or concurrently</span>
+        </li>
+        <li>
+          <span class="il-icon">💰</span>
+          <span class="il-text"><strong>Performance Cost</strong>True serializability is expensive; most systems implement weaker isolation instead</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Weak Isolation Risks</strong>Oracle 11g "serializable" mode actually implements snapshot isolation — not true serializability</span>
+        </li>
+        <li>
+          <span class="il-icon">🏗️</span>
+          <span class="il-text"><strong>Implementation Variance</strong>Every database vendor implements differently; same isolation level name has different semantics</span>
+        </li>
+      </ul>
+
+      <h3>🟢 Durability: Fault Tolerance</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>✅ How Durability Works</h3>
+          <ul>
+            <li><strong>Single-node:</strong> Write-ahead log + nonvolatile storage (disk/SSD)</li>
+            <li><strong>Replicated:</strong> Successful replication to multiple nodes before commit</li>
+            <li><strong>Hybrid:</strong> Log to disk + synchronous replication to standby</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>❌ Durability Limits</h3>
+          <ul>
+            <li>"Perfect durability does not exist" — hardware failures are inevitable</li>
+            <li>Correlated failures (power grid, datacenter fire) can destroy replicas</li>
+            <li>Trade-off: Safety vs. performance (sync replication = slower commits)</li>
+          </ul>
         </div>
       </div>
 
       <div class="callout callout-info">
-        <strong>HISTORICAL NOTE</strong> ACID was formalized in 1983 by Härder &amp; Reuter. The "C" was, per Joe Hellerstein, "tossed in to make the acronym work" and considered less foundational than A, I, D. Today, ACID is largely a marketing term — implementations vary wildly.
-      </div>
-
-      <div class="insight-strip">
-        <div class="insight-card insight-blue">
-          <span class="ic-icon">📜</span>
-          <div class="ic-title">Acronym Overload</div>
-          <div class="ic-body">ACID and BASE are both marketing terms. Consistency means ≥4 different things (replica consistency, CAP consistency, ACID invariants, consistent hashing). Beware!</div>
-        </div>
-        <div class="insight-card insight-orange">
-          <span class="ic-icon">⚠️</span>
-          <div class="ic-title">False Marketing</div>
-          <div class="ic-body">NoSQL movement claimed "ACID = anti-scalability." False: ACID is orthogonal to scalability. The real trade-off is serializability vs. performance.</div>
-        </div>
-        <div class="insight-card insight-green">
-          <span class="ic-icon">✅</span>
-          <div class="ic-title">Proven Pattern</div>
-          <div class="ic-body">IBM System R established the transaction pattern in 1975. ~40 years later, MySQL InnoDB, PostgreSQL, Oracle, SQL Server all follow essentially the same model.</div>
-        </div>
+        <strong>ACID CRITICISM</strong> ACID is an inconsistently implemented marketing term. Implementations vary wildly across vendors. BASE ("not ACID") is equally vague. Chapter's conclusion: specific isolation guarantees matter more than acronym labels.
       </div>
     </section>
 
-    <!-- ATOMICITY -->
-    <section id="atomicity" data-section-id="atomicity">
-      <h2><span class="section-num">03</span> Atomicity: Fault Tolerance via All-or-Nothing</h2>
-      <div class="seq-diagram">
-        <div style="text-align:center; margin-bottom:20px; font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.8px;">Atomicity in Action: Crash Recovery</div>
-        <table style="width:100%; font-size:12px;">
-          <tr>
-            <th style="text-align:left;">Scenario</th>
-            <th style="text-align:left;">Without Atomicity (No WAL)</th>
-            <th style="text-align:left;">With Atomicity (WAL)</th>
-          </tr>
-          <tr>
-            <td><strong>Write 1 succeeds</strong></td>
-            <td style="color:var(--accent3);">✘ Partial state persists</td>
-            <td style="color:var(--accent2);">✔ Logged, waits for Write 2</td>
-          </tr>
-          <tr>
-            <td><strong>Write 2 starts, then CRASH</strong></td>
-            <td style="color:var(--accent3);">✘ Corrupted data after restart</td>
-            <td style="color:var(--accent2);">✔ Rollback both writes, clean state</td>
-          </tr>
-          <tr>
-            <td><strong>After recovery, application retries</strong></td>
-            <td style="color:var(--accent3);">✘ No idempotency guarantee</td>
-            <td style="color:var(--accent2);">✔ Safe to retry: either all or nothing</td>
-          </tr>
-        </table>
-      </div>
-
-      <h3>Key Definition: Abortability</h3>
-      <p>Atomicity is fundamentally about <strong>abortability</strong>. A transaction either completes entirely or leaves no trace. The term "atomic" is a misnomer (confusing with physics); "abortable" would be clearer.</p>
-
-      <div class="highlight-band">
-        <h3>🏗️ How Atomicity is Implemented</h3>
-        <p><strong>Write-Ahead Log (WAL):</strong> Before any write is applied to the database, it is logged to durable storage. On crash, the recovery process scans the log and either completes pending transactions (if marked committed) or rolls them back (if still in-progress). This guarantees that after recovery, the database is in a consistent state—either the transaction's writes are all present or all absent.</p>
-      </div>
-
-      <ul class="icon-list">
-        <li>
-          <span class="il-icon">🔵</span>
-          <span class="il-text"><strong>Write-Ahead Log</strong>Mechanism where database writes to durable log before applying changes. On crash, uncommitted log entries are discarded; committed entries are replayed.</span>
-        </li>
-        <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>Safe Retry Guarantee</strong>Application can safely retry a failed transaction. Either it completes as if nothing happened, or it aborts cleanly with no partial state.</span>
-        </li>
-        <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Crash Recovery Overhead</strong>Multiple disk writes per transaction (log + data pages). SSD firmware bugs and sudden power loss can still cause subtle corruption despite WAL.</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- CONSISTENCY -->
-    <section id="consistency" data-section-id="consistency">
-      <h2><span class="section-num">04</span> Consistency: Application Responsibility</h2>
+    <!-- SECTION 3: CONCURRENCY FAILURES -->
+    <section id="concurrency-failures" data-section-id="concurrency-failures">
+      <h2><span class="section-num">03</span> Concurrency Failures & Race Conditions</h2>
       <div class="insight-strip">
         <div class="insight-card insight-red">
-          <span class="ic-icon">⚠️</span>
-          <div class="ic-title">ACID Consistency</div>
-          <div class="ic-body">Application-level invariants (e.g., "all bookings must have valid room_id"). NOT a database property.</div>
+          <span class="ic-icon">💥</span>
+          <div class="ic-title">Database/Hardware Crash</div>
+          <div class="ic-body">Operation fails mid-execution; requires crash recovery mechanism</div>
         </div>
-        <div class="insight-card insight-purple">
-          <span class="ic-icon">🔄</span>
-          <div class="ic-title">Replica Consistency</div>
-          <div class="ic-body">Data eventually syncs across replicas (eventual consistency). Orthogonal to ACID C.</div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">🔌</span>
+          <div class="ic-title">Application Crash</div>
+          <div class="ic-body">Transaction fails mid-way; partial writes must be rolled back</div>
         </div>
-        <div class="insight-card insight-blue">
-          <span class="ic-icon">🎯</span>
-          <div class="ic-title">CAP Consistency</div>
-          <div class="ic-body">Linearizability — all nodes see the same value simultaneously. Requires synchronous writes.</div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">📡</span>
+          <div class="ic-title">Network Interruption</div>
+          <div class="ic-body">Connection loss mid-transaction; unclear if commit succeeded</div>
         </div>
-        <div class="insight-card insight-teal">
-          <span class="ic-icon">🔗</span>
-          <div class="ic-title">Consistent Hashing</div>
-          <div class="ic-body">Distributed hash ring for cache distribution. Completely unrelated to ACID consistency.</div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">⚔️</span>
+          <div class="ic-title">Concurrent Data Overwrites</div>
+          <div class="ic-body">Multiple transactions modify same object simultaneously; lost updates</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">👁️</span>
+          <div class="ic-title">Dirty Reads</div>
+          <div class="ic-body">Partial updates from uncommitted transactions become visible to other readers</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🏃</span>
+          <div class="ic-title">Race Conditions</div>
+          <div class="ic-body">Timing-dependent behavior between concurrent clients; nondeterministic outcomes</div>
         </div>
       </div>
 
-      <h3>What Database Can Enforce</h3>
+      <div class="callout callout-success">
+        <strong>TRANSACTION VALUE PROPOSITION</strong> Database takes responsibility for handling these failures, simplifying application error handling. Without transactions, applications must manage partial failures manually — error-prone and complex.
+      </div>
+    </section>
+
+    <!-- SECTION 4: SINGLE-OBJECT OPERATIONS -->
+    <section id="single-object" data-section-id="single-object">
+      <h2><span class="section-num">04</span> Single-Object Operations</h2>
+      <p>Storage engines universally provide atomicity + isolation at the single-object level — even without multi-object transactions.</p>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Single-Object Guarantees Mechanism</div>
+        <div class="box-row">
+          <div class="box box-blue">Crash Recovery Log<small>Write-ahead log</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Atomicity<small>All-or-nothing</small></div>
+        </div>
+        <br>
+        <div class="box-row">
+          <div class="box box-purple">Per-Object Locks<small>One thread at a time</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Isolation<small>No concurrent access</small></div>
+        </div>
+      </div>
+
+      <h3>🔋 Atomic Operations & Compare-and-Set</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">⬆️</span>
+          <span class="il-text"><strong>Atomic Increment</strong>Prevents lost updates in counters; operation is indivisible</span>
+        </li>
+        <li>
+          <span class="il-icon">🔄</span>
+          <span class="il-text"><strong>Compare-and-Set</strong>Write succeeds only if value matches previous read; must verify success and retry on conflict</span>
+        </li>
+        <li>
+          <span class="il-icon">⚠️</span>
+          <span class="il-text"><strong>Retry Logic Required</strong>CAS failures demand application-level retry logic; not automatic</span>
+        </li>
+      </ul>
+
+      <div class="highlight-band">
+        <h3>❌ Misleading Terminology: "ACID" for Single Objects</h3>
+        <p>Many vendors market single-object operations as "ACID" or "lightweight transactions." This is technically inaccurate — true transactions support <em>multi-object</em> atomicity, not just single-object. Single-object ACID is universal and expected, not a differentiator.</p>
+      </div>
+
+      <h3>🎯 When Single-Object Operations Suffice</h3>
       <div class="data-bar-list">
         <div class="data-bar-item">
           <div class="data-bar-header">
-            <span class="data-bar-label">Foreign Key Constraints</span>
-            <span class="data-bar-value">✅ Database</span>
+            <span class="data-bar-label">Simple counters, KV updates</span>
+            <span class="data-bar-value">Fully Sufficient</span>
           </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:95%;background:var(--accent2)"></div></div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:100%;background:var(--accent2)"></div></div>
         </div>
         <div class="data-bar-item">
           <div class="data-bar-header">
-            <span class="data-bar-label">Uniqueness (PRIMARY KEY, UNIQUE)</span>
-            <span class="data-bar-value">✅ Database</span>
+            <span class="data-bar-label">NoSQL without joins</span>
+            <span class="data-bar-value">Often Sufficient</span>
           </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:95%;background:var(--accent2)"></div></div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:70%;background:var(--accent5)"></div></div>
         </div>
         <div class="data-bar-item">
           <div class="data-bar-header">
-            <span class="data-bar-label">NOT NULL Checks</span>
-            <span class="data-bar-value">✅ Database</span>
+            <span class="data-bar-label">Foreign key integrity</span>
+            <span class="data-bar-value">Insufficient</span>
           </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:90%;background:var(--accent2)"></div></div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:20%;background:var(--accent3)"></div></div>
         </div>
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Custom Business Logic (e.g., "balance ≥ 0")</span>
-            <span class="data-bar-value">❌ Application</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:5%;background:var(--accent3)"></div></div>
-        </div>
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Complex Invariants (multi-table checks)</span>
-            <span class="data-bar-value">❌ Application</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:5%;background:var(--accent3)"></div></div>
-        </div>
-      </div>
-
-      <div class="callout callout-warn">
-        <strong>CRITICAL INSIGHT</strong> The "C" in ACID is NOT a database guarantee. It is application responsibility. The database provides only Atomicity and Isolation (A and I). Consistency depends on the application using them correctly.
       </div>
     </section>
 
-    <!-- ISOLATION INTRO -->
-    <section id="isolation-intro" data-section-id="isolation-intro">
-      <h2><span class="section-num">05</span> Isolation: Concurrency Control & Serializability</h2>
-      <div class="diagram-container">
-        <div class="diagram-title">The Race Condition Problem</div>
-        <table style="width:100%; font-size:12px; margin-top:0;">
-          <tr>
-            <th>Client A</th>
-            <th>Client B</th>
-            <th>Result</th>
-            <th>Expected</th>
-          </tr>
-          <tr>
-            <td><code>READ counter=42</code></td>
-            <td></td>
-            <td rowspan="4" style="color:var(--accent3); font-weight:600; padding:20px 10px;">counter = 43 ❌ Lost update</td>
-            <td rowspan="4" style="color:var(--accent2); font-weight:600; padding:20px 10px;">counter = 44 ✔</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td><code>READ counter=42</code></td>
-          </tr>
-          <tr>
-            <td><code>WRITE counter=43</code></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td><code>WRITE counter=43</code></td>
-          </tr>
-        </table>
-      </div>
-
-      <h3>Definition: Serializability</h3>
-      <p>Transactions execute concurrently but produce results <strong>identical to serial execution</strong> (one after another). This is the gold standard of isolation and the formal definition of "isolated transactions."</p>
-
-      <h3>Reality Gap: Rarely Used in Practice</h3>
-      <p>Serializability is expensive (locks block readers and writers). Most databases offer weaker isolation levels to improve performance. Even worse: <strong>marketing deception</strong> — Oracle 11g advertises "serializable" mode but actually implements <strong>snapshot isolation</strong> (much weaker). This creates enormous confusion.</p>
-
-      <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="approach-card" style="border-color:rgba(210,168,255,.5);">
-          <h3 style="color:var(--accent4); margin:0 0 8px;">🎯 Ideal: Serializability</h3>
-          <p style="font-size:13px; margin-bottom:12px;">Results identical to serial execution. Prevents all anomalies (lost updates, phantom reads, write skew).</p>
-          <div class="approach-traits">
-            <span class="pill pill-green">Safe ✔</span>
-            <span class="pill pill-red">Slow ✗</span>
-            <span class="pill pill-red">Rarely used ✗</span>
-          </div>
-        </div>
-        <div class="approach-card">
-          <h3 style="color:var(--accent5); margin:0 0 8px;">⚡ Reality: Weak Isolation</h3>
-          <p style="font-size:13px; margin-bottom:12px;">Snapshot isolation, read committed, etc. Faster but allows anomalies. Most production systems use this.</p>
-          <div class="approach-traits">
-            <span class="pill pill-orange">Fast ✔</span>
-            <span class="pill pill-orange">Risky ⚠</span>
-            <span class="pill pill-green">Widely used ✔</span>
-          </div>
-        </div>
-      </div>
-
-      <ul class="icon-list">
-        <li>
-          <span class="il-icon">🔵</span>
-          <span class="il-text"><strong>Race Condition</strong>Two concurrent transactions read the same value, both increment, both write back. One increment is lost.</span>
-        </li>
-        <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Dirty Read</strong>Transaction A reads uncommitted (in-progress) data from Transaction B. If B aborts, A has garbage.</span>
-        </li>
-        <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Phantom Read</strong>Transaction A's WHERE clause returns different results mid-transaction because B inserted matching rows.</span>
-        </li>
-        <li>
-          <span class="il-icon">🟠</span>
-          <span class="il-text"><strong>Write Skew</strong>Two transactions read the same data, check an invariant, then write different columns. Both pass the check but invariant is violated.</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- DURABILITY -->
-    <section id="durability" data-section-id="durability">
-      <h2><span class="section-num">06</span> Durability: Storage, Replication & Risk</h2>
-      <div class="diagram-container">
-        <div class="diagram-title">Durability Implementation Strategies</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div>
-            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); margin-bottom:8px;">Single-Node: Write to Disk</div>
-            <div class="box box-blue" style="margin-bottom:8px;">Write-Ahead Log to HDD/SSD</div>
-            <ul style="font-size:12px; color:var(--text-muted); margin-left:10px;">
-              <li>✔ Data survives machine crash</li>
-              <li>✔ Data inaccessible until recovery</li>
-              <li>✘ Correlated faults (power loss, bugs)</li>
-              <li>✘ SSD data loss (power cut, weeks)</li>
-            </ul>
-          </div>
-          <div>
-            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); margin-bottom:8px;">Multi-Node: Replication</div>
-            <div class="box box-green" style="margin-bottom:8px;">Replicate to N nodes before ACK</div>
-            <ul style="font-size:12px; color:var(--text-muted); margin-left:10px;">
-              <li>✔ Data accessible if one node dies</li>
-              <li>✔ Mitigates correlated faults</li>
-              <li>✘ Network partitions delay writes</li>
-              <li>✘ All replicas could fail together</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <h3>The Hard Truth: Perfect Durability is Impossible</h3>
-      <p>If every disk is destroyed AND every backup location is destroyed, data is gone. Durability is a <strong>probabilistic guarantee</strong>: you can only reduce risk, not eliminate it.</p>
-
-      <div class="pro-con-grid">
-        <div class="pro-card">
-          <h3>✅ Replication Wins</h3>
-          <ul>
-            <li>Survives single-node hardware failure</li>
-            <li>Avoids cascading failures from correlated faults</li>
-            <li>Mitigates SSD power-loss failures</li>
-            <li>Data remains accessible during recovery</li>
-          </ul>
-        </div>
-        <div class="con-card">
-          <h3>❌ Disk-Write Alone</h3>
-          <ul>
-            <li>All replicas could crash from power outage</li>
-            <li>fsync() not guaranteed during sudden power cut</li>
-            <li>Disk firmware bugs corrupt files post-crash</li>
-            <li>Data inaccessible during recovery window</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="callout callout-danger">
-        <strong>SSD FAILURES</strong> SSDs develop ≥1 bad block in 30–80% of drives within 4 years. Magnetic drives have lower bad-sector rates but higher complete failure rates. Neither is reliable alone.
-      </div>
-
-      <div class="takeaway">
-        <span class="takeaway-icon">💡</span>
-        <div class="takeaway-text"><strong>Durability is Layered:</strong> Write-ahead log (single-node) + replication (multi-node) + backups (offsite) = reducing risk from multiple angles simultaneously.</div>
-      </div>
-    </section>
-
-    <!-- SINGLE-OBJECT OPERATIONS -->
-    <section id="single-object" data-section-id="single-object">
-      <h2><span class="section-num">07</span> Single-Object Operations & Lightweight Atomicity</h2>
-      <div class="diagram-container">
-        <div class="diagram-title">What Atomicity Prevents (Single Object)</div>
-        <table style="width:100%; font-size:12px;">
-          <tr>
-            <th>Problem</th>
-            <th>Without Atomic Read</th>
-            <th>With Atomic Read</th>
-          </tr>
-          <tr>
-            <td><strong>Incomplete JSON read</strong></td>
-            <td style="color:var(--accent3);">✘ Partial old + new mixed</td>
-            <td style="color:var(--accent2);">✔ Full old or full new</td>
-          </tr>
-          <tr>
-            <td><strong>Concurrent write mid-read</strong></td>
-            <td style="color:var(--accent3);">✘ Inconsistent snapshot</td>
-            <td style="color:var(--accent2);">✔ Reader blocked until write done</td>
-          </tr>
-          <tr>
-            <td><strong>Increment operation</strong></td>
-            <td style="color:var(--accent3);">✘ Lost updates (race)</td>
-            <td style="color:var(--accent2);">✔ Atomic read-modify-write</td>
-          </tr>
-        </table>
-      </div>
-
-      <h3>Built-in Atomic Operations (Database-Level)</h3>
-      <ul class="icon-list">
-        <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>INCREMENT</strong>Atomic fetch-add. Multiple threads can safely increment; results are serialized.</span>
-        </li>
-        <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>Compare-and-Set (CAS)</strong>Read value, compute new value, write only if unchanged. Prevents lost updates in single-threaded retry loops.</span>
-        </li>
-        <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>Read-Modify-Write Elimination</strong>Database holds lock on object; client reads, computes, writes without releasing lock. No race window.</span>
-        </li>
-      </ul>
-
-      <div class="callout callout-warn">
-        <strong>MARKETING INFLATION</strong> Vendors call single-object CAS operations "lightweight transactions" or claim "ACID on single objects." Misleading. A transaction groups multiple objects; single-object atomicity is just basic database hygiene, not transactions.
-      </div>
-
-      <h3>Why Multi-Object Operations Matter</h3>
-      <p>Single-object atomicity is table stakes. Real transactions span multiple objects: foreign key references, denormalized documents, cross-table invariants. This is where transactions earn their value.</p>
-
-      <div class="highlight-band">
-        <h3>🔒 Implementation: Lock Per Object</h3>
-        <p>Database maintains one lock per object. Before reading, client acquires a shared (read) lock; before writing, an exclusive (write) lock. If another transaction holds a conflicting lock, the reader/writer waits. On commit/abort, all locks release. This guarantees atomicity + isolation for single-object operations.</p>
-      </div>
-    </section>
-
-    <!-- MULTI-OBJECT TRANSACTIONS -->
+    <!-- SECTION 5: MULTI-OBJECT TRANSACTIONS -->
     <section id="multi-object" data-section-id="multi-object">
-      <h2><span class="section-num">08</span> Multi-Object Transactions: The Real Purpose</h2>
+      <h2><span class="section-num">05</span> Multi-Object Transactions: Why Required?</h2>
       <div class="step-flow">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Foreign Key Constraint</h4>
-            <p>User table references account table. If you insert a user, its account_id must exist in accounts. Both writes must succeed together (atomic) or abort together.</p>
+            <h4>Foreign Keys & Referential Integrity</h4>
+            <p>Relational model requires referential consistency across tables/rows. A customer deletion must atomically delete their orders, addresses, and references — or leave database in inconsistent state.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Document Denormalization</h4>
-            <p>NoSQL stores all order items inside a single order document (denormalized). When updating item list, entire document must be rewritten atomically. No joins, but requires atomicity.</p>
+            <h4>Denormalization Synchronization</h4>
+            <p>Document databases (lacking joins) duplicate data across documents. Example: Email app stores unread email count + actual email list in same document. Counter and list must stay synchronized — single atomic transaction updates both.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>Multi-Step Business Logic</h4>
-            <p>Transfer $100 from Alice to Bob: decrement Alice's balance AND increment Bob's balance. Both must succeed; if one fails, both abort. This is the canonical example.</p>
+            <h4>Secondary Indexes & Primary Data</h4>
+            <p>Index updates are separate storage objects from primary data. Risk: Record appears in one index but not another, breaking query correctness. Atomic transactions ensure index consistency with primary data.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>🔄 Multi-Object Definition Gap</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">📝</span>
+          <span class="il-text"><strong>Relational Databases</strong>Group operations by TCP connection: BEGIN TRANSACTION → ... → COMMIT</span>
+        </li>
+        <li>
+          <span class="il-icon">🔗</span>
+          <span class="il-text"><strong>NoSQL Stores</strong>Often lack grouping mechanism; multi-object API doesn't guarantee transaction semantics</span>
+        </li>
+        <li>
+          <span class="il-icon">⚡</span>
+          <span class="il-text"><strong>Partial Success Risk</strong>NoSQL writes may succeed for some objects and fail for others; partial state visible to readers</span>
+        </li>
+      </ul>
+
+      <div class="callout callout-warn">
+        <strong>CRITICAL DESIGN CHOICE</strong> Systems lacking true multi-object transactions must use application-level coordination (two-phase commit, saga patterns) or accept eventual consistency risks. This is a fundamental architectural trade-off.
+      </div>
+    </section>
+
+    <!-- SECTION 6: READ COMMITTED ISOLATION -->
+    <section id="read-committed" data-section-id="read-committed">
+      <h2><span class="section-num">06</span> Read Committed: Most Basic Isolation Level</h2>
+      <p><strong>Default in:</strong> Oracle 11g, PostgreSQL, SQL Server 2012, MemSQL</p>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Read Committed Guarantees</div>
+        <div class="box-row">
+          <div class="box box-green">No Dirty Reads<small>See only committed data</small></div>
+          <div class="arrow">+</div>
+          <div class="box box-green">No Dirty Writes<small>Overwrite only committed</small></div>
+        </div>
+      </div>
+
+      <h3>🔵 Guarantee 1: No Dirty Reads</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>✅ How It Works</h3>
+          <ul>
+            <li><strong>Multiple Versions:</strong> Database maintains old committed value + new uncommitted value simultaneously</li>
+            <li><strong>In-Progress Lock:</strong> Transaction modifying object holds lock; other readers see old value until commit</li>
+            <li><strong>No Partial Updates Visible:</strong> Readers never see incomplete transaction state</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>❌ Performance Cost</h3>
+          <ul>
+            <li><strong>Lock-Based Approach:</strong> Long-running writers block all readers (poor operability)</li>
+            <li><strong>Not Ideal:</strong> MVCC better than row-level locks for read concurrency</li>
+            <li><strong>Blocking Duration:</strong> Writers hold locks until commit — synchronous, blocking</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>🟠 Guarantee 2: No Dirty Writes</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔒</span>
+          <span class="il-text"><strong>Row-Level Exclusive Locks</strong>Held until transaction commits/aborts; prevents concurrent writes</span>
+        </li>
+        <li>
+          <span class="il-icon">🚫</span>
+          <span class="il-text"><strong>Prevents Intermingled Writes</strong>Example: Car sale listing Alice updates, invoice Bob updates — lock ensures atomic coordination</span>
+        </li>
+        <li>
+          <span class="il-icon">⚡</span>
+          <span class="il-text"><strong>Lost Updates NOT Prevented</strong>Read-modify-write cycle still vulnerable (counter increment problem from Figure 7-1)</span>
+        </li>
+      </ul>
+
+      <div class="callout callout-warn">
+        <strong>INCOMPLETE ISOLATION</strong> Read committed prevents dirty reads/writes but allows lost updates and read skew. Application must handle these anomalies manually or use stronger isolation.
+      </div>
+    </section>
+
+    <!-- SECTION 7: SNAPSHOT ISOLATION -->
+    <section id="snapshot-isolation" data-section-id="snapshot-isolation">
+      <h2><span class="section-num">07</span> Snapshot Isolation (Repeatable Read)</h2>
+      <p>Solves <strong>read skew (nonrepeatable reads)</strong> that plague read committed isolation.</p>
+
+      <h3>🎯 Problem: Read Skew</h3>
+      <div class="insight-card insight-red">
+        <span class="ic-icon">💔</span>
+        <div class="ic-title">Consistency Violation Example</div>
+        <div class="ic-body">Alice reads account1=$500, account2=$400 (total $900). Meanwhile, Bob transfers $100: account1 → account2. Alice sees only partial transfer — appears she has $900 instead of correct $1000. Database is internally consistent, but Alice's view is inconsistent.</div>
+      </div>
+
+      <h3>❌ Read Skew Consequences</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">📊</span>
+          <span class="il-text"><strong>Backups & Snapshots</strong>Database writes continue during backup; parts see old version, parts see new — inconsistencies become permanent on restore</span>
+        </li>
+        <li>
+          <span class="il-icon">📈</span>
+          <span class="il-text"><strong>Analytic Queries</strong>Large table scans see inconsistent snapshots across execution; nonsensical aggregate results</span>
+        </li>
+        <li>
+          <span class="il-icon">✓</span>
+          <span class="il-text"><strong>Integrity Checks</strong>Monitoring queries return contradictory facts (constraint violations that don't exist)</span>
+        </li>
+      </ul>
+
+      <h3>🟣 Implementation: Multi-Version Concurrency Control (MVCC)</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Assign Transaction ID</h4>
+            <p>Each transaction gets unique, always-increasing transaction ID (txid). 32-bit systems overflow at ~4 billion, requiring careful management.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Tag All Rows with Metadata</h4>
+            <p>Each row carries <code>created_by</code> (txid of writer) and <code>deleted_by</code> (txid of deleter, if applicable). Multiple versions of same logical row coexist.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Consistency Snapshot</h4>
+            <p>Transaction sees consistent snapshot: all writes from transactions with txid < its own txid, no writes from concurrent or later transactions. Like reading from immutable copy at start time.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">4</div>
           <div class="step-content">
-            <h4>Coordinated Updates</h4>
-            <p>Update booking status AND reserve room seat AND deduct payment. All succeed together or all rollback. No partial states visible to other transactions.</p>
+            <h4>Garbage Collection</h4>
+            <p>Old row versions deleted once no transaction needs them (no active txid < version's txid).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-band">
+        <h3>🎯 Key MVCC Advantage: Readers Never Block Writers</h3>
+        <p>Unlike read committed's lock-based approach, MVCC allows readers to see old versions while writers create new versions. Massive concurrency improvement: <strong>readers never block writers, writers never block readers</strong>.</p>
+      </div>
+
+      <h3>⚡ MVCC Variants</h3>
+      <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="approach-card">
+          <h3 style="color:var(--accent)">PostgreSQL "Repeatable Read"</h3>
+          <p>MVCC-based; transaction sees snapshot of committed data. Prevents read skew but allows phantom reads (INSERT anomalies).</p>
+          <div class="approach-traits">
+            <span class="pill pill-green">✔ Good read perf</span>
+            <span class="pill pill-orange">⚠ Phantoms possible</span>
+          </div>
+        </div>
+        <div class="approach-card">
+          <h3 style="color:var(--accent)">Oracle/MySQL "Snapshot Isolation"</h3>
+          <p>MVCC with slightly different implementation; semantically similar to PostgreSQL repeatable read.</p>
+          <div class="approach-traits">
+            <span class="pill pill-blue">📌 Named differently</span>
+            <span class="pill pill-orange">⚠ Same anomaly risks</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>PHANTOM READS STILL POSSIBLE</strong> Snapshot isolation prevents read skew but allows phantom reads: transaction A reads rows matching condition, transaction B inserts/deletes row matching condition, A's repeat read returns different results. Predicate locks needed to prevent this.
+      </div>
+    </section>
+
+    <!-- SECTION 8: ISOLATION LEVEL COMPARISON -->
+    <section id="isolation-comparison" data-section-id="isolation-comparison">
+      <h2><span class="section-num">08</span> Isolation Levels: Anomalies & Trade-offs</h2>
+      <table>
+        <tr>
+          <th>Isolation Level</th>
+          <th>Dirty Reads?</th>
+          <th>Lost Updates?</th>
+          <th>Read Skew?</th>
+          <th>Phantoms?</th>
+          <th>Typical Use</th>
+        </tr>
+        <tr>
+          <td><strong>Read Uncommitted</strong></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td>Rare; dangerous</td>
+        </tr>
+        <tr>
+          <td><strong>Read Committed</strong></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td>Default; risky</td>
+        </tr>
+        <tr>
+          <td><strong>Snapshot Isolation</strong></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="cross">✘ Yes</span></td>
+          <td>Good balance</td>
+        </tr>
+        <tr>
+          <td><strong>Serializable</strong></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="check">✔ No</span></td>
+          <td><span class="check">✔ No</span></td>
+          <td>Strongest; slow</td>
+        </tr>
+      </table>
+
+      <div class="insight-strip">
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">⚠️</span>
+          <div class="ic-title">Lost Updates Problem</div>
+          <div class="ic-body">Read-modify-write cycle still loses updates in snapshot isolation. Concurrent transactions read same value, both increment, final value = initial+1 instead of initial+2</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">👻</span>
+          <div class="ic-title">Phantom Anomaly</div>
+          <div class="ic-body">Transaction reads rows matching condition, concurrent INSERT/DELETE matches condition, repeat read returns different result set</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">🔴</span>
+          <div class="ic-title">Serializability Cost</div>
+          <div class="ic-body">True serializability is expensive; most systems don't implement it. Oracle 11g "serializable" ≠ actual serializability</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9: SERIAL EXECUTION -->
+    <section id="serial-execution" data-section-id="serial-execution">
+      <h2><span class="section-num">09</span> Serial Execution: Single-Threaded Guarantee</h2>
+      <p>Simplest way to achieve true serializability: execute transactions sequentially on single CPU core. No concurrency, but guaranteed serial equivalence.</p>
+
+      <h3>📊 Performance Reality</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent2)">Linear</div>
+          <div class="stat-label">VoltDB Single-Partition Throughput Scaling</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent3)">~1,000</div>
+          <div class="stat-label">VoltDB Cross-Partition Writes/sec (orders of magnitude slower)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5)">No</div>
+          <div class="stat-label">Cannot increase via adding machines (single-partition bottleneck)</div>
+        </div>
+      </div>
+
+      <h3>⚡ Scalability Mechanisms</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">💾</span>
+          <span class="il-text"><strong>Anti-Caching</strong>Abort transaction if data not in memory → asynchronously fetch → restart when loaded. Converts capacity bottleneck into latency issue</span>
+        </li>
+        <li>
+          <span class="il-icon">🔀</span>
+          <span class="il-text"><strong>Data Partitioning</strong>Each partition has independent transaction processing thread; single-partition transactions scale linearly with CPU cores</span>
+        </li>
+        <li>
+          <span class="il-icon">🔗</span>
+          <span class="il-text"><strong>Cross-Partition Coordination</strong>Lock-step execution required across partitions for serializability — severe throughput penalty</span>
+        </li>
+      </ul>
+
+      <h3>🚨 Viability Constraints</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-red">
+          <span class="ic-icon">⏱️</span>
+          <div class="ic-title">Every Transaction Must Be Small & Fast</div>
+          <div class="ic-body">One slow transaction stalls entire system. Latency tail amplified: single slow transaction = system stalled for that duration</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">💾</span>
+          <div class="ic-title">Active Dataset Must Fit in Memory</div>
+          <div class="ic-body">Disk I/O kills single-threaded throughput. Requires expensive hardware; doesn't scale with data volume</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">📤</span>
+          <div class="ic-title">Write Throughput ≤ Single CPU Core Capacity</div>
+          <div class="ic-body">Hard limit on writes; partitioning without cross-partition coordination can help but creates consistency risks</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🌐</span>
+          <div class="ic-title">Cross-Partition Transactions Have Hard Limits</div>
+          <div class="ic-body">VoltDB example: 1,000 writes/sec for distributed transactions. Scaling bottleneck; impractical for high write volume</div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>WHEN SERIAL EXECUTION WORKS</strong> Limited to specialized use cases: high-value transactions with strict consistency requirements, low volume, or contained within single partition. Not general-purpose solution.
+      </div>
+    </section>
+
+    <!-- SECTION 10: TWO-PHASE LOCKING -->
+    <section id="two-phase-locking" data-section-id="two-phase-locking">
+      <h2><span class="section-num">10</span> Two-Phase Locking (2PL)</h2>
+      <p><strong>Duration:</strong> ~30 years as only widely-used serializability algorithm. <strong>Used in:</strong> MySQL InnoDB (serializable), SQL Server (serializable), DB2 (repeatable read).</p>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Two-Phase Locking Architecture</div>
+        <div class="box-row">
+          <div class="box box-blue">Phase 1: Execution<small>Locks acquired</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-orange">Potential Deadlock<small>Circular waits</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Phase 2: End<small>All released</small></div>
+        </div>
+      </div>
+
+      <h3>🔐 Lock Modes & Rules</h3>
+      <table>
+        <tr>
+          <th>Operation</th>
+          <th>Lock Type</th>
+          <th>Blocking Conditions</th>
+        </tr>
+        <tr>
+          <td><strong>Read object</strong></td>
+          <td>Shared (S)</td>
+          <td>Wait if exclusive lock exists</td>
+        </tr>
+        <tr>
+          <td><strong>Write object</strong></td>
+          <td>Exclusive (X)</td>
+          <td>Wait if any lock exists (shared or exclusive)</td>
+        </tr>
+        <tr>
+          <td><strong>Upgrade shared→exclusive</strong></td>
+          <td>Exclusive (X)</td>
+          <td>Same as acquiring exclusive; risk of deadlock</td>
+        </tr>
+        <tr>
+          <td><strong>Release</strong></td>
+          <td>—</td>
+          <td>End of transaction (commit/abort only)</td>
+        </tr>
+      </table>
+
+      <h3>⚠️ Critical Difference from Snapshot Isolation</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>Snapshot Isolation ("Optimistic")</h3>
+          <ul>
+            <li>Readers never block writers</li>
+            <li>Writers never block readers</li>
+            <li>High concurrency</li>
+            <li>But: Lost updates, phantoms possible</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>Two-Phase Locking ("Pessimistic")</h3>
+          <ul>
+            <li>Writers block readers AND readers block writers</li>
+            <li>Mutual exclusion everywhere</li>
+            <li>True serializability achieved</li>
+            <li>But: Low concurrency, poor performance</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>💥 Deadlock Handling</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔍</span>
+          <span class="il-text"><strong>Auto-Detection</strong>Database detects circular wait; aborts one transaction (victim selection)</span>
+        </li>
+        <li>
+          <span class="il-icon">🔄</span>
+          <span class="il-text"><strong>Application Retry</strong>Application must catch deadlock exception and retry transaction</span>
+        </li>
+        <li>
+          <span class="il-icon">📈</span>
+          <span class="il-text"><strong>Higher Frequency</strong>Deadlocks more frequent under 2PL than read-committed due to aggressive locking</span>
+        </li>
+      </ul>
+
+      <h3>📉 Performance Characteristics</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-red">
+          <span class="ic-icon">🐢</span>
+          <div class="ic-title">Significantly Worse Throughput & Latency</div>
+          <div class="ic-body">Transaction throughput and response times substantially worse than weak isolation levels</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">🔒</span>
+          <div class="ic-title">Lock Acquisition Overhead</div>
+          <div class="ic-body">Cost of acquiring, releasing, and tracking locks; plus context switches between waiting transactions</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">⛔</span>
+          <div class="ic-title">Reduced Concurrency</div>
+          <div class="ic-body">Any potential race condition → one transaction waits for other. Serialization of execution destroys parallelism</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">∞</span>
+          <div class="ic-title">Unbounded Wait Times</div>
+          <div class="ic-body">Interactive applications face unpredictable latency. No transaction duration limit; one slow transaction cascades to block others indefinitely</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">📊</span>
+          <div class="ic-title">Queue Formation & Exponential Latency</div>
+          <div class="ic-body">Multiple transactions accessing same object → queue formation → exponential latency increase as load increases</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">⚡</span>
+          <div class="ic-title">High-Percentile Latency Instability</div>
+          <div class="ic-body">One slow transaction or heavy-locking transaction grinds system to halt. Tail latency unpredictable; p99 can be 100× p50</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🔄</span>
+          <div class="ic-title">Deadlock Retry Overhead</div>
+          <div class="ic-body">If deadlocks frequent, retry cost adds up; wasted work aborted and re-executed</div>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>2PL RARELY ACCEPTABLE</strong> The performance cost of true serializability via 2PL is so high that it's rarely used in practice. Most systems accept weaker isolation or use SSI instead.
+      </div>
+    </section>
+
+    <!-- SECTION 11: PREDICATE LOCKS & INDEX-RANGE LOCKS -->
+    <section id="predicate-locks" data-section-id="predicate-locks">
+      <h2><span class="section-num">11</span> Predicate Locks & Index-Range Locks</h2>
+      <p><strong>Problem to Solve:</strong> Phantom reads — one transaction's search query result shouldn't be changed by concurrent inserts/updates/deletes matching the same condition.</p>
+
+      <h3>🔵 Predicate Locks: Perfect But Impractical</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Shared-Mode Predicate Lock on Search Condition</h4>
+            <p>Example: <code>WHERE room_id = 123 AND end_time > '2018-01-01 12:00' AND start_time < '2018-01-01 13:00'</code> — lock applies to ALL objects matching condition, including future inserts</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Exclusive Check Before Insert/Update/Delete</h4>
+            <p>Before modifying object, check if old value OR new value matches any existing predicate lock. If yes, block or abort.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Future Prevention</h4>
+            <p>New inserts matching predicate detected and blocked; phantoms prevented. But cost: lock matching becomes time-consuming with many overlapping predicates.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-card insight-red">
+        <span class="ic-icon">⚙️</span>
+        <div class="ic-title">Performance Problem</div>
+        <div class="ic-body">Matching check complex and expensive with many locks. Predicate locks rarely used in practice due to overhead. Need approximation for acceptable performance.</div>
+      </div>
+
+      <h3>🟣 Index-Range Locks (Next-Key Locking): Practical Approximation</h3>
+      <p><strong>Core Idea:</strong> Safe to broaden predicate to match greater set of objects — any write matching original predicate will match approximation.</p>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Index-Range Lock Broadening Strategy</div>
+        <div class="box-row">
+          <div class="box box-orange">Room 123, noon–1pm<small>Exact predicate</small></div>
+          <div class="arrow">→ Broaden</div>
+          <div class="box box-blue">Room 123, any time<small>Approximate predicate</small></div>
+        </div>
+        <br>
+        <div class="box-row">
+          <div class="box box-orange">Room 123, noon–1pm<small>Exact predicate</small></div>
+          <div class="arrow">→ Broaden</div>
+          <div class="box box-blue">Any room, noon–1pm<small>Approximate predicate</small></div>
+        </div>
+      </div>
+
+      <h3>🔧 Implementation Details</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🗂️</span>
+          <span class="il-text"><strong>Attach Lock to Index Entry</strong>Shared lock on index entry or range of index values; any write updating same index part encounters lock</span>
+        </li>
+        <li>
+          <span class="il-icon">🔌</span>
+          <span class="il-text"><strong>Index Update Forces Wait</strong>INSERT/UPDATE/DELETE matching index range must wait for shared lock to be released</span>
+        </li>
+        <li>
+          <span class="il-icon">📋</span>
+          <span class="il-text"><strong>Fallback to Table Lock</strong>If no suitable index exists, use table-level shared lock (severe performance cost but safe)</span>
+        </li>
+        <li>
+          <span class="il-icon">⚡</span>
+          <span class="il-text"><strong>MySQL InnoDB Example</strong>Uses next-key locking; locks gaps between index values to prevent phantoms</span>
+        </li>
+      </ul>
+
+      <div class="highlight-band">
+        <h3>📊 Precision vs. Performance Trade-off</h3>
+        <p>Index-range locks are <strong>less precise</strong> than true predicate locks (may lock bigger range than necessary) but have <strong>much lower overhead</strong>. Good compromise between correctness and performance.</p>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>FALSE POSITIVES EXPECTED</strong> Index-range locks may block unrelated writes if they fall within approximated range. This is acceptable trade-off for avoiding complex predicate matching.
+      </div>
+    </section>
+
+    <!-- SECTION 12: SERIALIZABLE SNAPSHOT ISOLATION -->
+    <section id="ssi" data-section-id="ssi">
+      <h2><span class="section-num">12</span> Serializable Snapshot Isolation (SSI)</h2>
+      <p><strong>Described:</strong> 2008 [40]. <strong>PhD Thesis:</strong> Michael Cahill [51]. <strong>Production Implementations:</strong> PostgreSQL 9.1+ (single-node), FoundationDB (distributed). <strong>Status:</strong> Young, still proving performance in practice; potential future default.</p>
+
+      <h3>🎯 Core Philosophy: Optimistic vs. Pessimistic</h3>
+      <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="approach-card" style="border-color:rgba(247,129,102,.5)">
+          <h3 style="color:var(--accent3)">❌ Pessimistic (2PL, Serial)</h3>
+          <p><strong>Principle:</strong> Block if anything might go wrong.</p>
+          <ul style="font-size:13px;margin:0;padding-left:20px;">
+            <li>Mutual exclusion; serial = exclusive lock on entire DB/partition</li>
+            <li>Downside: Lower max throughput</li>
+            <li>Prevents anomalies before they happen</li>
+          </ul>
+        </div>
+        <div class="approach-card" style="border-color:rgba(63,185,80,.5)">
+          <div class="preferred-badge" style="background:var(--accent2);">★ MODERN</div>
+          <h3 style="color:var(--accent2)">✅ Optimistic (SSI)</h3>
+          <p><strong>Principle:</strong> Proceed; check at commit.</p>
+          <ul style="font-size:13px;margin:0;padding-left:20px;">
+            <li>Transaction continues without locks; abort if isolation violated</li>
+            <li>Downside: Aborted transactions waste work</li>
+            <li>Detects anomalies after they might occur</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>🔍 SSI Detection Mechanism</h3>
+      <p>Unlike snapshot isolation (which accepts lost updates & phantoms), SSI actively detects these anomalies at commit time.</p>
+
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Transaction Executes with Snapshot Isolation</h4>
+            <p>No locks acquired; reads consistent snapshot; writes buffered. Like traditional snapshot isolation so far.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>At Commit: Detect Conflicts</h4>
+            <p>Check if transaction's reads/writes conflicted with concurrent transactions. Specifically: identify if writes happened to data transaction read, or vice versa.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Abort on Isolation Violation</h4>
+            <p>If conflict detected, abort transaction (roll back all buffered writes). Application must retry.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Commit if Clean</h4>
+            <p>If no conflicts, commit succeeds. Isolation guarantees maintained.</p>
           </div>
         </div>
       </div>
 
       <div class="callout callout-info">
-        <strong>WITHOUT MULTI-OBJECT TRANSACTIONS</strong> You must manually handle failures: "Write to A failed, but B succeeded. Now what?" Compensation logic, retries, idempotency checks — all become application responsibility. Transactions eliminate this complexity.
+        <strong>SOPHISTICATED CONFLICT DETECTION</strong> SSI tracks read/write dependencies across transactions, not just individual object conflicts. Detects complex anomaly patterns that simpler approaches miss.
       </div>
 
+      <h3>⚡ Advantages Over 2PL & Snapshot Isolation</h3>
       <div class="insight-strip">
-        <div class="insight-card insight-blue">
-          <span class="ic-icon">📋</span>
-          <div class="ic-title">Relational Model Benefit</div>
-          <div class="ic-body">Foreign keys across tables guarantee referential integrity. Transactions ensure all related inserts/updates are atomic.</div>
-        </div>
-        <div class="insight-card insight-orange">
-          <span class="ic-icon">⚠️</span>
-          <div class="ic-title">Denormalization Trade-off</div>
-          <div class="ic-body">Document stores lack joins, so developers denormalize (copy data). Transactions handle the complexity of updating all copies atomically.</div>
+        <div class="insight-card insight-green">
+          <span class="ic-icon">🚀</span>
+          <div class="ic-title">Better Throughput Than 2PL</div>
+          <div class="ic-body">No blocking; transactions proceed concurrently. Only aborted when conflict confirmed at commit. Much higher throughput than 2PL's mutual exclusion.</div>
         </div>
         <div class="insight-card insight-green">
-          <span class="ic-icon">✨</span>
-          <div class="ic-title">Simplifies Application Code</div>
-          <div class="ic-body">Instead of error-handling cascades, you can write: "execute these writes; if any fail, abort all." Database guarantees consistency.</div>
+          <span class="ic-icon">🛡️</span>
+          <div class="ic-title">Stronger Isolation Than Snapshot</div>
+          <div class="ic-body">Detects & prevents lost updates and phantoms that snapshot isolation allows. True serializability achieved.</div>
         </div>
+        <div class="insight-card insight-green">
+          <span class="ic-icon">📖</span>
+          <div class="ic-title">MVCC Foundation</div>
+          <div class="ic-body">Built on snapshot isolation's MVCC; leverages existing infrastructure. Incremental improvement, not revolution.</div>
+        </div>
+      </div>
+
+      <h3>❌ Challenges & Trade-offs</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🔄</span>
+          <div class="ic-title">Aborted Transactions Waste Work</div>
+          <div class="ic-body">Optimistic approach means some transactions aborted after significant execution. Wasted CPU, I/O, network; application must retry.</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">🧮</span>
+          <div class="ic-title">Conflict Detection Overhead</div>
+          <div class="ic-body">Sophisticated tracking of read/write dependencies. More complex than snapshot isolation. Adds CPU cost at commit time.</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">📚</span>
+          <div class="ic-title">Young & Unproven at Scale</div>
+          <div class="ic-body">Only ~15 years of academic study; production experience limited. PostgreSQL implementation relatively recent. Long-term performance characteristics not fully understood.</div>
+        </div>
+        <div class="insight-card insight-teal">
+          <span class="ic-icon">🌍</span>
+          <div class="ic-title">Distributed Implementation Complexity</div>
+          <div class="ic-body">Single-node SSI proven; distributed version (FoundationDB) much harder. Network partitions complicate conflict detection.</div>
+        </div>
+      </div>
+
+      <div class="highlight-band">
+        <h3>🎯 When SSI Shines</h3>
+        <p>SSI most valuable when conflicts rare — optimistic assumption pays off. High-conflict workloads may see excessive aborts and high retry overhead. Workload characteristics matter significantly.</p>
       </div>
     </section>
 
-    <!-- SERIAL EXECUTION -->
-    <section id="serial-execution" data-section-id="serial-execution">
-      <h2><span class="section-num">09</span> Serial Execution: The Simplest Isolation</h2>
-      <div class="diagram-container">
-        <div class="diagram-title">Serial Execution Architecture</div>
-        <div class="box-row">
-          <div class="box box-blue">
-            Transaction 1<small>(full execution, single thread)</small>
-          </div>
-          <div class="arrow">→</div>
-          <div class="box box-blue">
-            Transaction 2<small>(waits for Txn 1 to commit)</small>
-          </div>
-          <div class="arrow">→</div>
-          <div class="box box-blue">
-            Transaction N<small>(queued transactions)</small>
-          </div>
+    <!-- SECTION 13: IMPLEMENTATION MATRIX -->
+    <section id="implementation-matrix" data-section-id="implementation-matrix">
+      <h2><span class="section-num">13</span> Implementation Matrix by Database</h2>
+      <table>
+        <tr>
+          <th>Database</th>
+          <th>Default Isolation</th>
+          <th>Serializable Mode</th>
+          <th>Algorithm</th>
+          <th>Notes</th>
+        </tr>
+        <tr>
+          <td><strong>PostgreSQL</strong></td>
+          <td><span class="partial">Read Committed</span></td>
+          <td><span class="partial">SSI (optimistic)</span></td>
+          <td>MVCC + conflict detection</td>
+          <td>Repeatable Read = Snapshot Isolation; Serializable = SSI since 9.1</td>
+        </tr>
+        <tr>
+          <td><strong>MySQL InnoDB</strong></td>
+          <td><span class="partial">Repeatable Read</span></td>
+          <td><span class="check">2PL</span></td>
+          <td>MVCC + next-key locking</td>
+          <td>Serializable uses gap locks; default allows some phantoms</td>
+        </tr>
+        <tr>
+          <td><strong>Oracle 11g</strong></td>
+          <td><span class="partial">Read Committed</span></td>
+          <td><span class="cross">Snapshot Isolation ≠ Serializable</span></td>
+          <td>MVCC (no true serializability option)</td>
+          <td>Marketing claims "serializable" but implements snapshot isolation</td>
+        </tr>
+        <tr>
+          <td><strong>SQL Server</strong></td>
+          <td><span class="partial">Read Committed</span></td>
+          <td><span class="check">2PL</span></td>
+          <td>MVCC for snapshot; locking for serializable</td>
+          <td>Serializable mode uses 2PL; allows MVCC-based snapshot isolation</td>
+        </tr>
+        <tr>
+          <td><strong>FoundationDB</strong></td>
+          <td><span class="check">Serializability</span></td>
+          <td>—</td>
+          <td>MVCC + distributed SSI</td>
+          <td>Only distributed system with true serializability; pioneering work</td>
+        </tr>
+        <tr>
+          <td><strong>VoltDB</strong></td>
+          <td><span class="check">Serializability</span></td>
+          <td>—</td>
+          <td>Serial execution</td>
+          <td>Single-threaded per partition; scales linearly but limited by cross-partition writes</td>
+        </tr>
+      </table>
+
+      <div class="callout callout-danger">
+        <strong>VENDOR MARKETING WARNING</strong> Isolation level names are not standardized. "Serializable" mode varies drastically: PostgreSQL = SSI (optimistic), MySQL = 2PL (pessimistic), Oracle = Snapshot Isolation (neither). Always verify actual guarantees, not label.</strong>
+      </div>
+    </section>
+
+    <!-- SECTION 14: KEY TAKEAWAYS -->
+    <section id="key-takeaways" data-section-id="key-takeaways">
+      <h2><span class="section-num">14</span> Key Takeaways & Decision Framework</h2>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">🔐</span>
+        <div class="takeaway-text"><strong>ACID is a Vague Umbrella:</strong> Acronym hides huge variance. Different vendors implement each letter differently. Focus on specific isolation guarantees (dirty read prevention, phantom prevention) rather than ACID labels. Consistency (C) is application responsibility, not database.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">🎯</span>
+        <div class="takeaway-text"><strong>Multi-Object Transactions Are Essential:</strong> Foreign keys, denormalization sync, and secondary indexes cannot be managed safely without atomic multi-object operations. NoSQL systems lacking transactions require complex application-level coordination.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">⚖️</span>
+        <div class="takeaway-text"><strong>Isolation Level Choice is a Performance Trade-off:</strong> Read committed is default but allows lost updates & read skew. Snapshot isolation prevents read skew but allows lost updates & phantoms. Serializability (2PL/SSI) prevents all anomalies but is slow. Pick based on workload tolerance for anomalies.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">⚠️</span>
+        <div class="takeaway-text"><strong>Read-Modify-Write Cycles Are Vulnerable:</strong> Even snapshot isolation doesn't prevent lost updates. Concurrent reads of same value, both increment, final value = initial+1 instead of initial+2. Use atomic operations (compare-and-set) or explicit locking for these patterns.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">🎪</span>
+        <div class="takeaway-text"><strong>2PL Rarely Acceptable in Practice:</strong> Mutual exclusion causes severe performance degradation. Unbounded waits, queue formation, exponential latency. 30-year-old algorithm, but still most common for "serializable" mode. SSI and snapshot isolation generally superior.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">🚀</span>
+        <div class="takeaway-text"><strong>SSI Represents Modern Direction:</strong> Optimistic conflict detection; combines snapshot isolation's concurrency with serializability's guarantees. PostgreSQL & FoundationDB pioneering distributed implementations. Performance unproven at massive scale but theoretically promising.</div>
+      </div>
+
+      <h3>📊 Decision Matrix: When to Use Each Approach</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5)">Read Committed</div>
+          <div class="stat-label">Default; high throughput. Accept anomalies or handle in application.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent2)">Snapshot Isolation</div>
+          <div class="stat-label">Best balance; prevents read skew. Handle lost updates explicitly.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent)">Serializable (2PL)</div>
+          <div class="stat-label">Last resort; high-value low-volume transactions with strict isolation needs.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent)">Serializable (SSI)</div>
+          <div class="stat-label">Future default; PostgreSQL only today. Try if rare conflicts expected.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent4)">Serial Execution</div>
+          <div class="stat-label">Niche; single-partition, in-memory, low-volume use cases only.</div>
         </div>
       </div>
 
-      <h3>Core Principle: One Thread, No Concurrency</h3>
-      <p>All transactions execute in a single-threaded loop. Each transaction runs to completion (commit or abort) before the next one starts. No locks, no race conditions, no deadlocks—serializability by design.</p>
+      <h3>🔧 Practical Implementation Recommendations</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">📝</span>
+          <div class="ic-title">Document Actual Guarantees</div>
+          <div class="ic-body">Don't assume isolation level name; test or read source code. Verify which anomalies actually prevented vs. allowed. Different vendors, different implementations.</div>
+        </div>
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">🔍</span>
+          <div class="ic-title">Test Concurrency Anomalies</div>
+          <div class="ic-body">Write test cases for read skew, lost updates, phantoms. Verify database prevents what you expect. Don't rely on marketing promises.</div>
+        </div>
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">🎯</span>
+          <div class="ic-title">Use Snapshot Isolation by Default</div>
+          <div class="ic-body">Good balance of performance and safety. Handle lost updates via compare-and-set or explicit locking. Prevents most real-world anomalies.</div>
+        </div>
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">⚙️</span>
+          <div class="ic-title">Atomic Operations for Read-Modify-Write</div>
+          <div class="ic-body">Use atomic increment, compare-and-set, or explicit locks for vulnerable patterns. Don't rely on isolation level alone.</div>
+        </div>
+        <div class="insight-card insight-purple">
+          <span class="ic-icon">📊</span>
+          <div class="ic-title">Monitor Transaction Patterns</div>
+          <div class="ic-body">Identify high-conflict workloads (cause SSI aborts) vs. low-conflict (SSI shines). Adapt isolation strategy based on actual contention patterns.</div>
+        </div>
+        <div class="insight-card insight-purple">
+          <span class="ic-icon">🔗</span>
+          <div class="ic-title">Keep Transactions Small</div>
+          <div class="ic-body">Shorter transactions reduce conflict probability, lock duration, and failure risk. Design transactions to be minimal and fast.</div>
+        </div>
+      </div>
 
-      <h3>Why It Works</h3>
+      <h3>📈 Historical Context & Future Direction</h3>
       <ul class="icon-list">
         <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>Guarantees Serializability</strong>By definition, single-threaded execution produces serial order. No concurrency anomalies possible.</span>
+          <span class="il-icon">🏛️</span>
+          <span class="il-text"><strong>40-Year Consistency</strong>IBM System R (1975) established SQL transaction model; approach remained virtually unchanged through 2015 and beyond</span>
         </li>
         <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>No Deadlocks</strong>No locks = no deadlock detection, no wasted retries.</span>
+          <span class="il-icon">📚</span>
+          <span class="il-text"><strong>ACID Term Longevity</strong>Proposed 1983 by Härder & Reuter; still dominant despite inconsistent implementations and vagueness</span>
         </li>
         <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text
+          <span class="il-icon">🌍</span>
+          <span class="il-text"><strong>NoSQL Shift</strong>2000s–2010s: Systems abandoned transactions for eventual consistency; recent trend back toward strong guarantees (Spanner, CockroachDB)</span>
+        </li>
+        <li>
+          <span class="il-icon">🚀</span>
+          <span class="il-text"><strong>SSI Emergence</strong>2008 onwards: Academic work by Michael Cahill; PostgreSQL adoption (2011); FoundationDB distributed implementation. Potential next-generation standard.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔮</span>
+          <span class="il-text"><strong>Future: Stronger Defaults</strong>Trend toward databases defaulting to snapshot isolation or SSI rather than weak read-committed. Safety-first design gaining acceptance.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- SECTION 15: ARCHITECTURE OVERVIEW -->
+    <section id="architecture" data-section-id="architecture">
+      <h2><span class="section-num">15</span> Concurrency Control Algorithms: Architecture Comparison</h2>
+      <p>Four major approaches to achieving serializability, each with distinct architectural implications:</p>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Algorithm Architecture Layers</div>
+        <div class="box-row">
+          <div class="box box-blue">Lock Manager<small>2PL / Serial</small></div>
+          <div class="arrow">vs</div>
+          <div class="box box-purple">MVCC Engine<small>Snapshot / SSI</small></div>
+        </div>
+        <br/>
+        <div class="box-row">
+          <div class="box box-orange">Pessimistic<small>Block risk away</small></div>
+          <div class="arrow">vs</div>
+          <div class="box box-green">Optimistic<small>Detect conflict</small></div>
+        </div>
+      </div>
+
+      <h3>🔵 MVCC (Multi-Version Concurrency Control) Foundation</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">📸</span>
+          <span class="il-text"><strong>Snapshot Semantics</strong>Each transaction sees consistent snapshot at transaction start time; old versions coexist with new</span>
+        </li>
+        <li>
+          <span class="il-icon">🔖</span>
+          <span class="il-text"><strong>Version Tagging</strong>Rows tagged with created_by txid and deleted_by txid; garbage collection removes obsolete versions</span>
 </main>
 <script>
 (function() {

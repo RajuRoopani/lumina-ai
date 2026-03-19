@@ -213,6 +213,10 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
     if message.stop_reason == "max_tokens":
         raw_html = _continue_html(client, system_prompt, user_prompt, raw_html)
 
+    # Strip markdown code fences Claude sometimes wraps around the HTML
+    raw_html = re.sub(r'^```[a-zA-Z]*\n?', '', raw_html.strip())
+    raw_html = re.sub(r'\n?```\s*$', '', raw_html.strip())
+
     html = _strip_orphan_nav_links(raw_html)
     html = _inject_nav_js(html)
 

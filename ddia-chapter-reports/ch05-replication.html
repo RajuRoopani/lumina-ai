@@ -1,20 +1,20 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA Chapter 5: Replication — Complete Technical Report</title>
+  <title>DDIA Ch05: Replication — Comprehensive Technical Report</title>
   <style>
     :root {
       --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
-      --border: #30363d; --accent: #388cfd; --accent2: #3fb950;
+      --border: #30363d; --accent: #388BFD; --accent2: #3fb950;
       --accent3: #f78166; --accent4: #d2a8ff; --accent5: #ffa657;
       --text: #e6edf3; --text-muted: #8b949e; --text-dim: #484f58;
       --radius: 8px; --font-mono: 'JetBrains Mono','Fira Code',monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height: 1.7; font-size: 15px; }
+    
     /* SIDEBAR */
     #sidebar { position: fixed; top:0; left:0; width:260px; height:100vh; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:100; transition:transform .3s; }
     #sidebar-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); }
@@ -24,8 +24,10 @@
     #sidebar nav a { display:block; padding:7px 16px; font-size:12.5px; color:var(--text-muted); text-decoration:none; border-left:2px solid transparent; transition:all .15s; }
     #sidebar nav a:hover, #sidebar nav a.active { color:var(--accent); background:rgba(56,139,253,.07); border-left-color:var(--accent); }
     #sidebar nav .section-label { padding:14px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-dim); }
+    
     /* MAIN */
     #main { margin-left:260px; padding:48px 48px 100px; max-width:960px; }
+    
     /* HERO */
     .hero { background:linear-gradient(135deg,#1a2332 0%,#0f1c2e 40%,#161b22 100%); border:1px solid var(--border); border-radius:12px; padding:48px; margin-bottom:48px; position:relative; overflow:hidden; }
     .hero::before { content:''; position:absolute; top:-60px; right:-60px; width:300px; height:300px; background:radial-gradient(circle,rgba(56,139,253,.15) 0%,transparent 70%); pointer-events:none; }
@@ -36,6 +38,7 @@
     .hero .meta { display:flex; gap:20px; margin-top:24px; flex-wrap:wrap; }
     .hero .meta-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); }
     .hero .meta-item .dot { width:8px; height:8px; border-radius:50%; }
+    
     /* SECTIONS */
     section { margin-bottom:64px; scroll-margin-top:24px; }
     h2 { font-size:22px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
@@ -48,6 +51,7 @@
     strong { color:var(--text); }
     em { color:var(--text-muted); }
     .section-divider { height:1px; background:var(--border); margin:0 0 48px; }
+    
     /* CALLOUT */
     .callout { border-left:3px solid; padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; margin:16px 0; font-size:14px; }
     .callout-info { border-color:var(--accent); background:rgba(56,139,253,.06); }
@@ -55,6 +59,7 @@
     .callout-success { border-color:var(--accent2); background:rgba(63,185,80,.06); }
     .callout-danger { border-color:var(--accent3); background:rgba(247,129,102,.06); }
     .callout strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; opacity:.8; }
+    
     /* PILLS */
     .pill-list { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
     .pill { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:500; border:1px solid; }
@@ -64,15 +69,18 @@
     .pill-purple { background:rgba(210,168,255,.1); color:var(--accent4); border-color:rgba(210,168,255,.3); }
     .pill-orange { background:rgba(255,166,87,.1); color:var(--accent5); border-color:rgba(255,166,87,.3); }
     .pill-teal { background:rgba(57,217,217,.1); color:#39d9d9; border-color:rgba(57,217,217,.3); }
+    
     /* TABLE */
     table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
     th { background:var(--surface2); padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); border-bottom:1px solid var(--border); }
     td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
     tr:hover td { background:rgba(255,255,255,.02); }
     .check { color:var(--accent2); } .cross { color:var(--accent3); } .partial { color:var(--accent5); }
+    
     /* CODE */
     pre { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; margin:12px 0; color:#e6edf3; }
     code { font-family:var(--font-mono); font-size:12.5px; background:rgba(110,118,129,.2); padding:1px 6px; border-radius:4px; }
+    
     /* APPROACH CARDS */
     .approach-grid { display:grid; gap:16px; margin:16px 0; }
     .approach-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; }
@@ -80,6 +88,7 @@
     .approach-card h3 { margin:0 0 8px; font-size:15px; }
     .approach-card p { font-size:13.5px; color:var(--text-muted); margin-bottom:12px; }
     .approach-traits { display:flex; flex-wrap:wrap; gap:6px; }
+    
     /* BOX DIAGRAMS */
     .diagram-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
     .diagram-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
@@ -97,6 +106,7 @@
     .arrow { color:var(--text-dim); font-size:18px; padding:0 6px; white-space:nowrap; }
     .arrow-down { display:flex; justify-content:center; height:30px; align-items:center; }
     .arrow-down-line { width:2px; height:30px; opacity:.4; }
+    
     /* TIMELINE */
     .timeline { position:relative; padding-left:28px; }
     .timeline::before { content:''; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--border); }
@@ -104,6 +114,7 @@
     .tl-item::before { content:''; position:absolute; left:-25px; top:5px; width:12px; height:12px; border-radius:50%; border:2px solid var(--accent); background:var(--bg); }
     .tl-item h4 { margin:0 0 4px; font-size:13.5px; color:var(--text); text-transform:none; letter-spacing:0; }
     .tl-item p { font-size:13px; margin:0; }
+    
     /* PRO/CON */
     .pro-con-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
     .pro-card { background:rgba(63,185,80,.05); border:1px solid rgba(63,185,80,.2); border-radius:var(--radius); padding:16px; }
@@ -111,22 +122,27 @@
     .pro-card h3 { color:var(--accent2); font-size:14px; margin:0 0 10px; }
     .con-card h3 { color:var(--accent3); font-size:14px; margin:0 0 10px; }
     .pro-card li,.con-card li { font-size:13px; }
+    
     /* TAGS */
     .tag { display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:3px; font-weight:600; margin-right:4px; }
     .tag-new { background:rgba(63,185,80,.15); color:var(--accent2); }
     .tag-change { background:rgba(56,139,253,.15); color:var(--accent); }
     .tag-risk { background:rgba(247,129,102,.15); color:var(--accent3); }
+    
     /* STAT CARDS */
     .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:16px 0; }
     .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
     .stat-card .stat-value { font-size:28px; font-weight:800; color:var(--accent); line-height:1; }
     .stat-card .stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+    
     /* PROGRESS BAR */
     #progress-bar { position:fixed; top:0; left:0; height:3px; background:var(--accent); z-index:200; transition:width .1s; }
+    
     /* SCROLLBAR */
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    
     /* SEQUENCE DIAGRAM */
     .seq-diagram { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
     .seq-participants { display:flex; gap:0; justify-content:flex-start; margin-bottom:0; }
@@ -141,7 +157,11 @@
     .seq-msg-arrow { display:flex; align-items:center; gap:4px; }
     .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
     .seq-msg-head { color:var(--accent); font-size:14px; }
+    .seq-msg-head-left { color:var(--accent2); font-size:14px; }
+    .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; border-top:2px dashed rgba(63,185,80,.5); height:0; }
     .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
+    .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
+    
     /* VISUAL SUMMARY */
     .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
     .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
@@ -151,12 +171,14 @@
     .vs-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
     .vs-value { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
     .vs-sub { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    
     /* ICON LIST */
     .icon-list { list-style:none; padding:0; margin:12px 0; }
     .icon-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-muted); }
     .icon-list li:last-child { border-bottom:none; }
     .icon-list .il-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
     .icon-list .il-text strong { display:block; color:var(--text); font-size:13.5px; margin-bottom:2px; }
+    
     /* DATA BAR */
     .data-bar-list { margin:12px 0; }
     .data-bar-item { margin-bottom:10px; }
@@ -165,6 +187,7 @@
     .data-bar-value { color:var(--text); font-weight:600; }
     .data-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
     .data-bar-fill { height:100%; border-radius:3px; background:var(--accent); }
+    
     /* INSIGHT CARD */
     .insight-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:16px 0; }
     .insight-card { border-radius:10px; padding:16px 18px; border:1px solid; position:relative; overflow:hidden; }
@@ -178,6 +201,7 @@
     .insight-red { background:rgba(247,129,102,.07); border-color:rgba(247,129,102,.25); color:var(--accent3); }
     .insight-purple { background:rgba(210,168,255,.07); border-color:rgba(210,168,255,.25); color:var(--accent4); }
     .insight-teal { background:rgba(57,217,217,.07); border-color:rgba(57,217,217,.25); color:#39d9d9; }
+    
     /* STEP FLOW */
     .step-flow { display:flex; flex-direction:column; gap:0; margin:16px 0; }
     .step-item { display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:24px; }
@@ -188,7 +212,8 @@
     .step-content { flex:1; padding-top:8px; }
     .step-content h4 { margin:0 0 4px; font-size:14px; color:var(--text); text-transform:none; letter-spacing:0; }
     .step-content p { margin:0; font-size:13px; color:var(--text-muted); }
-    /* COMPARE GRID */
+    
+    /* COMPARISON TABLE */
     .compare-grid { display:grid; gap:2px; margin:16px 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
     .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
     .compare-row { display:grid; background:var(--surface); transition:background .15s; }
@@ -198,14 +223,17 @@
     .compare-cell.good { color:var(--accent2); }
     .compare-cell.bad { color:var(--accent3); }
     .compare-cell.neutral { color:var(--text-muted); }
+    
     /* HIGHLIGHT BAND */
     .highlight-band { background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:24px; margin:20px 0; }
     .highlight-band h3 { color:var(--accent); margin:0 0 8px; font-size:16px; }
+    
     /* KEY TAKEAWAY */
     .takeaway { background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(57,217,217,.05)); border:1px solid rgba(63,185,80,.25); border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
     .takeaway-icon { font-size:20px; flex-shrink:0; }
     .takeaway-text { font-size:13.5px; color:var(--text-muted); line-height:1.6; }
     .takeaway-text strong { color:var(--accent2); }
+    
     /* RESPONSIVE */
     @media (max-width:900px) { #sidebar { transform:translateX(-260px); } #main { margin-left:0; padding:24px; } }
   </style>
@@ -216,540 +244,1093 @@
 
 <div id="sidebar">
   <div id="sidebar-header">
-    <h1>DDIA Ch.5</h1>
-    <p>Replication Systems</p>
+    <h1>📚 DDIA Ch05</h1>
+    <p>Replication Patterns & Consistency</p>
   </div>
   <nav>
-    <div class="section-label">Overview</div>
-    <a href="#visual-summary" class="nav-link">At a Glance</a>
-    <a href="#paradigms" class="nav-link">Three Paradigms</a>
+    <div class="section-label">Core Concepts</div>
+    <a href="#visual-summary">Visual Summary</a>
+    <a href="#fundamentals">Replication Fundamentals</a>
+    <a href="#architecture">System Architecture</a>
+    <a href="#synchronization">Sync & Async Modes</a>
+    <a href="#failover">Failover Hazards</a>
     
-    <div class="section-label">Single-Leader</div>
-    <a href="#single-leader-arch" class="nav-link">Architecture & Components</a>
-    <a href="#sync-async" class="nav-link">Sync vs. Async Replication</a>
-    <a href="#follower-setup" class="nav-link">Setting Up New Followers</a>
+    <div class="section-label">Implementation Details</div>
+    <a href="#follower-setup">New Follower Setup</a>
+    <a href="#replication-logs">Replication Log Methods</a>
+    <a href="#data-flow">Data Flow Sequence</a>
     
-    <div class="section-label">Failures & Recovery</div>
-    <a href="#node-outages" class="nav-link">Node Outage Handling</a>
-    <a href="#failover-modes" class="nav-link">Failover Failure Modes</a>
+    <div class="section-label">Consistency & Concurrency</div>
+    <a href="#concurrency">Concurrency Definition</a>
+    <a href="#version-numbers">Version-Based Detection</a>
+    <a href="#conflict-resolution">Conflict Resolution</a>
+    <a href="#version-vectors">Version Vectors</a>
     
-    <div class="section-label">Implementation</div>
-    <a href="#repl-log-methods" class="nav-link">Replication Log Methods</a>
+    <div class="section-label">Synthesis</div>
+    <a href="#components">Key Components</a>
+    <a href="#approaches">Three Replication Models</a>
     
-    
-    <div class="section-label">Concurrency & Consistency</div>
-    <a href="#concurrency" class="nav-link">Happens-Before & Concurrency</a>
-    <a href="#version-numbers" class="nav-link">Version Number Algorithm</a>
-    
-    
-    
-    <div class="section-label">Key Insights</div>
     
   </nav>
 </div>
 
 <div id="main">
-
-  <!-- HERO -->
   <div class="hero">
-    <div class="badge">DDIA Technical Deep Dive</div>
-    <h1>Designing Data-Intensive Applications<br><span>Chapter 5: Replication</span></h1>
-    <p>Master the architecture, algorithms, and failure modes of distributed database replication systems—from single-leader paradigms to leaderless CRDTs.</p>
+    <div class="badge">📖 DDIA Chapter 5</div>
+    <h1>Replication: Distributed Data <span>Consistency Patterns</span></h1>
+    <p>Master the three core replication algorithms—single-leader, multi-leader, and leaderless—and understand the trade-offs between consistency, availability, and durability across networked databases.</p>
     <div class="meta">
-      <div class="meta-item"><span class="dot" style="background:var(--accent);"></span>Distributed Systems</div>
-      <div class="meta-item"><span class="dot" style="background:var(--accent2);"></span>High Availability</div>
-      <div class="meta-item"><span class="dot" style="background:var(--accent5);"></span>Consistency Guarantees</div>
+      <div class="meta-item"><span class="dot" style="background:var(--accent)"></span> Single-Leader & Multi-Leader</div>
+      <div class="meta-item"><span class="dot" style="background:var(--accent5)"></span> Sync/Async Trade-offs</div>
+      <div class="meta-item"><span class="dot" style="background:var(--accent2)"></span> Failover & CRDTs</div>
     </div>
   </div>
 
-  <!-- SECTION 1: VISUAL SUMMARY -->
+  <!-- ========== VISUAL SUMMARY ========== -->
   <section id="visual-summary" data-section-id="visual-summary">
-    <h2><span class="section-num">01</span>At a Glance</h2>
+    <h2><span class="section-num">01</span> At a Glance</h2>
     <div class="visual-summary">
       <div class="vs-card">
         <div class="vs-icon">🎯</div>
         <div class="vs-body">
-          <div class="vs-label">Core Challenge</div>
-          <div class="vs-value">Maintain consistent data across multiple nodes</div>
-          <div class="vs-sub">Handle network failures, partial writes, concurrent operations</div>
+          <div class="vs-label">Core Purpose</div>
+          <div class="vs-value">Keep identical data copies across machines</div>
+          <div class="vs-sub">Reduce latency, increase availability, boost read throughput</div>
         </div>
       </div>
       <div class="vs-card">
         <div class="vs-icon">🏗️</div>
         <div class="vs-body">
-          <div class="vs-label">Three Paradigms</div>
-          <div class="vs-value">Single-Leader, Multi-Leader, Leaderless</div>
-          <div class="vs-sub">Each with distinct trade-offs and failure modes</div>
+          <div class="vs-label">3 Primary Algorithms</div>
+          <div class="vs-value">Leader, Multi-Leader, Leaderless</div>
+          <div class="vs-sub">Mutually exclusive architectural choices</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">📊</div>
+        <div class="vs-icon">⚡</div>
         <div class="vs-body">
-          <div class="vs-label">Key Trade-off</div>
-          <div class="vs-value">Durability ↔ Latency ↔ Availability</div>
-          <div class="vs-sub">Sync: strong durability, high latency; Async: low latency, weaker durability</div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-icon">⚠️</div>
-        <div class="vs-body">
-          <div class="vs-label">Primary Risk</div>
-          <div class="vs-value">Silent data loss & split-brain scenarios</div>
-          <div class="vs-sub">Failover & concurrency handling are notoriously tricky</div>
+          <div class="vs-label">Sync vs Async</div>
+          <div class="vs-value">Semi-Synchronous Default</div>
+          <div class="vs-sub">1 sync + N async for practical durability</div>
         </div>
       </div>
       <div class="vs-card">
         <div class="vs-icon">🔄</div>
         <div class="vs-body">
-          <div class="vs-label">Real-World Adoption</div>
-          <div class="vs-value">PostgreSQL, MySQL, Oracle, MongoDB, RethinkDB, Kafka</div>
-          <div class="vs-sub">Principles unchanged since 1970s; network constraints invariant</div>
+          <div class="vs-label">Core Challenge</div>
+          <div class="vs-value">Handling data changes safely</div>
+          <div class="vs-sub">Not static snapshots—live consistency</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">🧩</div>
+        <div class="vs-icon">🗂️</div>
         <div class="vs-body">
-          <div class="vs-label">Convergence Strategy</div>
-          <div class="vs-value">Version vectors, CRDTs, tombstones</div>
-          <div class="vs-sub">Enable leaderless writes without silent data loss</div>
+          <div class="vs-label">Key Assumption</div>
+          <div class="vs-value">Dataset fits one machine</div>
+          <div class="vs-sub">Chapter 6 addresses partitioning/sharding</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">✅</div>
+        <div class="vs-body">
+          <div class="vs-label">Conflict Resolution</div>
+          <div class="vs-value">CRDTs + Version Vectors</div>
+          <div class="vs-sub">Automatic merge without data loss</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 2: THREE PARADIGMS -->
-  <section id="paradigms" data-section-id="paradigms">
-    <h2><span class="section-num">02</span>Three Core Replication Paradigms</h2>
+  <!-- ========== REPLICATION FUNDAMENTALS ========== -->
+  <section id="fundamentals" data-section-id="fundamentals">
+    <h2><span class="section-num">02</span> Replication Fundamentals</h2>
+    
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">📋</span>
+        <div class="ic-title">Definition</div>
+        <div class="ic-body">Keeping identical copies of data across multiple networked machines</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">⏱️</span>
+        <div class="ic-title">Latency Reduction</div>
+        <div class="ic-body">Geographic proximity enables faster local reads</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">🛡️</span>
+        <div class="ic-title">Fault Tolerance</div>
+        <div class="ic-body">Redundant copies survive individual node failures</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">📈</span>
+        <div class="ic-title">Read Scaling</div>
+        <div class="ic-body">Distribute read load across multiple followers</div>
+      </div>
+    </div>
+
+    <h3>Three Mutually Exclusive Replication Algorithms</h3>
+    <div class="data-bar-list">
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>Single-Leader Replication</strong> — One node accepts writes</span>
+          <span class="data-bar-value">Most Common</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:90%;background:var(--accent)"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>Multi-Leader Replication</strong> — Multiple writers, complex conflicts</span>
+          <span class="data-bar-value">Moderate</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:45%;background:var(--accent5)"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>Leaderless Replication</strong> — All nodes equal, client-driven conflicts</span>
+          <span class="data-bar-value">Specialized</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:35%;background:var(--accent4)"></div></div>
+      </div>
+    </div>
+
+    <p><strong>Core Challenge:</strong> Replication is about <em>handling changes to data</em>, not managing static snapshots. Every write must propagate reliably and consistently across all nodes.</p>
+  </section>
+
+  <!-- ========== ARCHITECTURE OVERVIEW ========== -->
+  <section id="architecture" data-section-id="architecture">
+    <h2><span class="section-num">03</span> Single-Leader Architecture</h2>
+
     <div class="diagram-container">
-      <div class="diagram-title">Replication Architecture Space</div>
+      <div class="diagram-title">Leader-Follower Topology</div>
       <div class="box-row">
         <div class="box box-blue">
-          Single-Leader<br><small>(Master-Slave)</small>
+          Leader<br/><small>Accepts all writes</small>
         </div>
-        <div class="arrow">↔</div>
+        <div class="arrow">→</div>
         <div class="box box-orange">
-          Multi-Leader<br><small>(Master-Master)</small>
+          Replication Log<br/><small>Change stream</small>
         </div>
-        <div class="arrow">↔</div>
+        <div class="arrow">↙ ↓ ↘</div>
+      </div>
+      <div style="height:20px;"></div>
+      <div class="box-row" style="justify-content:space-around;">
         <div class="box box-green">
-          Leaderless<br><small>(Dynamo-style)</small>
+          Follower 1<br/><small>Read-only replica</small>
+        </div>
+        <div class="box box-green">
+          Follower 2<br/><small>Read-only replica</small>
+        </div>
+        <div class="box box-green">
+          Follower N<br/><small>Read-only replica</small>
         </div>
       </div>
     </div>
+
+    <h3>Architecture Components</h3>
     <ul class="icon-list">
       <li>
         <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Single-Leader (Master-Slave, Active-Passive)</strong> One designated leader accepts writes; followers replicate asynchronously or synchronously. Simplest model, easiest to reason about. Dominated in practice: PostgreSQL (9.0+), MySQL, Oracle Data Guard, MongoDB, RethinkDB.</span>
+        <span class="il-text"><strong>Leader (Master/Primary)</strong> Sole node accepting write operations; persists to local storage first; immediately generates change events</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Followers (Read Replicas/Secondaries)</strong> Receive serialized stream of writes from leader; apply changes identically in same order; clients read from leader OR followers</span>
       </li>
       <li>
         <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>Multi-Leader (Master-Master, Active-Active)</strong> Multiple nodes accept writes concurrently. More complex conflict resolution required. Enables continued writes during leader failure. Use cases: data centers (inter-DC replication), offline-first applications.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Leaderless (Dynamo-style)</strong> All nodes equivalent; clients write to multiple nodes concurrently. Gossip dissemination and read-repair. Highest write availability. Implementation: Amazon Dynamo, Riak, Cassandra. Requires client-side or server-side merging of siblings.</span>
-      </li>
-    </ul>
-    <div class="callout callout-info">
-      <strong>Historical Context</strong> Core principles unchanged since 1970s. Fundamental network constraints remain invariant: partial failures, network delays, asynchrony cannot be assumed away.
-    </div>
-  </section>
-
-  <!-- SECTION 3: SINGLE-LEADER ARCHITECTURE -->
-  <section id="single-leader-arch" data-section-id="single-leader-arch">
-    <h2><span class="section-num">03</span>Single-Leader Replication: Architecture & Components</h2>
-    <div class="diagram-container">
-      <div class="diagram-title">Single-Leader Write Flow</div>
-      <div class="box-row">
-        <div class="box box-blue">
-          Client Write<br><small>Application</small>
-        </div>
-        <div class="arrow">→</div>
-        <div class="box box-orange">
-          Leader Node<br><small>Write + Repl. Log</small>
-        </div>
-        <div class="arrow">→</div>
-        <div class="box box-green">
-          Change Stream<br><small>Binary or Logical</small>
-        </div>
-        <div class="arrow">→</div>
-        <div class="box box-purple">
-          Follower Nodes<br><small>Apply in Order</small>
-        </div>
-      </div>
-    </div>
-    <h3>Core Components</h3>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Leader Node</strong> Accepts all client writes, stores data locally, maintains replication log (sequence of write operations, also called <em>change stream</em>). Responsibility: serialize writes, assign sequence numbers.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Follower Nodes</strong> Receive replication log from leader, apply writes in <strong>same order as leader</strong>, read-only from client perspective. Clients may read stale data if follower hasn't caught up.</span>
+        <span class="il-text"><strong>Replication Log</strong> Sequential record of every write operation; followers consume and replay locally; forms backbone of consistency</span>
       </li>
       <li>
         <span class="il-icon">🟣</span>
-        <span class="il-text"><strong>Replication Log (Change Stream)</strong> Sequence of write operations transmitted from leader to followers. Format depends on implementation method: statement-based, WAL-shipped, or logical (row-based).</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Consistency Invariant</strong> Critical guarantee: followers must apply writes in <strong>exact same order</strong> as leader. Deviation = data corruption across replicas.</span>
+        <span class="il-text"><strong>Client Interface</strong> All writes directed to leader; reads optionally distributed across followers for load balancing</span>
       </li>
     </ul>
+
+    <h3>Systems Implementing Single-Leader Pattern</h3>
+    <div class="compare-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="compare-header" style="grid-column: 1/-1;">
+        <div class="compare-cell"><strong>Category</strong></div>
+        <div class="compare-cell"><strong>Examples</strong></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">Relational Databases</div>
+        <div class="compare-cell">PostgreSQL (v9.0+), MySQL, Oracle Data Guard, SQL Server AlwaysOn</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">NoSQL/Document</div>
+        <div class="compare-cell">MongoDB, RethinkDB, Espresso</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">Message Brokers</div>
+        <div class="compare-cell">Kafka, RabbitMQ</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell">Infrastructure</div>
+        <div class="compare-cell">DRBD (Distributed Replicated Block Device)</div>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>KEY INSIGHT</strong> Single-leader replication's simplicity and prevalence stem from its straightforward write ordering: every follower replays the exact same operations in identical sequence, eliminating complex conflict resolution.
+    </div>
   </section>
 
-  <!-- SECTION 4: SYNC VS. ASYNC REPLICATION -->
-  <section id="sync-async" data-section-id="sync-async">
-    <h2><span class="section-num">04</span>Synchronous vs. Asynchronous Replication: The Fundamental Trade-off</h2>
+  <!-- ========== SYNCHRONIZATION MODES ========== -->
+  <section id="synchronization" data-section-id="synchronization">
+    <h2><span class="section-num">04</span> Synchronous vs Asynchronous Replication</h2>
+
+    <div class="approach-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="approach-card">
+        <h3 style="color:var(--accent)">🔵 Synchronous</h3>
+        <p><strong>Behavior:</strong> Leader blocks write acknowledgment until follower confirms receipt.</p>
+        <div class="approach-traits" style="margin-top:12px;">
+          <span class="pill pill-green">✓ Durability</span>
+          <span class="pill pill-red">✗ Latency</span>
+        </div>
+      </div>
+
+      <div class="approach-card">
+        <div class="preferred-badge">⚡ DEFAULT</div>
+        <h3 style="color:var(--accent2)">🟢 Semi-Synchronous</h3>
+        <p><strong>Behavior:</strong> One follower synchronous, rest asynchronous. Optimal balance.</p>
+        <div class="approach-traits" style="margin-top:12px;">
+          <span class="pill pill-green">✓ Durable</span>
+          <span class="pill pill-green">✓ Available</span>
+        </div>
+      </div>
+
+      <div class="approach-card">
+        <h3 style="color:var(--accent5)">🟠 Asynchronous</h3>
+        <p><strong>Behavior:</strong> Leader acknowledges immediately; followers catch up eventually.</p>
+        <div class="approach-traits" style="margin-top:12px;">
+          <span class="pill pill-green">✓ Throughput</span>
+          <span class="pill pill-red">✗ Durability</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Detailed Comparison</h3>
     <table>
       <tr>
-        <th>Dimension</th>
-        <th style="color:var(--accent2);">Synchronous</th>
-        <th style="color:var(--accent3);">Asynchronous</th>
+        <th>Mode</th>
+        <th>Guarantee</th>
+        <th>Advantage</th>
+        <th>Disadvantage</th>
+        <th>Use Case</th>
       </tr>
       <tr>
-        <td><strong>Durability Guarantee</strong></td>
-        <td><span class="check">✔</span> Write must be replicated to ≥2 nodes before acknowledgment</td>
-        <td><span class="cross">✘</span> Write reported to client before replication begins</td>
+        <td><strong>Synchronous</strong></td>
+        <td><span class="check">✔ Durability</span></td>
+        <td>Follower guaranteed up-to-date; data safe if leader fails</td>
+        <td>Any follower outage blocks <em>all</em> writes; impractical with many followers</td>
+        <td>Critical systems requiring zero data loss</td>
       </tr>
       <tr>
-        <td><strong>Latency</strong></td>
-        <td><span class="cross">✘</span> High — blocks on follower response (typically 50–100ms per follower)</td>
-        <td><span class="check">✔</span> Low — acknowledgment immediate, replication decoupled</td>
+        <td><strong>Asynchronous</strong></td>
+        <td><span class="cross">✘ None</span></td>
+        <td>Writes continue even if all followers down; maximum throughput</td>
+        <td>Durability guarantee lost; data lost if leader fails before replication</td>
+        <td>High-volume analytics; non-critical systems; distributed followers</td>
       </tr>
       <tr>
-        <td><strong>Availability</strong></td>
-        <td><span class="cross">✘</span> Low — single follower failure halts writes at leader</td>
-        <td><span class="check">✔</span> High — leader continues accepting writes regardless of follower state</td>
-      </tr>
-      <tr>
-        <td><strong>Typical Lag</strong></td>
-        <td>< 1 second (usually sub-100ms)</td>
-        <td>Can reach minutes, hours, or indefinitely (network partition)</td>
-      </tr>
-      <tr>
-        <td><strong>Practical Use</strong></td>
-        <td>Rare in practice; expensive cost-benefit</td>
-        <td>Default in most production systems (PostgreSQL, MySQL)</td>
+        <td><strong>Semi-Sync</strong></td>
+        <td><span class="partial">⚠ Partial</span></td>
+        <td>≥2 nodes have up-to-date copy (leader + 1 sync follower); automatic promotion on failure</td>
+        <td>Promotion latency; limited synchronous follower availability</td>
+        <td>Production databases (PostgreSQL, MySQL default); balance of safety & performance</td>
       </tr>
     </table>
-    <div class="pro-con-grid">
-      <div class="pro-card">
-        <h3>✅ Why Async Wins</h3>
-        <ul>
-          <li><strong>Write latency decoupled</strong> from follower state. Leader not blocked by slow replicas.</li>
-          <li><strong>Fault tolerance</strong> of leader unaffected by replica failures. System continues accepting writes.</li>
-          <li><strong>Network robustness</strong> handles high-latency or unreliable inter-node links.</li>
-          <li><strong>Practical reality</strong> in all major databases: PostgreSQL (asynchronous default), MySQL (asynchronous), MongoDB (asynchronous).</li>
-        </ul>
-      </div>
-      <div class="con-card">
-        <h3>❌ The Async Weakness</h3>
-        <ul>
-          <li><strong>Durability is weak</strong>. Leader crash may lose unreplicated writes. Violates ACID durability expectation.</li>
-          <li><strong>Replication lag</strong> unpredictable. Reads from followers return stale data. Violates read-after-write consistency.</li>
-          <li><strong>Failover hazard</strong> new leader may lack writes from old leader. Silent data loss.</li>
-          <li><strong>Primary key reuse</strong> disaster possible if new leader autoincrement counter lags (GitHub incident: exposed private data).</li>
-        </ul>
-      </div>
-    </div>
-    
-    <h3>Semi-Synchronous: The Pragmatic Middle Ground</h3>
-    <div class="highlight-band">
-      <h3>🏆 Recommended Configuration</h3>
-      <p><strong>One follower synchronous, others asynchronous.</strong> Guarantees durability on ≥2 nodes (leader + 1 sync follower up-to-date) while preserving write availability if any single follower fails. Most practitioners' choice: trade slight latency increase for durability guarantee without sacrificing availability.</p>
-    </div>
-    
-    <div class="callout callout-warn">
-      <strong>Critical Trade-off</strong> Cannot simultaneously achieve strong durability (sync), low latency, AND high availability. Must sacrifice at least one. Semi-synchronous sacrifices a small amount of latency for guaranteed 2-node durability + availability.
-    </div>
-  </section>
 
-  <!-- SECTION 5: SETTING UP NEW FOLLOWERS -->
-  <section id="follower-setup" data-section-id="follower-setup">
-    <h2><span class="section-num">05</span>Setting Up New Followers: Zero-Downtime Process</h2>
+    <div class="highlight-band">
+      <h3>🏆 Industry Practice: Asynchronous Dominates</h3>
+      <p>Despite durability risks, asynchronous replication is widely deployed, especially with geographically distributed followers. Organizations accept eventual consistency trade-off for <strong>operational simplicity</strong> and <strong>write availability</strong>.</p>
+    </div>
+
+    <h3>Semi-Synchronous Promotion Strategy</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Take Consistent Snapshot of Leader</h4>
-          <p>Obtain exact point-in-time snapshot without full database lock (most modern databases support this: PostgreSQL COPY, MySQL mysqldump --single-transaction). Captures all committed data at snapshot moment. Snapshot must be accompanied by <strong>exact replication position</strong>.</p>
+          <h4>Normal Operation</h4>
+          <p>Follower A designated synchronous; Followers B, C, D asynchronous. Every write requires A's acknowledgment.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Follower A Becomes Unavailable</h4>
+          <p>Leader detects timeout; system cannot proceed with A's confirmation.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Automatic Promotion</h4>
+          <p>Promote async follower (e.g., B) to synchronous role. Continue accepting writes with B's confirmation.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>A Returns Online</h4>
+          <p>A reconnects, catches up via replication log, potentially demoted back to async.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOLLOWER SETUP ========== -->
+  <section id="follower-setup" data-section-id="follower-setup">
+    <h2><span class="section-num">05</span> Setting Up New Followers (Zero-Downtime)</h2>
+
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Take Consistent Snapshot (No Locking)</h4>
+          <p>Leader creates snapshot without locking entire database. Most databases support this natively (required for backups anyway). Tools like <code>innobackupex</code> for MySQL automate this.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
           <h4>Copy Snapshot to New Follower</h4>
-          <p>Bulk transfer snapshot data to new follower node (disk, network, cloud storage). Can happen gradually; no downtime required. New follower loads data into local storage structure.</p>
+          <p>Transfer snapshot file(s) to new follower node over network or storage system. No special ordering required.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Follower Connects and Requests Change Stream</h4>
-          <p>New follower initiates connection to leader, sends replication position from snapshot (e.g., PostgreSQL <code>log sequence number (LSN)</code> or MySQL <code>binlog file + byte offset</code>). Requests all changes <strong>since that position</strong>.</p>
+          <h4>Connect to Leader & Request Backlog</h4>
+          <p>New follower connects to leader, provides <strong>exact position in replication log</strong> (snapshot's point). Leader streams all changes <em>since</em> that position.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">4</div>
         <div class="step-content">
-          <h4>Follower Catches Up</h4>
-          <p>Processes change stream in sequence, applying writes to local storage in same order as leader. Once lag reaches zero, follower is fully replicated and ready to serve reads.</p>
+          <h4>Replay & Reach Consistency</h4>
+          <p>Follower processes backlog of changes, applies them in order, reaches consistency with leader, continues streaming new writes.</p>
         </div>
       </div>
     </div>
-    
-    <h3>Position Tracking: Key Implementation Details</h3>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>PostgreSQL</strong> uses <code>log sequence number (LSN)</code>—a byte position in WAL (write-ahead log). Example: 0/3D5C370</span>
-      </li>
-      <li>
-        <span class="il-icon">🟣</span>
-        <span class="il-text"><strong>MySQL</strong> uses <code>binlog coordinates</code>—combination of binlog file name and byte offset. Example: mysql-bin.000003:154</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Position invariant</strong> replication position must be deterministic and tracked consistently to ensure followers don't miss or re-process changes.</span>
-      </li>
-    </ul>
-  </section>
 
-  <!-- SECTION 6: NODE OUTAGES AND FAILURE RECOVERY -->
-  <section id="node-outages" data-section-id="node-outages">
-    <h2><span class="section-num">06</span>Node Outages: Failure Detection & Recovery</h2>
-    
-    <h3>Follower Failure: Catch-up Recovery (Simple)</h3>
-    <div class="diagram-container">
-      <div class="diagram-title">Follower Failure & Recovery</div>
-      <div style="padding: 16px; background:rgba(56,139,253,.05); border-radius:8px;">
-        <strong>Follower maintains local log of received changes</strong><br>
-        <code style="color:var(--accent2);">On restart → connect to leader → "send me all changes since position X" → catch up asynchronously</code><br>
-        <strong>Result:</strong> Automatic recovery, no manual intervention required.
-      </div>
-    </div>
+    <h3>Log Position Naming by System</h3>
     <ul class="icon-list">
       <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Straightforward mechanism</strong> Follower persists replication position after applying changes. On restart, queries leader for changes since that position.</span>
+        <span class="il-icon">🐘</span>
+        <span class="il-text"><strong>PostgreSQL</strong> — <code>log sequence number (LSN)</code> identifies exact position in write-ahead log</span>
       </li>
       <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>No data loss</strong> Follower has its own durable log; missed changes can be fetched from leader's replication log (kept for days/weeks).</span>
+        <span class="il-icon">🐬</span>
+        <span class="il-text"><strong>MySQL</strong> — <code>binlog coordinates</code> (filename + offset) pinpoint exact position in binary log</span>
       </li>
       <li>
         <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>Replication lag during downtime</strong> If follower was down for extended period, catch-up may take time. Reads from follower return stale data until caught up.</span>
+        <span class="il-text"><strong>Generic Pattern</strong> — Any replication system must encode snapshot position in language the leader understands</span>
       </li>
     </ul>
-    
-    <h3>Leader Failure: Failover (Complex)</h3>
-    <p style="margin:16px 0; padding:12px; background:rgba(247,129,102,.05); border-left:3px solid var(--accent3); border-radius:4px; color:var(--text);">Leader failure is the most dangerous scenario in replication. Automatic failover can trigger cascading failures, data loss, and corruption.</p>
-    
+
+    <div class="callout callout-success">
+      <strong>ZERO-DOWNTIME ADVANTAGE</strong> Snapshot does not lock database; new followers can be added without interrupting read/write traffic. This is critical for production systems scaling read capacity.
+    </div>
+  </section>
+
+  <!-- ========== FAILOVER HAZARDS ========== -->
+  <section id="failover" data-section-id="failover">
+    <h2><span class="section-num">06</span> Failover: Hazards & Complexities</h2>
+
+    <h3>Three Automatic Failover Steps</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
           <h4>Detect Leader Failure</h4>
-          <p>Timeout mechanism (typically ~30 seconds) detects unresponsiveness. <strong>Challenge:</strong> no reliable failure detection over networks. Slow network = timeout. Network partition = ambiguity (is leader dead or unreachable?).</p>
+          <p>Monitor uses timeout on heartbeat/message exchange (e.g., 30 seconds). Problem: Timeouts are imprecise—crashes, power failures, and network partition all look identical. No foolproof detection exists.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
           <h4>Choose New Leader</h4>
-          <p>Election among replicas (majority consensus) OR appointment by controller node. <strong>Candidate selection:</strong> replica with most up-to-date changes (least data loss). Position used: latest replication position in replica's log.</p>
+          <p>Election by replica majority OR appointment by controller node. Best candidate: replica with most up-to-date data (minimizes data loss). Consensus problem (see Ch9).</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
           <h4>Reconfigure System</h4>
-          <p>Clients rerouted to new leader (DNS, load balancer config, application config). Old leader becomes follower. <strong>Critical step:</strong> old leader must recognize its demotion and not continue accepting writes (prevents split-brain).</p>
+          <p>Update clients to route writes to new leader. Force old leader into follower role (becomes read-only). Prevents accidental dual-leadership.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- SECTION 7: FAILOVER FAILURE MODES -->
-  <section id="failover-modes" data-section-id="failover-modes">
-    <h2><span class="section-num">07</span>Failover Failure Modes: When Automated Recovery Goes Wrong</h2>
+    <h3>Failover Hazards (No Easy Solutions)</h3>
     <div class="insight-strip">
       <div class="insight-card insight-red">
         <span class="ic-icon">💾</span>
-        <div class="ic-title">Unreplicated Write Loss</div>
-        <div class="ic-body"><strong>Scenario:</strong> Async replication, leader crashes before follower receives latest writes. New leader elected lacks those writes. <strong>Result:</strong> Silent data loss, violates durability expectations. <strong>Common solution:</strong> discard unreplicated writes (trade durability for availability).</div>
+        <div class="ic-title">Data Loss</div>
+        <div class="ic-body"><strong>Problem:</strong> New leader may lack writes old leader issued before crashing; asynchronous replication loses unreplicated data. <strong>Example:</strong> GitHub incident—out-of-date MySQL follower promoted to leader; autoincrement counter reused primary keys previously assigned, exposing private data.</div>
       </div>
       <div class="insight-card insight-red">
         <span class="ic-icon">🧠</span>
-        <div class="ic-title">Split-Brain (Two Leaders)</div>
-        <div class="ic-body"><strong>Scenario:</strong> Network partition isolates old leader. Other replicas elect new leader. Both old and new accept writes independently. <strong>Consequence:</strong> data divergence, requires complex merge logic to recover. <strong>Prevention:</strong> fencing/STONITH mechanism—forcibly shut down old leader to prevent writes. <strong>Risk:</strong> poor fencing design causes <em>both</em> to be shut down (all writes lost).</div>
-      </div>
-      <div class="insight-card insight-red">
-        <span class="ic-icon">🔑</span>
-        <div class="ic-title">Primary Key Reuse Disaster (GitHub Incident)</div>
-        <div class="ic-body"><strong>GitHub case:</strong> Out-of-date follower promoted to new leader. Autoincrement counter lags old leader's. Same PKs assigned by new leader were previously assigned by old leader. Caused unique constraint violations, data corruption. <strong>Secondary damage:</strong> MySQL-Redis inconsistency exposed private data. <strong>Lesson:</strong> ensure new leader is most up-to-date candidate before promotion.</div>
+        <div class="ic-title">Split Brain</div>
+        <div class="ic-body"><strong>Problem:</strong> Two nodes both believe they're leader; both accept writes → data loss/corruption. <strong>Mitigation:</strong> Fencing mechanism shuts down node if 2 leaders detected, but poorly designed systems shut down <em>both</em>.</div>
       </div>
       <div class="insight-card insight-orange">
         <span class="ic-icon">⏱️</span>
-        <div class="ic-title">Timeout Dilemma</div>
-        <div class="ic-body"><strong>Trade-off:</strong> Long timeout (e.g., 5 min) = slow recovery from actual failure. Short timeout (e.g., 10 sec) = unnecessary failovers under heavy load/network congestion, amplifying problems. <strong>Solution:</strong> monitor-based alerting + manual failover (many operators prefer this despite automatic support).</div>
+        <div class="ic-title">Timeout Calibration</div>
+        <div class="ic-body"><strong>Dilemma:</strong> Long timeout = slow recovery; short timeout = unnecessary failovers during load spikes or transient network glitches, <em>worsening</em> the situation.</div>
       </div>
     </div>
-    
-    <div class="callout callout-danger">
-      <strong>Operational Reality</strong> Many teams deliberately disable automatic failover despite database support. Manual failover is safer: allows human judgment, DNS propagation time, system state verification before promotion. Trades RTO (recovery time objective) for lower risk of cascading failure.
+
+    <div class="callout callout-warn">
+      <strong>INDUSTRY PRACTICE</strong> Many teams disable automatic failover and prefer manual intervention. Reduces surprise data loss, but requires operational response time. Trade-off: availability vs. safety.
+    </div>
+
+    <h3>Failover Risk Comparison</h3>
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>✅ Automatic Failover</h3>
+        <ul>
+          <li>Fast recovery from leader failure</li>
+          <li>High availability for read-heavy workloads</li>
+          <li>Minimal operational effort</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>❌ Manual Failover</h3>
+        <ul>
+          <li>Operator must detect & diagnose failure</li>
+          <li>Slow promotion of new leader</li>
+          <li>Prevents write availability during outage</li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- SECTION 8: REPLICATION LOG IMPLEMENTATION METHODS -->
-  <section id="repl-log-methods" data-section-id="repl-log-methods">
-    <h2><span class="section-num">08</span>Replication Log Implementation: Statement vs. WAL vs. Logical</h2>
-    
-    <div class="compare-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-      <div class="compare-header" style="grid-template-columns: 1fr 1fr 1fr; padding:10px;">
-        <div style="padding:10px 14px; text-align:center;"><strong>Method</strong></div>
-        <div style="padding:10px 14px; text-align:center;"><strong>Log Format</strong></div>
-        <div style="padding:10px 14px; text-align:center;"><strong>Key Trade-offs</strong></div>
+  <!-- ========== REPLICATION LOG IMPLEMENTATION ========== -->
+  <section id="replication-logs" data-section-id="replication-logs">
+    <h2><span class="section-num">07</span> Replication Log Implementation Methods</h2>
+
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">📝</span>
+        <div class="ic-title">Statement-Based</div>
+        <div class="ic-body">Forward every SQL statement (INSERT, UPDATE, DELETE) to followers for replay</div>
       </div>
-      <div class="compare-row" style="grid-template-columns: 1fr 1fr 1fr;">
-        <div class="compare-cell" style="text-align:center;"><strong>Statement-Based</strong></div>
-        <div class="compare-cell">SQL statements (INSERT, UPDATE, DELETE)</div>
-        <div class="compare-cell" style="color:var(--accent3);">Nondeterministic functions break replication</div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔤</span>
+        <div class="ic-title">Write-Ahead Log (WAL)</div>
+        <div class="ic-body">Low-level log of disk block changes; followers replicate exact bytes modified</div>
       </div>
-      <div class="compare-row" style="grid-template-columns: 1fr 1fr 1fr;">
-        <div class="compare-cell" style="text-align:center;"><strong>WAL Shipping</strong></div>
-        <div class="compare-cell">Low-level byte changes per disk block</div>
-        <div class="compare-cell" style="color:var(--accent3);">Storage engine coupling prevents upgrades</div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">📦</span>
+        <div class="ic-title">Logical Log</div>
+        <div class="ic-body">High-level record of row-level changes; decoupled from storage format</div>
       </div>
-      <div class="compare-row" style="grid-template-columns: 1fr 1fr 1fr;">
-        <div class="compare-cell" style="text-align:center;"><strong>Logical (Row-based)</strong></div>
-        <div class="compare-cell">Row changes in semantic format</div>
-        <div class="compare-cell" style="color:var(--accent2);">Decoupled from storage engine</div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔔</span>
+        <div class="ic-title">Change Data Capture</div>
+        <div class="ic-body">Application observes database changes as events; external streaming system consumes</div>
       </div>
     </div>
 
-    <h3>1. Statement-Based Replication</h3>
-    <p>Log every SQL statement (INSERT, UPDATE, DELETE). Follower parses and executes statements.</p>
+    <h3>Statement-Based Replication: Failures</h3>
+    <table>
+      <tr>
+        <th>Failure Mode</th>
+        <th>Description</th>
+        <th>Example</th>
+      </tr>
+      <tr>
+        <td><strong>Nondeterministic Functions</strong></td>
+        <td><code>NOW()</code>, <code>RAND()</code> produce different values per replica</td>
+        <td><code>INSERT INTO events (timestamp) VALUES (NOW())</code> — each replica records different time</td>
+      </tr>
+      <tr>
+        <td><strong>Concurrency Dependency</strong></td>
+        <td>Autoincrement, conditional updates must execute in identical order across all nodes</td>
+        <td><code>UPDATE table SET id=NEXT_ID() WHERE ...</code> — order matters; failures cascade</td>
+      </tr>
+      <tr>
+        <td><strong>Side Effects</strong></td>
+        <td>Triggers, stored procedures, UDFs may produce different side effects if execution order differs</td>
+        <td>Trigger fires during statement; replica's trigger fires at different logical time → inconsistency</td>
+      </tr>
+    </table>
+
+    <h3>Write-Ahead Log (WAL) Replication</h3>
     <div class="pro-con-grid">
       <div class="pro-card">
         <h3>✅ Advantages</h3>
         <ul>
-          <li>Compact log (SQL text is small).</li>
-          <li>Human-readable for debugging.</li>
-          <li>Version-agnostic (same SQL runs on different versions).</li>
+          <li>Exact byte-level replication; no ambiguity</li>
+          <li>Handles all statement types, including nondeterministic functions</li>
+          <li>Used by PostgreSQL, Oracle</li>
         </ul>
       </div>
       <div class="con-card">
-        <h3>❌ Critical Problems</h3>
+        <h3>❌ Disadvantages</h3>
         <ul>
-          <li><strong>NOW(), RAND()</strong> nondeterministic—each replica generates different values.</li>
-          <li><strong>Autoincrement, conditional UPDATEs</strong> order-dependent; must execute identically on all replicas.</li>
-          <li><strong>Triggers, stored procedures, UDFs</strong> side effects diverge per replica.</li>
+          <li>Tightly couples replication to storage engine format</li>
+          <li>Followers cannot use different storage engine versions</li>
+          <li>Large log size (low-level details)</li>
         </ul>
       </div>
     </div>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Workaround complexity</strong> Leader must replace nondeterministic calls with fixed values before logging (e.g., <code>NOW() → 2024-01-15 10:30:45</code>). Adds implementation burden.</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Limited adoption</strong> MySQL <5.1 used this; now fallback only. VoltDB uses statement-based but requires deterministic transactions (restricted programming model).</span>
-      </li>
-    </ul>
 
-    <h3>2. Write-Ahead Log (WAL) Shipping</h3>
-    <p><strong>Concept:</strong> Storage engines already append all writes to WAL (used for crash recovery, main source of truth for mutations). Ship exact log bytes across network; follower rebuilds storage structure.</p>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Core idea</strong> WAL is already maintained by storage engine (B-tree, LSM) for durability. Replication reuses this log—efficient, no translation needed.</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Storage engine coupling</strong> WAL describes low-level byte changes per disk block, tightly coupled to storage format (B-tree node layout, LSM memtable structure). Version mismatch = replication incompatibility.</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Zero-downtime upgrades blocked</strong> Cannot upgrade follower to newer software version (different WAL format). Forces full outage + snapshot + resync. Operational nightmare in large systems.</span>
-      </li>
-    </ul>
-    <div class="callout callout-danger">
-      <strong>PostgreSQL, Oracle Limitation</strong> Both use WAL shipping as primary replication method. Cannot perform zero-downtime rolling upgrades of replication followers (major operational constraint).
-    </div>
-
-    <h3>3. Logical (Row-Based) Replication</h3>
-    <p>Encode row changes in <strong>semantic format</strong> decoupled from storage engine. Follower interprets changes based on logical meaning, not physical storage layout.</p>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Version flexibility</strong> Semantic format allows follower to use different storage engine version. Follower can upgrade independently. Enables zero-downtime rolling upgrades (promote replica, upgrade leader, re-replicate).</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Semantic clarity</strong> Log describes rows affected, not bytes modified. Easier to understand, debug, audit mutations.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>Slightly larger log</strong> Encodes row IDs, column values, not just byte offsets. Storage overhead moderate (still compact compared to statements).</span>
-      </li>
-    </ul>
-  </section>
-
-  <!-- SECTION 9: CONCURRENCY & HAPPENS-BEFORE -->
-  <section id="concurrency" data-section-id="concurrency">
-    <h2><span class="section-num">09</span>Concurrency, Happens-Before, and Defining Consistency</h2>
-    
-    <div class="diagram-container">
-      <div class="diagram-title">Happens-Before Relation (Event Ordering)</div>
-      <div style="padding:16px; background:rgba(56,139,253,.05); border-radius:8px; font-size:13px; line-height:1.6;">
-        <strong>Operation A happens-before B if:</strong><br>
-        ✔ B knows about A (received its result)<br>
-        ✔ B depends on A (needs A's output)<br>
-        ✔ B builds upon A (chains causally)<br><br>
-        <strong>Concurrency definition:</strong> A and B concurrent ⟺ neither happens-before the other (neither knows about the other)<br><br>
-        <strong>Trichotomy:</strong> For any two ops A, B: (1) A → B, OR (2) B → A, OR (3) A ∥ B
+    <h3>Logical Log (Row-Based) Replication</h3>
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>✅ Advantages</h3>
+        <ul>
+          <li>Decoupled from storage engine; more portable</li>
+          <li>Followers can run different versions, even different databases</li>
+          <li>External tools (Kafka, CDC systems) can consume for analytics</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>❌ Disadvantages</h3>
+        <ul>
+          <li>More verbose than WAL for large bulk operations</li>
+          <li>Requires row-level granularity (not suitable for column-based stores)</li>
+        </ul>
       </div>
     </div>
 
-    <h3>Key Insight: Physical Time is Irrelevant</h3>
-    <p>Exact wall-clock time doesn't define concurrency. Two operations may have a time gap but still be concurrent if network prevented mutual awareness.</p>
-    
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Relativity principle</strong> Connected to special relativity: information cannot travel faster than light. Two distant events cannot affect each other if time between them is shorter than light travel time. Network analog: two nodes separated by latency cannot coordinate if message round-trip exceeds operation gap.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟣</span>
-        <span class="il-text"><strong>Network caveat</strong> Two operations can be concurrent despite physical time gap if network slowness or partition prevented one from knowing about the other. Clock skew doesn't matter; causality matters.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Practical consequence</strong> Don't use wall-clock timestamps to order events in distributed systems. Use logical clocks (version numbers, vector clocks) to capture causal relationships.</span>
-      </li>
-    </ul>
-
-    <div class="highlight-band">
-      <h3>💡 Why This Matters for Replication</h3>
-      <p>Concurrency definition based on causality (not physical time) enables leaderless systems. Nodes don't need synchronized clocks to detect which writes conflict. Version vectors capture concurrency precisely.</p>
+    <div class="callout callout-info">
+      <strong>TREND</strong> Modern systems favor <strong>logical logs</strong> (MySQL binlog, PostgreSQL logical decoding) for flexibility. WAL remains dominant for single-node performance; multi-leader scenarios prefer logical isolation.
     </div>
   </section>
 
-  <!-- SECTION 10: VERSION NUMBER ALGORITHM -->
+  <!-- ========== DATA FLOW SEQUENCE ========== -->
+  <section id="data-flow" data-section-id="data-flow">
+    <h2><span class="section-num">08</span> Data Flow & Replication Sequence</h2>
+
+    <div class="seq-diagram">
+      <div class="seq-participants">
+        <div class="seq-actor"><div class="seq-actor-box">Client</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Leader</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Follower 1</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Follower 2</div><div class="seq-actor-line"></div></div>
+      </div>
+      <div class="seq-messages">
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">WRITE request</div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">Log record</div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">Log record</div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">Log record</div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line"></div><div class="seq-msg-head">▶</div></div><div class="seq-msg-label">ACK applied</div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line-return"></div><div class="seq-msg-head-left">◀</div></div><div class="seq-msg-label">ACK to leader</div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg"><div class="seq-msg-arrow"><div class="seq-msg-line-return"></div><div class="seq-msg-head-left">◀</div></div><div class="seq-msg-label">ACK to client</div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Replication Flow Breakdown</h3>
+    <ol style="margin-left:20px;">
+      <li><strong>Client sends WRITE request</strong> to leader node (only destination for writes)</li>
+      <li><strong>Leader processes & persists</strong> to local storage (durability checkpoint)</li>
+      <li><strong>Leader generates log record</strong> containing the change (statement, WAL block, or row delta)</li>
+      <li><strong>Log record streams asynchronously/synchronously</strong> to all followers (depending on sync mode)</li>
+      <li><strong>Each follower applies</strong> the log record to its local storage in identical order</li>
+      <li><strong>Followers acknowledge</strong> processing to leader (if synchronous/semi-sync mode)</li>
+      <li><strong>Leader acknowledges to client</strong> (once durability requirements met)</li>
+      <li><strong>Subsequent READs</strong> can target any follower (read scaling benefit)</li>
+    </ol>
+
+    <div class="callout callout-success">
+      <strong>KEY PROPERTY</strong> Followers apply the <em>same log in the same order</em>. This deterministic replay ensures replicas remain consistent even if followers are temporarily slow or disconnected (catch-up recovery).
+    </div>
+  </section>
+
+  <!-- ========== CONCURRENCY & HAPPENS-BEFORE ========== -->
+  <section id="concurrency" data-section-id="concurrency">
+    <h2><span class="section-num">09</span> Concurrency & Happens-Before Relationship</h2>
+
+    <div class="insight-strip">
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">📊</span>
+        <div class="ic-title">Happens-Before Definition</div>
+        <div class="ic-body">Operation A happens before B if B knows about A, depends on A, or builds upon A's result</div>
+      </div>
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">⚡</span>
+        <div class="ic-title">Concurrency Definition</div>
+        <div class="ic-body">Two operations concurrent if neither happens before the other (neither knows about each other)</div>
+      </div>
+      <div class="insight-card insight-teal">
+        <span class="ic-icon">🌐</span>
+        <div class="ic-title">Three-Way Partition</div>
+        <div class="ic-body">For any two operations A, B: either A→B (A before B), B→A (B before A), or A||B (concurrent)</div>
+      </div>
+      <div class="insight-card insight-teal">
+        <span class="ic-icon">🚀</span>
+        <div class="ic-title">Relativity Twist</div>
+        <div class="ic-body">Network delays can make operations concurrent even if physical timing would theoretically allow causality</div>
+      </div>
+    </div>
+
+    <h3>Physics Analogy: Special Relativity</h3>
+    <div class="highlight-band">
+      <h3>🌌 Information Cannot Travel Faster Than Light</h3>
+      <p>Two events at distance D apart cannot affect each other if time between events &lt; D ÷ speed of light. Distributed systems apply same principle: <strong>exact physical time is irrelevant for defining concurrency; only what each operation knows matters.</strong></p>
+    </div>
+
+    <h3>Happens-Before Relation Properties</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Transitive</strong> If A→B and B→C, then A→C (chain of causality)</span>
+      </li>
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Partial Order</strong> Not all pairs (A,B) are ordered; some remain concurrent</span>
+      </li>
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Knowledge-Based</strong> Defined by what information flows, not wall-clock time</span>
+      </li>
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Causal Consistency</strong> Systems respecting happens-before prevent causality violations</span>
+      </li>
+    </ul>
+
+    <div class="callout callout-info">
+      <strong>IMPACT</strong> Happens-before formalizes intuition: two operations are concurrent iff neither can influence the other. This is the foundation for detecting conflicts in multi-leader & leaderless systems.
+    </div>
+  </section>
+
+  <!-- ========== VERSION-BASED CONCURRENCY DETECTION ========== -->
   <section id="version-numbers" data-section-id="version-numbers">
-    <h2><span class="section-num">10</span>Version Number Algorithm: Single-Replica Conflict Detection</h2>
+    <h2><span class="section-num">10</span> Version-Based Concurrency Detection Algorithm</h2>
+
+    <h3>Single-Replica Version Number Scheme</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔢</span>
+        <div class="ic-title">Data Structure</div>
+        <div class="ic-body">Server maintains integer version number for every key; incremented with each write to that key; stored alongside value</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">📖</span>
+        <div class="ic-title">Client-Server Protocol</div>
+        <div class="ic-body">READ: Server returns all non-overwritten values + latest version. WRITE: Client sends new value + version from prior read. Server overwrites values ≤ sent version; keeps higher versions as siblings</div>
+      </div>
+    </div>
+
+    <h3>Client-Server Protocol Detailed</h3>
+    <table>
+      <tr>
+        <th>Step</th>
+        <th>Action</th>
+        <th>Key Detail</th>
+      </tr>
+      <tr>
+        <td><strong>Read</strong></td>
+        <td>Client requests key from server</td>
+        <td>Server returns all non-overwritten values <em>plus latest version number</em>. Client must read before write.</td>
+      </tr>
+      <tr>
+        <td><strong>Write Prep</strong></td>
+        <td>Client merges all received values</td>
+        <td>Client combines siblings from read into single value (application-specific merge logic)</td>
+      </tr>
+      <tr>
+        <td><strong>Write</strong></td>
+        <td>Client sends new value + version from read</td>
+        <td>Must include version number received in prior read; identifies what client "knows about"</td>
+      </tr>
+      <tr>
+        <td><strong>Server Processing</strong></td>
+        <td>Overwrite values at sent version and below</td>
+        <td>Sent version marks boundary: ≤ sent version = client saw these, so overwrite. &gt; sent version = concurrent with incoming write, keep as sibling</td>
+      </tr>
+    </table>
+
+    <h3>Shopping Cart Example (Figure 5-13 Walkthrough)</h3>
+    <p><strong>5 writes, 2 clients, single replica, building shopping cart:</strong></p>
     
-    <h3>Core Algorithm</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Server: Maintain Version Per Key</h4
+          <h4>Client 1: Add Milk</h4>
+          <p>Client 1 adds <code>milk</code> → Server: <code>{milk}@v1</code>. Version 1 created. State: single item.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Client 2: Add Eggs (Unaware of Milk)</h4>
+          <p>Client 2 reads cart (empty from its perspective), adds <code>eggs</code> → Server: <code>{milk}@v1, {eggs}@v2</code>. v2 is concurrent with v1; both coexist.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Client 1: Add Flour (Merge Milk)</h4>
+          <p>Client 1 reads {milk}@v1, adds flour → sends <code>{milk,flour}@v1</code>. Server overwrites v1 (milk), keeps v2 (eggs) as sibling → <code>{milk,flour}@v3, {eggs}@v2</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Client 2: Merge Received Values + Add Ham</h4>
+          <p>Client 2 reads <code>{milk}@v1, {eggs}@v2</code>, merges to <code>{milk,eggs}</code>, adds ham → sends <code>{eggs,milk,ham}@v2</code>. Server overwrites v2, concurrent with v3 → <code>{milk,flour}@v3, {eggs,milk,ham}@v4</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Client 1: Merge Stale + Add Bacon</h4>
+          <p>Client 1 merges {milk,flour}@v3 + {eggs} (stale read), adds bacon → sends <code>{milk,flour,eggs,bacon}@v3</code>. Overwrites v3, concurrent with v4 → <code>{milk,flour,eggs,bacon}@v3, {eggs,milk,ham}@v4</code>. Final: two siblings, no data lost.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <strong>CRITICAL INSIGHT</strong> Server distinguishes <em>overwrites</em> (version ≤ sent) from <em>concurrent writes</em> (version &gt; sent) using version numbers alone. Does not interpret values. This enables automatic detection without application knowledge.
+    </div>
+
+    <h3>Write-Without-Version Behavior</h3>
+    <p>If client sends write <em>without</em> version number: creates sibling concurrent with <em>all</em> existing versions; overwrites nothing. Leads to unbounded sibling explosion if not careful.</p>
+  </section>
+
+  <!-- ========== CONFLICT RESOLUTION & MERGING ========== -->
+  <section id="conflict-resolution" data-section-id="conflict-resolution">
+    <h2><span class="section-num">11</span> Conflict Resolution & Sibling Merging</h2>
+
+    <h3>The Merge Problem</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">⚠️</span>
+        <div class="ic-title">Siblings Definition</div>
+        <div class="ic-body">Concurrent values coexisting in system (Riak terminology). Equivalent to multi-leader conflict resolution problem.</div>
+      </div>
+      <div class="insight-card insight-red">
+        <span class="ic-icon">💥</span>
+        <div class="ic-title">Data Loss Risk</div>
+        <div class="ic-body">Naive approaches (last-write-wins) discard concurrent writes. Shopping cart conflict resolution must preserve all items.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔧</span>
+        <div class="ic-title">Application Burden</div>
+        <div class="ic-body">Merging is application-level; system cannot know correct resolution without domain knowledge</div>
+      </div>
+    </div>
+
+    <h3>Union Merge Strategy (Add-Only Pattern)</h3>
+    <div class="approach-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="approach-card">
+        <h3 style="color:var(--accent2)">✅ Union Merge for Additions</h3>
+        <p><strong>Strategy:</strong> Take union of all sibling values. Works perfectly for add-only data structures (shopping carts, tags, sets).</p>
+        <p style="margin-top:12px;"><strong>Example:</strong> <code>{milk,flour} ∪ {eggs,milk,ham} = {milk,flour,eggs,ham}</code> ✓ All items preserved.</p>
+      </div>
+      <div class="approach-card">
+        <h3 style="color:var(--accent3)">❌ Union Merge Fails on Deletions</h3>
+        <p><strong>Problem:</strong> Removed items reappear when merging union of siblings where one version deleted item.</p>
+        <p style="margin-top:12px;"><strong>Example:</strong> v3={milk,flour,eggs,bacon}, v4={eggs,milk,ham}. If v4 had deleted <code>flour</code>, union recreates it—wrong!</p>
+      </div>
+    </div>
+
+    <h3>Tombstone Solution for Deletions</h3>
+    <div class="highlight-band">
+      <h3>🪦 Tombstones: Deletion Markers with Version Numbers</h3>
+      <p><strong>Mechanism:</strong> Item deletion is not erased; instead, a <em>tombstone marker</em> with appropriate version number is created. During sibling merge, tombstones prevent deleted items from reappearing.</p>
+      <p><strong>Example:</strong> v4 deletes <code>flour</code> → {eggs, milk, ham, TOMBSTONE(flour@v4)}. Union preserves tombstone; <code>flour</code> stays deleted even if v3 contained it.</p>
+    </div>
+
+    <h3>Automatic Conflict Resolution via CRDTs</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-green">
+        <span class="ic-icon">🤖</span>
+        <div class="ic-title">CRDT (Conflict-free Replicated Data Type)</div>
+        <div class="ic-body">Data structures that automatically merge siblings sensibly without application code. Preserves deletions correctly; avoids complex error-prone manual merging.</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">📦</span>
+        <div class="ic-title">Riak Datatype Support</div>
+        <div class="ic-body">Riak uses CRDT family (LWW Register, OR-Set, Counter, Map) to handle common conflicts automatically</div>
+      </div>
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">🧮</span>
+        <div class="ic-title">Common CRDT Types</div>
+        <div class="ic-body">OR-Set (add-remove sets), LWW-Register (last-write-wins), G-Counter (append-only), PN-Counter (increment/decrement)</div>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <strong>MODERN PRACTICE</strong> CRDTs eliminate manual conflict resolution for standard data types. Applications using Riak datatypes or CRDT libraries avoid boilerplate merge logic and data loss risks.
+    </div>
+  </section>
+
+  <!-- ========== VERSION VECTORS ========== -->
+  <section id="version-vectors" data-section-id="version-vectors">
+    <h2><span class="section-num">12</span> Version Vectors for Multi-Replica Systems</h2>
+
+    <h3>Single Version Number Limitation</h3>
+    <div class="callout callout-warn">
+      <strong>PROBLEM</strong> Shopping cart example used single replica. Single version number <em>cannot capture dependencies</em> when multiple replicas accept concurrent writes. Example: Client reads from Replica A (v5), then writes to Replica B. Replica B cannot determine if v5 from Replica A happened before or concurrent with its own version numbers.
+    </div>
+
+    <h3>Version Vector Structure</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">📊</span>
+        <div class="ic-title">Definition</div>
+        <div class="ic-body">Collection of version numbers, one per replica. Encodes causality across replica boundaries.</div>
+      </div>
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">🔢</span>
+        <div class="ic-title">Per-Replica Version Tracking</div>
+        <div class="ic-body">Each replica increments its own version when processing writes. Each replica tracks version numbers seen from all other replicas.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔗</span>
+        <div class="ic-title">Causality Encoding</div>
+        <div class="ic-body">Vector captures which writes have been seen; prevents causal ordering violations across replicas</div>
+      </div>
+    </div>
+
+    <h3>Multi-Replica Protocol (Parallel to Single-Replica)</h3>
+    <table>
+      <tr>
+        <th>Step</th>
+        <th>Action</th>
+        <th>Version Vector Role</th>
+      </tr>
+      <tr>
+        <td><strong>Read</strong></td>
+        <td>Client reads from any replica</td>
+        <td>Server returns value + version vector (Riak encodes as "causal context" string)</td>
+      </tr>
+      <tr>
+        <td><strong>Write</strong></td>
+        <td>Client sends value + version vector from read</td>
+        <td>Any replica can accept write; vector identifies prior state; enables conflict detection across replicas</td>
+      </tr>
+      <tr>
+        <td><strong>Replication</strong></td>
+        <td>Replica propagates write to other replicas</td>
+        <td>Vector accompanies write; other replicas merge vector into their state; enables sibling detection</td>
+      </tr>
+      <tr>
+        <td><strong>Merge Decision</strong></td>
+        <td>Replica compares vectors</td>
+        <td>If vectors incomparable (neither dominates), writes are concurrent → create siblings</td>
+      </tr>
+    </table>
+
+    <h3>Key Property: Safe Cross-Replica Reads & Writes</h3>
+    <div class="highlight-band">
+      <h3>✅ No Data Loss Across Replicas</h3>
+      <p><strong>Safe pattern:</strong> Read from Replica A, write to Replica B, read from Replica C, write to Replica A. <strong>Result:</strong> Siblings created if concurrent, but <em>no data lost</em> (assuming correct merging logic). Version vector ensures causal consistency regardless of replica routing.</p>
+    </div>
+
+    <h3>Dotted Version Vectors (Riak 2.0)</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Riak 2.0 Innovation</strong> Most interesting variant of version vectors. Mechanically similar to shopping cart example but extended across replicas</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Details Deferred</strong> Conceptually extends version vectors with logical clocks; provides more precise causality tracking than traditional vectors</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Practical Impact</strong> Reduces false concurrent detection; minimizes sibling explosion in high-concurrency scenarios</span>
+      </li>
+    </ul>
+
+    <div class="callout callout-info">
+      <strong>VECTOR COMPARISON</strong> Version vectors enable pairwise comparison: A → B (A happened before B), B → A, or A||B (concurrent). This is the foundation for distinguishing overwrites from concurrent writes in leaderless systems (Dynamo, Riak, Cassandra).
+    </div>
+  </section>
+
+  <!-- ========== HANDLING NODE OUTAGES ========== -->
+  <section id="node-outages" data-section-id="node-outages">
+    <h2><span class="section-num">13</span> Handling Node Outages & Recovery</h2>
+
+    <h3>Follower Failure: Catch-Up Recovery (Simple)</h3>
+    <div class="approach-card" style="background:rgba(63,185,80,.07);border:1px solid rgba(63,185,80,.25);">
+      <h3 style="color:var(--accent2);margin:0 0 12px;">✅ Follower Catch-Up</h3>
+      <p><strong>Process:</strong> Each follower maintains local log of received changes. On restart/reconnection: replays missing changes from leader using stored transaction position.</p>
+      <p style="margin-top:8px;"><strong>Advantage:</strong> Simple because exact position in replication log is known (stored locally). Leader streams changes since that position; follower deterministically replays.</p>
+      <p style="margin-top:8px;"><strong>Example:</strong> Follower crashes at binlog position 500. On restart, reads "last known position: 500" from disk, requests changes 501+, replays automatically.</p>
+    </div>
+
+    <h3>Leader Failure: Failover (Complex)</h3>
+    <p>Previously detailed in <a href="#failover" style="color:var(--accent);text-decoration:underline;">Section 06</a>. Summary:</p>
+    
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Detect Failure (Imprecise)</h4>
+          <p>Timeout on heartbeat; indistinguishable from network partition or slow machine.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Choose New Leader (Consensus)</h4>
+          <p>Elect replica with most up-to-date data; minimize data loss.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Reconfigure (Routing Change)</h4>
+          <p>Update clients to target new leader; force old leader into follower role.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent3)">3</div>
+        <div class="stat-label">Failover Steps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent3)">3</div>
+        <div class="stat-label">Hazard Types</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent2)">30</div>
+        <div class="stat-label">Typical Timeout (sec)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== KEY COMPONENTS ========== -->
+  <section id="components" data-section-id="components">
+    <h2><span class="section-num">14</span> Key Components & Roles</h2>
+
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Leader/Master</strong> Single write authority; maintains replication log; propagates changes to all followers; point of failure for write availability</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Followers/Read Replicas</strong> Read-only; consume replication log; apply writes in order; serve read queries; elected as new leader on leader failure</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>Replication Log</strong> Ordered sequence of write operations (statement, WAL, or logical); followers deterministically replay; enables catch-up recovery</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Version Number / Version Vector</strong> Per-key (single-replica) or per-replica (multi-replica) counter; distinguishes overwrites from concurrent writes; enables conflict detection without application knowledge</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Tombstone Marker</strong> Deletion record with version number; prevents deleted items from reappearing during sibling merge; core of correct CRDT deletion semantics</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>CRDT (Conflict-Free Replicated Data Type)</strong> Data structure (OR-Set, LWW-Register, Counter) that automatically merges siblings correctly; eliminates manual conflict resolution</span>
+      </li>
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Failover Detector</strong> Monitors leader health via heartbeat/timeout; initiates election on failure detection; prone to false positives</span>
+      </li>
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Election Mechanism</strong> Majority-based or controller-appointed; selects new leader; consensus problem (Chapter 9); requires quorum to prevent split-brain</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ========== THREE REPLICATION APPROACHES ========== -->
+  <section id="approaches" data-section-id="approaches">
+    <h2><span class="section-num">15</span> Three Replication Models: Architecture Comparison</h2>
+
+    <div class="compare-grid" style="grid-template-columns: repeat(3, 1fr);gap:2px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div class="compare-header" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);">
+        <div class="compare-cell"><strong>Property</strong></div>
+        <div class="compare-cell"><strong>Single-Leader</strong></div>
+        <div class="compare-cell"><strong>Multi-Leader</strong></div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);">
+        <div class="compare-cell">Write Authority</div>
+        <div class="compare-cell good">One leader</div>
+        <div class="compare-cell neutral">Multiple leaders</div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);">
+        <div class="compare-cell">Conflict Resolution</div>
+        <div class="compare-cell good">None (ordered writes)</div>
+        <div class="compare-cell bad">Complex (application-level)</div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);">
+        <div class="compare-cell">Write Availability</div>
+        <div class="compare-cell bad">Leader failure = no writes</div>
+        <div class="compare-cell good">Continues if any leader alive</div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);">
+        <div class="compare-cell">Latency (multi-region)</div>
+        <div class="compare-cell bad">All writes cross WAN to single leader</div>
+        <div class="compare-cell good">Local writes to nearest leader</div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);">
+        <div class="compare-cell">Replication Delay</div>
+        <div class="compare-cell neutral">Single point of propagation</div>
+        <div class="compare-cell bad">Multi-hop delays</div>
+      </div>
+      <div class="compare-row" style="display:grid;grid-template-columns:repeat(3,1fr);">
+        <div class="compare-cell">Implementation Complexity</div>
+        <div class="compare-cell good">Simple</div>
+        <div class="compare-cell bad">Very complex</div>
+      </div>
+    </div>
 </main>
 <script>
 (function() {

@@ -1,14 +1,13 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA Chapter 2: Data Models and Query Languages</title>
+  <title>DDIA Ch02: Data Models and Query Languages</title>
   <style>
     :root {
       --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
-      --border: #30363d; --accent: #3b82f6; --accent2: #3fb950;
+      --border: #30363d; --accent: #388bfd; --accent2: #3fb950;
       --accent3: #f78166; --accent4: #d2a8ff; --accent5: #ffa657;
       --text: #e6edf3; --text-muted: #8b949e; --text-dim: #484f58;
       --radius: 8px; --font-mono: 'JetBrains Mono','Fira Code',monospace;
@@ -127,6 +126,21 @@
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    /* SEQUENCE DIAGRAM */
+    .seq-diagram { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
+    .seq-participants { display:flex; gap:0; justify-content:flex-start; margin-bottom:0; }
+    .seq-actor { display:flex; flex-direction:column; align-items:center; min-width:120px; flex:1; }
+    .seq-actor-box { background:var(--surface); border:1px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; color:var(--accent); white-space:nowrap; }
+    .seq-actor-line { width:2px; background:var(--border); flex:1; min-height:24px; }
+    .seq-messages { display:flex; flex-direction:column; gap:0; }
+    .seq-row { display:flex; align-items:center; gap:0; min-height:40px; }
+    .seq-spacer { min-width:120px; flex:1; display:flex; justify-content:center; }
+    .seq-spacer-line { width:2px; background:var(--border); height:40px; }
+    .seq-msg { flex:1; display:flex; flex-direction:column; align-items:stretch; justify-content:center; }
+    .seq-msg-arrow { display:flex; align-items:center; gap:4px; }
+    .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
+    .seq-msg-head { color:var(--accent); font-size:14px; }
+    .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
     /* VISUAL SUMMARY */
     .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
     .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
@@ -201,625 +215,982 @@
 
 <div id="sidebar">
   <div id="sidebar-header">
-    <h1>🗄️ DDIA Ch02</h1>
+    <h1>DDIA Ch02</h1>
     <p>Data Models & Query Languages</p>
   </div>
   <nav>
     <div class="section-label">Core Concepts</div>
-    <a href="#visual-summary">At a Glance</a>
-    <a href="#layering">Data Model Layering</a>
-    <a href="#history">Relational vs NoSQL</a>
-    <a href="#impedance">Impedance Mismatch</a>
-
-    <div class="section-label">Data Relationships</div>
-    <a href="#relationships">One-to-Many Patterns</a>
-    <a href="#normalization">Normalization & IDs</a>
-    <a href="#joins">Join Problem</a>
-
-    <div class="section-label">Model Evolution</div>
-    <a href="#document-advantages">Document Model Benefits</a>
-    <a href="#tradeoffs">Model Tradeoffs</a>
+    <a href="#visual-summary" class="active">Visual Summary</a>
+    <a href="#abstraction-layers">Abstraction Layers</a>
+    <a href="#relational-dominance">Relational Dominance</a>
+    <a href="#nosql-shift">NoSQL Movement</a>
     
-
-    <div class="section-label">System Reference</div>
+    <div class="section-label">Data Models</div>
+    <a href="#impedance-mismatch">Impedance Mismatch</a>
+    <a href="#document-model">Document Model</a>
+    <a href="#relationships">Relationship Patterns</a>
+    <a href="#model-evolution">Model Evolution</a>
     
-    
-    
-    
+    <div class="section-label">Systems & Approaches</div>
+    <a href="#database-systems">Database Systems</a>
+    <a href="#query-languages">Query Languages</a>
+    <a href="#schema-evolution">Schema Evolution</a>
+    <a href="#key-takeaways">Key Takeaways</a>
   </nav>
 </div>
 
 <div id="main">
 
   <div class="hero">
-    <div class="badge">📚 CHAPTER 2 ANALYSIS</div>
-    <h1>Data Models and <span>Query Languages</span></h1>
-    <p>The foundational patterns that shape how applications interact with data—from 4-layer abstractions and the relational model's 25-year dominance to the NoSQL revolution and impedance mismatch solved by document databases.</p>
+    <div class="badge">📚 DDIA CHAPTER 2</div>
+    <h1>Data Models & <span>Query Languages</span></h1>
+    <p>Understanding the fundamental abstractions that bridge real-world problems to storage systems, and how to choose the right model for your application's unique requirements.</p>
     <div class="meta">
-      <div class="meta-item"><span class="dot" style="background:#3fb950;"></span> Source: Designing Data-Intensive Applications (Kleppmann)</div>
-      <div class="meta-item"><span class="dot" style="background:#f78166;"></span> Era: 1970–2016</div>
-      <div class="meta-item"><span class="dot" style="background:#3b82f6;"></span> Focus: Architecture & Abstraction</div>
+      <div class="meta-item">
+        <div class="dot" style="background:var(--accent);"></div>
+        <span>Core Fundamentals</span>
+      </div>
+      <div class="meta-item">
+        <div class="dot" style="background:var(--accent2);"></div>
+        <span>Historical Context</span>
+      </div>
+      <div class="meta-item">
+        <div class="dot" style="background:var(--accent3);"></div>
+        <span>Trade-offs & Design</span>
+      </div>
     </div>
   </div>
 
-  <!-- SECTION: VISUAL SUMMARY -->
+  <!-- SECTION 01: VISUAL SUMMARY -->
   <section id="visual-summary" data-section-id="visual-summary">
     <h2><span class="section-num">01</span> At a Glance</h2>
     <div class="visual-summary">
       <div class="vs-card">
         <div class="vs-icon">🏗️</div>
         <div class="vs-body">
-          <div class="vs-label">Core Insight</div>
-          <div class="vs-value">4-Layer Stack</div>
-          <div class="vs-sub">Real world → Objects → Data model → Bytes → Hardware</div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-icon">⏱️</div>
-        <div class="vs-body">
-          <div class="vs-label">Relational Dominance</div>
-          <div class="vs-value">25–30 Years</div>
-          <div class="vs-sub">1970 (Codd) to 2000s (Web explosion)</div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-icon">🔄</div>
-        <div class="vs-body">
-          <div class="vs-label">NoSQL Era</div>
-          <div class="vs-value">2009–Present</div>
-          <div class="vs-sub">Polyglot persistence & multiple models coexist</div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-icon">🎯</div>
-        <div class="vs-body">
-          <div class="vs-label">Critical Decision Point</div>
-          <div class="vs-value">Model Choice</div>
-          <div class="vs-sub">Profoundly affects what software can do</div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-icon">⚙️</div>
-        <div class="vs-body">
-          <div class="vs-label">Impedance Gap</div>
-          <div class="vs-value">OOP ↔ Relational</div>
-          <div class="vs-sub">Document model offers native alignment</div>
+          <div class="vs-label">Central Question</div>
+          <div class="vs-value">Which Data Model?</div>
+          <div class="vs-sub">4-layer abstraction determining application design</div>
         </div>
       </div>
       <div class="vs-card">
         <div class="vs-icon">📊</div>
         <div class="vs-body">
-          <div class="vs-label">Evolution Pattern</div>
-          <div class="vs-value">Tree → Graph</div>
-          <div class="vs-sub">One-to-many → Many-to-many relationships</div>
+          <div class="vs-label">Dominant Era</div>
+          <div class="vs-value">Relational: 25–30 yrs</div>
+          <div class="vs-sub">Mid-1980s onward; defeated all competitors</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">🔄</div>
+        <div class="vs-body">
+          <div class="vs-label">Paradigm Shift</div>
+          <div class="vs-value">NoSQL (2009)</div>
+          <div class="vs-sub">Polyglot persistence; multiple models coexist</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">⚡</div>
+        <div class="vs-body">
+          <div class="vs-label">Key Trade-off</div>
+          <div class="vs-value">Impedance Mismatch</div>
+          <div class="vs-sub">OO objects ≠ relational tables; model choice bridges gap</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">🌐</div>
+        <div class="vs-body">
+          <div class="vs-label">Many-to-Many Scaling</div>
+          <div class="vs-value">Graph Optimal</div>
+          <div class="vs-sub">As interconnections grow, graph > relational > document</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">💾</div>
+        <div class="vs-body">
+          <div class="vs-label">Future State</div>
+          <div class="vs-value">Specialized DBs</div>
+          <div class="vs-sub">Relational + NoSQL + Graph + Time Series coexist</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SECTION: DATA MODEL LAYERING -->
-  <section id="layering" data-section-id="layering">
-    <h2><span class="section-num">02</span> Data Model Layering: The 4-Layer Stack</h2>
+  <!-- SECTION 02: ABSTRACTION LAYERS -->
+  <section id="abstraction-layers" data-section-id="abstraction-layers">
+    <h2><span class="section-num">02</span> The 4-Layer Data Model Abstraction</h2>
     <div class="diagram-container">
-      <div class="diagram-title">Abstraction Hierarchy</div>
-      <div style="display:flex; flex-direction:column; gap:0;">
-        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
-          <div class="box box-blue" style="flex:1;">Real World<small>Business domain, users, entities</small></div>
+      <div class="diagram-title">Complete Data Model Stack</div>
+      <div class="box-row" style="flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-orange" style="flex:1;">Real World<small>Business domain, entities, relationships</small></div>
         </div>
-        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
-        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
-          <div class="box box-purple" style="flex:1;">Application Objects / APIs<small>Domain models, service contracts</small></div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-purple" style="flex:1;">Application Objects<small>OO classes, data structures, domain models</small></div>
         </div>
-        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
-        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
-          <div class="box box-orange" style="flex:1;">General-Purpose Data Model<small>JSON, XML, Relational, Graph, etc.</small></div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-blue" style="flex:1;">Data Model (JSON/XML/SQL/Graph)<small>Relational, document, hierarchical, or graph structures</small></div>
         </div>
-        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
-        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
-          <div class="box box-green" style="flex:1;">Bytes / Memory / Disk / Network<small>Index structures, storage format</small></div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-green" style="flex:1;">Physical Storage<small>Bytes, disk layout, network serialization</small></div>
         </div>
-        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
-        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
-          <div class="box box-gray" style="flex:1;">Hardware Representation<small>CPU, RAM, disk controller logic</small></div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-gray" style="flex:1;">Hardware<small>Electrical signals, storage media, CPUs</small></div>
         </div>
       </div>
     </div>
 
-    <div class="callout callout-info">
-      <strong>KEY PRINCIPLE</strong> Each layer hides complexity below via clean abstraction boundaries. Multiple teams (database vendors, application developers) coordinate through these boundaries without exposing lower-layer details.
-    </div>
-
-    <h3>Why Layering Matters</h3>
+    <h3>Why Layers Matter</h3>
     <ul class="icon-list">
       <li>
         <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Separation of Concerns</strong>Database engineers don't need to know application domain logic; application developers don't need to know disk I/O patterns</span>
+        <span class="il-text"><strong>Clean Boundaries</strong> Each abstraction hides internal complexity from the layer above, enabling parallel development and independent team progress</span>
       </li>
       <li>
         <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Independent Evolution</strong>You can change query languages without rewriting applications; you can optimize storage engines without touching APIs</span>
-      </li>
-      <li>
-        <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>Assumption Encapsulation</strong>Each layer embodies assumptions about usage patterns and performance; mismatches surface at layer boundaries</span>
+        <span class="il-text"><strong>Technology Independence</strong> Changes in physical storage don't require rewriting application objects if the data model API remains stable</span>
       </li>
       <li>
         <span class="il-icon">🟣</span>
-        <span class="il-text"><strong>Mental Model Alignment</strong>The data model chosen at layer 3 profoundly shapes what can be efficiently expressed and queried across all layers</span>
+        <span class="il-text"><strong>Trade-off Crystallization</strong> Data model choice profoundly shapes software development approach—some operations become fast, others unsupported, and some feel natural while others awkward</span>
       </li>
     </ul>
 
-    <div class="highlight-band">
-      <h3>🏆 The Most Important Layer</h3>
-      <p>Data models are "perhaps the most important part of developing software." Model choice doesn't just affect performance—it shapes the <strong>conceptual boundaries</strong> of what the software can and cannot do. A poor model choice at this layer cascades problems through all layers above and below.</p>
+    <div class="callout callout-info">
+      <strong>CORE PRINCIPLE</strong> Every data model embodies assumptions about usage patterns. Mastery requires understanding not just the model itself, but the hidden assumptions embedded in its design.
     </div>
   </section>
 
-  <!-- SECTION: RELATIONAL VS NOSQL HISTORY -->
-  <section id="history" data-section-id="history">
-    <h2><span class="section-num">03</span> Relational Model Dominance & the NoSQL Revolution</h2>
-    <div class="timeline">
-      <div class="tl-item">
-        <h4>1970: Relational Model Born</h4>
-        <p><strong>Edgar Codd</strong> publishes foundational work. Becomes dominant paradigm for business transaction processing (sales, banking, reservations, inventory) and batch processing (invoicing, payroll, reporting).</p>
+  <!-- SECTION 03: RELATIONAL DOMINANCE -->
+  <section id="relational-dominance" data-section-id="relational-dominance">
+    <h2><span class="section-num">03</span> Relational Model Dominance: 25–30 Year Reign</h2>
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">📅</span>
+        <div class="ic-title">Timeline</div>
+        <div class="ic-body"><strong>Proposed 1970</strong> by Edgar Codd. <strong>Dominated mid-1980s–present</strong> (25–30+ years). Longest-reigning single data model in database history.</div>
       </div>
-      <div class="tl-item">
-        <h4>1970s–1980s: Network & Hierarchical Models</h4>
-        <p><strong>IMS (IBM's Information Management System, 1968)</strong> and <strong>CODASYL Model</strong> compete but fail to dethrone relational. Hierarchical model requires "programmer as navigator" pattern—developers manually traverse tree structures.</p>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">💼</span>
+        <div class="ic-title">Original Use Case</div>
+        <div class="ic-body">Business data processing on 1960s–70s mainframes: sales transactions, banking, airline reservations, stock-keeping, batch invoicing, payroll, reporting.</div>
       </div>
-      <div class="tl-item">
-        <h4>Late 1980s–1990s: Object Databases Emerge</h4>
-        <p>Attempt to eliminate impedance mismatch by storing objects directly. Fail to gain traction due to lack of standardization and limited query flexibility.</p>
-      </div>
-      <div class="tl-item">
-        <h4>Early 2000s: XML Databases</h4>
-        <p>Promise native hierarchical data support; never achieve mainstream adoption. Relational model remains entrenched.</p>
-      </div>
-      <div class="tl-item">
-        <h4>2009: NoSQL Movement Begins</h4>
-        <p>Twitter hashtag (later "Not Only SQL") for open-source, distributed, nonrelational databases. Driven by three forces: <strong>scalability</strong>, <strong>open-source preference</strong>, <strong>specialized query operations</strong>.</p>
-      </div>
-      <div class="tl-item">
-        <h4>2010s–Present: Polyglot Persistence</h4>
-        <p>No single model wins. Organizations standardize on <strong>multiple datastores</strong>: relational for transactional consistency, document for schema flexibility, graph for relationships, time-series for metrics.</p>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">🎯</span>
+        <div class="ic-title">Design Goal</div>
+        <div class="ic-body">Hide internal data representation behind a clean interface. Enable query optimization without exposing storage internals.</div>
       </div>
     </div>
 
-    <h3>Why NoSQL Emerged: Three Core Drivers</h3>
-    <div class="insight-strip">
-      <div class="insight-card insight-red">
-        <span class="ic-icon">📈</span>
-        <div class="ic-title">Scalability Gap</div>
-        <div class="ic-body">Relational databases struggled with massive datasets and high write throughput. NoSQL systems designed from ground up for horizontal scaling across clusters.</div>
+    <h3>Why Relational Won Every Battle (1970–2000)</h3>
+    <table>
+      <tr>
+        <th>Competitor Model</th>
+        <th>Era</th>
+        <th>Why Relational Prevailed</th>
+      </tr>
+      <tr>
+        <td><strong>Network Model (CODASYL)</strong></td>
+        <td>1970s–1980s</td>
+        <td><span class="check">✔ Relational</span> declarative; network required "programmer as navigator" (complex application code)</td>
+      </tr>
+      <tr>
+        <td><strong>Hierarchical Model (IBM IMS)</strong></td>
+        <td>1970s–1980s</td>
+        <td><span class="check">✔ Relational</span> generalized beyond tree-like structures; IMS struggled with many-to-many</td>
+      </tr>
+      <tr>
+        <td><strong>Object Databases</strong></td>
+        <td>Late 1980s–1990s</td>
+        <td><span class="check">✔ Relational</span> proved more flexible; object DBs generated hype but never reached mainstream adoption</td>
+      </tr>
+      <tr>
+        <td><strong>XML Databases</strong></td>
+        <td>Early 2000s</td>
+        <td><span class="check">✔ Relational</span> remained dominant; XML DBs achieved only niche adoption</td>
+      </tr>
+    </table>
+
+    <h3>The Query Optimizer Advantage</h3>
+    <div class="highlight-band">
+      <h3>🏆 Key Innovation: Automatic Execution Planning</h3>
+      <p><strong>Relational databases introduced the query optimizer—a single optimizer built once that all applications instantly benefit from.</strong> You declare <em>what</em> you want (SQL), and the optimizer automatically decides <em>how</em> to execute it: access paths, indexes, join methods. Competitors required application developers to manually specify execution strategies, creating a scalability bottleneck.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 04: NoSQL MOVEMENT -->
+  <section id="nosql-shift" data-section-id="nosql-shift">
+    <h2><span class="section-num">04</span> The NoSQL Movement (2009 Onward)</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">NoSQL Paradigm Shift</div>
+      <div class="box-row" style="flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-blue" style="flex:1;">2009: Twitter Meetup Hashtag #NoSQL<small>Originally: "Not Only SQL" (retroactive meaning)</small></div>
+        </div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-purple" style="flex:1;">Paradigm Shift, Not Single Technology<small>Umbrella term for non-relational approaches</small></div>
+        </div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-teal" style="flex:1;">Polyglot Persistence Era Emerges<small>Different applications, different data stores; relational + broad variety of nonrelational coexist</small></div>
+        </div>
       </div>
-      <div class="insight-card insight-purple">
-        <span class="ic-icon">💰</span>
-        <div class="ic-title">Open-Source Economics</div>
-        <div class="ic-body">Free/open-source preference over proprietary relational engines. Cost-per-operation at scale made NoSQL attractive for startups and web companies.</div>
+    </div>
+
+    <h3>Four Driving Forces</h3>
+    <div class="data-bar-list">
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>1. Scalability</strong> — Very large datasets, high write throughput</span>
+          <span class="data-bar-value">Critical</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:95%;background:var(--accent3)"></div></div>
       </div>
-      <div class="insight-card insight-blue">
-        <span class="ic-icon">🔍</span>
-        <div class="ic-title">Specialized Queries</div>
-        <div class="ic-body">Relational model's SQL didn't naturally express certain operations (full-text search, geospatial queries, time-series aggregations). NoSQL databases optimized for specific access patterns.</div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>2. Open Source</strong> — Preference for free, open-source software</span>
+          <span class="data-bar-value">High</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:75%;background:var(--accent5)"></div></div>
       </div>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">🎨</span>
-        <div class="ic-title">Schema Flexibility</div>
-        <div class="ic-body">Frustration with relational schema enforcement. Desire for <strong>schema-on-read</strong> (data structure inferred from application code) vs. <strong>schema-on-write</strong> (database enforces structure).</div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>3. Specialized Queries</strong> — Operations unsupported by relational model</span>
+          <span class="data-bar-value">Medium-High</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:70%;background:var(--accent)"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>4. Schema Flexibility</strong> — Dynamic, expressive models vs. rigid schemas</span>
+          <span class="data-bar-value">High</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:80%;background:var(--accent4)"></div></div>
       </div>
     </div>
 
     <div class="callout callout-success">
-      <strong>OUTCOME</strong> <strong>Polyglot Persistence</strong> became the norm. Organizations deploy relational for ACID transactions, document databases for flexible schemas, graph databases for relationship-heavy queries, and time-series databases for metrics—all in the same architecture.
+      <strong>POLYGLOT PERSISTENCE PRINCIPLE</strong> The future is not "relational vs. NoSQL"—it's relational databases coexisting with a broad ecosystem of specialized nonrelational datastores, each chosen for its strengths in specific use cases.
     </div>
   </section>
 
-  <!-- SECTION: IMPEDANCE MISMATCH -->
-  <section id="impedance" data-section-id="impedance">
-    <h2><span class="section-num">04</span> The Impedance Mismatch Problem</h2>
-    <div class="diagram-container">
-      <div class="diagram-title">Object-Relational Gap</div>
-      <div class="box-row" style="gap:30px; justify-content:center;">
-        <div class="box box-blue">
-          Object-Oriented Code<small>Classes, inheritance, polymorphism</small>
-        </div>
-        <div class="arrow" style="font-size:24px; color:#f78166;">🔗</div>
-        <div class="box box-red">
-          Relational Rows & Columns<small>Tables, primary/foreign keys, JOINs</small>
-        </div>
-      </div>
-    </div>
-
-    <p><strong>Impedance mismatch</strong> is the disconnect between object-oriented application code and relational's table/row/column structure. The term borrowed from electronics, where impedance mismatches cause signal reflections and power loss.</p>
-
-    <h3>Classic Example: User Profile (Résumé / LinkedIn Profile)</h3>
-
-    <h4>Relational Approach</h4>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Atomic fields as columns</strong><code>first_name</code>, <code>last_name</code>, <code>date_of_birth</code></span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>One-to-many relationships in separate tables</strong><code>positions</code>, <code>education</code>, <code>contact_info</code> each get their own table with foreign key to <code>users</code></span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Requires multi-way JOINs</strong>To fetch a complete profile, must JOIN users → positions, users → education, users → contact_info in single query, or execute multiple queries</span>
-      </li>
-    </ul>
-
-    <pre><code>-- Relational: Multiple queries or complex JOIN
-SELECT u.*, p.*, e.*, c.*
-FROM users u
-LEFT JOIN positions p ON u.id = p.user_id
-LEFT JOIN education e ON u.id = e.user_id
-LEFT JOIN contact_info c ON u.id = c.user_id
-WHERE u.id = 251;</code></pre>
-
-    <h4>Document Model Approach (JSON)</h4>
-    <pre><code>{
-  "user_id": 251,
-  "first_name": "Bill",
-  "last_name": "Gates",
-  "positions": [
-    {
-      "job_title": "Founder & Chairman",
-      "organization": "Microsoft",
-      "start": 1975,
-      "end": 2000
-    },
-    {
-      "job_title": "Co-Chair",
-      "organization": "Bill & Melinda Gates Foundation",
-      "start": 2000
-    }
-  ],
-  "education": [
-    {
-      "school_name": "Harvard University",
-      "start": 1973,
-      "end": 1975
-    }
-  ],
-  "contact_info": {
-    "email": "bill@gates.com",
-    "phone": "+1-206-555-0100"
-  }
-}</code></pre>
-
-    <div class="pro-con-grid">
-      <div class="pro-card">
-        <h3>✅ Document Advantages</h3>
-        <ul>
-          <li><strong>Single query</strong>: One fetch returns entire nested structure</li>
-          <li><strong>Better locality</strong>: All data for entity lives in one place</li>
-          <li><strong>Native to OOP</strong>: Mirrors application's object graph (e.g., <code>user.positions[0].job_title</code>)</li>
-          <li><strong>Reduced mismatch</strong>: No translation layer needed from objects to rows</li>
-          <li><strong>Faster reads</strong>: No expensive JOINs</li>
-        </ul>
-      </div>
-      <div class="con-card">
-        <h3>❌ Document Tradeoffs</h3>
-        <ul>
-          <li><strong>Write overhead</strong>: Modify nested field? Rewrite entire document</li>
-          <li><strong>No native JOINs</strong>: Querying across documents requires app logic</li>
-          <li><strong>Denormalization risks</strong>: If data embedded in multiple places, must update all copies</li>
-          <li><strong>Schema flexibility ≠ no structure</strong>: Application still must handle variable schemas</li>
-          <li><strong>ORM still needed</strong>: Frameworks (ActiveRecord, Hibernate) reduce boilerplate but don't eliminate differences</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="callout callout-info">
-      <strong>ORM LIMITATION</strong> Even with ORM frameworks, the impedance mismatch is <em>reduced</em>, not eliminated. Deep structural differences remain. However, JSON representation can significantly reduce mismatch for document-like data that naturally nests.
-    </div>
-  </section>
-
-  <!-- SECTION: RELATIONSHIPS & NORMALIZATION -->
-  <section id="relationships" data-section-id="relationships">
-    <h2><span class="section-num">05</span> One-to-Many vs Many-to-Many: Tree vs Graph</h2>
-    <div class="diagram-container">
-      <div class="diagram-title">Data Structure Evolution</div>
-      <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
-        <div style="text-align:center;">
-          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px;">TREE (One-to-Many)</div>
-          <div style="background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.3); padding:12px; border-radius:6px; font-size:12px; color:var(--accent); font-family:monospace;">
-User<br/>├── Position[]<br/>├── Education[]<br/>└── Contact Info<br/>
-          </div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px;">GRAPH (Many-to-Many)</div>
-          <div style="background:rgba(210,168,255,.1); border:1px solid rgba(210,168,255,.3); padding:12px; border-radius:6px; font-size:12px; color:var(--accent4); font-family:monospace;">
-User ← recommends → User<br/>User → Company ← Industry<br/>User → Location ← Region
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <h3>One-to-Many: Document Databases Excel</h3>
-    <p>JSON documents naturally represent trees of one-to-many relationships. A user's profile contains an array of positions—perfect fit for document model.</p>
-
-    <h3>Many-to-One & Many-to-Many: Complexity Increases</h3>
-    <p>When data becomes interconnected across multiple entities, the choice between <strong>using IDs (normalization)</strong> and <strong>using text (denormalization)</strong> becomes critical.</p>
-
-    <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
-      <div class="approach-card" style="border-color:rgba(63,185,80,.5);">
-        <div class="preferred-badge">★ NORMALIZED</div>
-        <h3 style="color:var(--accent2);">Using IDs (Normalization)</h3>
-        <p>Store <code>region_id: 2</code> instead of text region name.</p>
-        <h4 style="color:var(--accent2); text-transform:none; letter-spacing:0; font-size:12px; margin:10px 0 6px;">Benefits</h4>
-        <ul style="font-size:12px; padding-left:16px;">
-          <li>Avoids duplication (single source of truth)</li>
-          <li>ID never needs to change (even if name corrected)</li>
-          <li>Consistent spelling across records</li>
-          <li>Enables batch updates (rename region once in lookup table)</li>
-          <li>Supports localization (same ID, different language)</li>
-          <li>Intelligent search (region canonical name)</li>
-        </ul>
-      </div>
-      <div class="approach-card">
-        <h3 style="color:var(--accent3);">Using Text (Denormalization)</h3>
-        <p>Store <code>region: "Southeast Asia"</code> directly in document.</p>
-        <h4 style="color:var(--accent3); text-transform:none; letter-spacing:0; font-size:12px; margin:10px 0 6px;">Problems</h4>
-        <ul style="font-size:12px; padding-left:16px;">
-          <li>Duplication across records (inconsistency risk)</li>
-          <li>Global updates require touching multiple documents</li>
-          <li>Spelling variations ("Southeast Asia" vs "SE Asia")</li>
-          <li>Write overhead and coordination burden</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="callout callout-info">
-      <strong>KEY INSIGHT</strong> <strong>Normalization = removing duplication via ID references</strong>. Databases excel at following IDs to fetch referenced data. Applications must decide: pay cost now (normalize with IDs) or pay cost later (manage denormalized copies in application code).
-    </div>
-  </section>
-
-  <!-- SECTION: NORMALIZATION & IDS -->
-  <section id="normalization" data-section-id="normalization">
-    <h2><span class="section-num">06</span> Normalization & ID References</h2>
-    <div class="data-bar-list">
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label"><strong>Normalization</strong> (IDs)</span>
-          <span class="data-bar-value">Upfront Cost</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:40%;background:var(--accent2)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label"><strong>Denormalization</strong> (Embedded Text)</span>
-          <span class="data-bar-value">Long-term Cost</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:75%;background:var(--accent3)"></div></div>
-      </div>
-    </div>
-
-    <h3>Why Normalization Matters: A Real Example</h3>
-    <p>Consider a user profile that records the user's organization:</p>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">❌</span>
-        <span class="il-text"><strong>Denormalized</strong> Store organization name: "Microsoft" inside user document. When Microsoft rebrands or needs logo update, must change it in thousands of user records.</span>
-      </li>
-      <li>
-        <span class="il-icon">✅</span>
-        <span class="il-text"><strong>Normalized</strong> Store <code>organization_id: 123</code> in user; maintain Organization table with logo, URL, etc. Change once, reflected everywhere instantly via ID reference.</span>
-      </li>
-    </ul>
-
-    <h3>The Trade-off Spectrum</h3>
-    <table>
-      <tr>
-        <th>Aspect</th>
-        <th>Normalized (IDs)</th>
-        <th>Denormalized (Embedded)</th>
-      </tr>
-      <tr>
-        <td><strong>Write Performance</strong></td>
-        <td><span class="partial">⚠ Slower</span> (indirect reference)</td>
-        <td><span class="check">✔ Faster</span> (self-contained)</td>
-      </tr>
-      <tr>
-        <td><strong>Update Consistency</strong></td>
-        <td><span class="check">✔ Single location</span></td>
-        <td><span class="cross">✘ Multiple locations</span></td>
-      </tr>
-      <tr>
-        <td><strong>Query Joins</strong></td>
-        <td><span class="partial">⚠ Required</span></td>
-        <td><span class="check">✔ Avoided</span></td>
-      </tr>
-      <tr>
-        <td><strong>Flexibility</strong></td>
-        <td><span class="check">✔ Resilient to schema changes</span></td>
-        <td><span class="partial">⚠ Brittle if reference changes</span></td>
-      </tr>
-      <tr>
-        <td><strong>Space</strong></td>
-        <td><span class="check">✔ Compact</span></td>
-        <td><span class="cross">✘ Redundant</span></td>
-      </tr>
-    </table>
-  </section>
-
-  <!-- SECTION: JOINS & DOCUMENT LIMITATIONS -->
-  <section id="joins" data-section-id="joins">
-    <h2><span class="section-num">07</span> The Join Problem in Document Databases</h2>
-    <div class="insight-strip">
-      <div class="insight-card insight-red">
-        <span class="ic-icon">🚫</span>
-        <div class="ic-title">MongoDB Limitation</div>
-        <div class="ic-body">Initially, no native JOIN support. Applications must fetch documents separately and stitch data together in code.</div>
-      </div>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">📋</span>
-        <div class="ic-title">CouchDB Workaround</div>
-        <div class="ic-body">Joins only available through predeclared materialized views—requires up-front schema design and explicit view definition.</div>
-      </div>
-      <div class="insight-card insight-green">
-        <span class="ic-icon">⚡</span>
-        <div class="ic-title">RethinkDB Solution</div>
-        <div class="ic-body">Native JOIN support in query language. Bridges gap between document and relational model, though joins still less optimized than dedicated SQL engines.</div>
-      </div>
-    </div>
-
-    <h3>Application-Level Join Emulation</h3>
-    <p>When database doesn't support joins, application code must handle it:</p>
+  <!-- SECTION 05: IMPEDANCE MISMATCH -->
+  <section id="impedance-mismatch" data-section-id="impedance-mismatch">
+    <h2><span class="section-num">05</span> The Impedance Mismatch Problem</h2>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Query Primary Document</h4>
-          <p>Fetch user document from collection: <code>db.users.findOne({id: 251})</code></p>
+          <h4>Define: The Mismatch</h4>
+          <p><strong>OO programming languages vs. relational tables/rows/columns.</strong> Application objects have nested, hierarchical structures (references to other objects), but relational databases require flattening into tables with foreign keys and multiple joins to reconstruct the object graph.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>Extract Foreign Keys</h4>
-          <p>Read arrays of IDs: <code>user.position_ids = [1, 2, 3]</code></p>
+          <h4>Symptom: Boilerplate Code</h4>
+          <p>ORM frameworks (ActiveRecord, Hibernate) reduce translation boilerplate but cannot fully eliminate the conceptual gap. Developers spend effort mapping classes ↔ tables, managing references, executing joins.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Fetch Referenced Documents</h4>
-          <p>For each ID, query separate collection: <code>db.positions.find({id: {$in: [1,2,3]}})</code></p>
+          <h4>Example: LinkedIn Profile</h4>
+          <p><em>One-to-one fields:</em> first_name, last_name → columns. <em>One-to-many:</em> positions (multiple jobs), education (multiple schools), contact info → separate tables + foreign keys. Reconstructing full profile = JOIN positions + JOIN education + JOIN contact.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">4</div>
         <div class="step-content">
-          <h4>Merge in Application Memory</h4>
-          <p>Loop through results and attach to user object: <code>user.positions = positions_docs</code></p>
+          <h4>Document Solution</h4>
+          <p>Represent the profile as a single JSON document with nested arrays for positions, education, contact. Self-contained structure = one query fetches everything. Reduces mismatch by aligning data representation to application object shape.</p>
         </div>
       </div>
     </div>
 
-    <div class="callout callout-warn">
-      <strong>PERFORMANCE COST</strong> Moving join logic from database to application has profound effects: multiple round-trips to database, network latency multiplied, memory usage in application process, loss of database query optimizer's ability to choose efficient execution plans.
+    <h3>Visual: One-to-Many in Relational vs. Document</h3>
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>Relational (Normalized)</h3>
+        <ul>
+          <li><strong>Profile table:</strong> user_id, first_name, last_name</li>
+          <li><strong>Positions table:</strong> position_id, user_id, title, company</li>
+          <li><strong>Education table:</strong> education_id, user_id, school, year</li>
+          <li><strong>Reconstruction:</strong> 3 joins minimum</li>
+          <li style="color:var(--accent2);">✓ Single source of truth (school names centralized if normalized further)</li>
+          <li style="color:var(--accent2);">✓ Avoids duplication</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>Document (Denormalized)</h3>
+        <ul>
+          <li><strong>One document:</strong> { user_id, first_name, last_name, positions: [...], education: [...] }</li>
+          <li><strong>Reconstruction:</strong> Single document read</li>
+          <li style="color:var(--accent3);">✘ Data duplication (school names embedded)</li>
+          <li style="color:var(--accent3);">✘ Updates must synchronize across documents</li>
+          <li style="color:var(--accent2);">✓ Better locality (all data in one query)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 06: DOCUMENT MODEL -->
+  <section id="document-model" data-section-id="document-model">
+    <h2><span class="section-num">06</span> Document Model: Design & Trade-offs</h2>
+    
+    <h3>Advantages of JSON Document Representation</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Reduced Impedance Mismatch</strong> Structure mirrors application objects; tree of nested objects/arrays requires no translation layer</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Better Locality</strong> One document query retrieves all related data (positions, education, contact) vs. multiple JOIN queries across tables</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Explicit Tree Structure</strong> One-to-many relationships encoded naturally; no separate junction tables required</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Self-Contained Documents</strong> Each record is independent; no foreign key lookups required to read a complete entity</span>
+      </li>
+    </ul>
+
+    <h3>Document Model Limitations</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Weak or Absent Join Support</strong> Historically (and still in many document DBs), no server-side joins; application code emulates joins with multiple queries</span>
+      </li>
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Many-to-Many Complexity</strong> Shared entities (e.g., multiple documents referencing same school) require either duplication (write-time inconsistency risk) or explicit application-level join code</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>Schema Flexibility = Implicit Schema</strong> No enforced schema, but implicit structure is still present. Updates can introduce silent inconsistency (e.g., some docs with "address", others with "location")</span>
+      </li>
+    </ul>
+
+    <h3>Prominent Document Databases (2013–2014 Era)</h3>
+    <div class="pill-list">
+      <span class="pill pill-blue">MongoDB</span>
+      <span class="pill pill-blue">RethinkDB 1.11</span>
+      <span class="pill pill-blue">Apache CouchDB 1.6</span>
+      <span class="pill pill-blue">Espresso (LinkedIn)</span>
     </div>
 
-    <h3>Evolution in Applications: When Document Model Breaks</h3>
-    <p>As applications mature, what began as trees become graphs:</p>
+    <div class="callout callout-warn">
+      <strong>SCHEMA FLEXIBILITY CAVEAT</strong> MongoDB's schema flexibility was criticized (Sarah Mei, 2013) for enabling developers to accidentally create inconsistent data structures without explicit validation. The trade-off: flexibility vs. early error detection.
+    </div>
+  </section>
+
+  <!-- SECTION 07: RELATIONSHIPS -->
+  <section id="relationships" data-section-id="relationships">
+    <h2><span class="section-num">07</span> Relationship Patterns: Why IDs Beat Strings</h2>
+    
+    <h3>Many-to-One Relationships (e.g., region_id, industry_id)</h3>
+    <p>Why use IDs instead of storing region names as strings directly?</p>
+    
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">✅</span>
+        <div class="ic-title">Data Consistency</div>
+        <div class="ic-body">Drop-down lists/autocompleters ensure users select from canonical list, avoiding typos ("Seatle" vs. "Seattle") and variants.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🌍</span>
+        <div class="ic-title">Disambiguation</div>
+        <div class="ic-body">Resolve ambiguities: multiple "Springfields" in USA → ID clarifies which state. Single point of truth prevents confusion.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔄</span>
+        <div class="ic-title">Single Point of Update</div>
+        <div class="ic-body">If region name changes (e.g., "Washington" → "Washington State"), update only the region table. ID remains constant; no cascading rewrites.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🌐</span>
+        <div class="ic-title">Localization Support</div>
+        <div class="ic-body">Serve different region names in different languages: one ID maps to multiple translated names (stored separately or runtime-translated).</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔍</span>
+        <div class="ic-title">Better Search</div>
+        <div class="ic-body">Structured queries become possible: "Find users in Seattle, Washington" (city_id=1234, state_id=5678) vs. substring search on string.</div>
+      </div>
+    </div>
+
+    <h3>Many-to-Many Evolution: Growing Interconnectedness</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Users with Positions & Education</h4>
-          <p><strong>Perfect tree.</strong> Document model shines. User → array of positions and education records.</p>
+          <h4>Simple Résumé (Document-Friendly)</h4>
+          <p>User has positions (employers) and education (schools). Initially: embed lists of companies and schools as arrays in user document. One query = complete résumé.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>Organizations as First-Class Entities</h4>
-          <p><strong>Graph emerges.</strong> Organizations now have their own pages with logos, websites, descriptions. Many users reference same organization. Denormalizing org data into every user becomes untenable.</p>
+          <h4>Feature Expansion: Recommendations</h4>
+          <p>Add recommendations system: users recommend each other. Now employers, schools, and users form many-to-many graphs. Document denormalization breaks: embedding user A's recommendations in user A's doc, but then user B's recommendation of user A must also update user A's doc.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>User Recommendations & Social Graph</h4>
-          <p><strong>Complexity explodes.</strong> User A recommends User B; recommendations have author profiles; photos update and must propagate everywhere. Many-to-many relationships everywhere. Document model increasingly awkward.</p>
+          <h4>Data Becomes Highly Interconnected</h4>
+          <p>As features multiply (endorsements, mutual connections, shared group memberships), the application's data becomes a dense graph. Document model's locality advantage diminishes.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Model Suitability Ranking</h4>
+          <p><strong>Graph model (optimal)</strong> → Relational (acceptable) → Document (suboptimal). As interconnections grow, graph databases outperform both.</p>
         </div>
       </div>
     </div>
 
-    <div class="callout callout-info">
-      <strong>PATTERN</strong> Document databases work best for applications with <em>shallow trees</em>. As your data graph deepens and interconnects, the cost of application-level join emulation grows until you're better served by a relational or native graph database.
+    <h3>Normalization vs. Denormalization Trade-off</h3>
+    <div class="compare-grid" style="grid-template-columns:1fr 1fr;grid-template-rows:auto auto;">
+      <div class="compare-header" style="grid-column:1 / 3;">
+        <div class="compare-cell">Aspect</div>
+        <div class="compare-cell">Normalized (Relational)</div>
+        <div class="compare-cell">Denormalized (Document)</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Duplication</strong></div>
+        <div class="compare-cell good">✔ None</div>
+        <div class="compare-cell bad">✘ Embedded everywhere</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Update Safety</strong></div>
+        <div class="compare-cell good">✔ Single point of change</div>
+        <div class="compare-cell bad">✘ Must sync all copies</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Write Overhead</strong></div>
+        <div class="compare-cell neutral">Medium (1 update)</div>
+        <div class="compare-cell bad">High (multiple docs)</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Inconsistency Risk</strong></div>
+        <div class="compare-cell good">✔ Low</div>
+        <div class="compare-cell bad">✘ High without discipline</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Read Latency</strong></div>
+        <div class="compare-cell neutral">Joins (slower)</div>
+        <div class="compare-cell good">✔ Single query</div>
+      </div>
+    </div>
+
+    <div class="highlight-band">
+      <h3>💡 Normalization Benefits (Why It Still Matters)</h3>
+      <p><strong>Normalize when:</strong> data is shared across documents and updates are frequent. Example: Region/city names. If "Washington" is referenced in thousands of user profiles, normalizing enables one update to propagate everywhere. Denormalization forces application code to track and update all copies, creating write-time overhead and inconsistency risk.</p>
     </div>
   </section>
 
-  <!-- SECTION: DOCUMENT MODEL ADVANTAGES -->
-  <section id="document-advantages" data-section-id="document-advantages">
-    <h2><span class="section-num">08</span> Document Model: When It Excels</h2>
-    <div class="diagram-container">
-      <div class="diagram-title">Document Model Strengths</div>
-      <div class="box-row" style="gap:0; flex-wrap:wrap;">
-        <div class="box box-green" style="flex:1; min-width:120px;">
-          Nested Data
-          <small>One-to-many relationships</small>
-        </div>
-        <div class="arrow">+</div>
-        <div class="box box-green" style="flex:1; min-width:120px;">
-          Single Query
-          <small>Fetch entire structure at once</small>
-        </div>
-        <div class="arrow">+</div>
-        <div class="box box-green" style="flex:1; min-width:120px;">
-          Schema Flexibility
-          <small>Easy to add fields per record</small>
-        </div>
-        <div class="arrow">=</div>
-        <div class="box box-orange" style="flex:1; min-width:120px;">
-          High-Velocity Development
-          <small>Iterate fast; schema evolves with app</small>
-        </div>
-      </div>
-    </div>
+  <!-- SECTION 08: DATABASE SYSTEMS LANDSCAPE -->
+  <section id="database-systems" data-section-id="database-systems">
+    <h2><span class="section-num">08</span> Modern Database Systems Landscape</h2>
+    
+    <h3>Major Distributed Data Systems (2006–2013)</h3>
+    <table>
+      <tr>
+        <th>System</th>
+        <th>Organization</th>
+        <th>Release</th>
+        <th>Purpose</th>
+      </tr>
+      <tr>
+        <td><strong>Google Bigtable</strong></td>
+        <td>Google</td>
+        <td>OSDI Nov 2006</td>
+        <td>Distributed structured storage system; foundation for Spanner</td>
+      </tr>
+      <tr>
+        <td><strong>Facebook TAO</strong></td>
+        <td>Facebook</td>
+        <td>USENIX ATC June 2013</td>
+        <td>Distributed data store for social graph (many-to-many relationships at scale)</td>
+      </tr>
+      <tr>
+        <td><strong>Google Spanner</strong></td>
+        <td>Google</td>
+        <td>OSDI Oct 2012</td>
+        <td>Globally-distributed database with ACID guarantees; horizontally scalable SQL</td>
+      </tr>
+      <tr>
+        <td><strong>LinkedIn Espresso</strong></td>
+        <td>LinkedIn</td>
+        <td>SIGMOD 2013</td>
+        <td>Distributed data serving platform for online storage</td>
+      </tr>
+    </table>
 
-    <h3>The Benefits Breakdown</h3>
+    <h3>Legacy Database Paradigms</h3>
     <ul class="icon-list">
       <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Faster Reads for Nested Data</strong>One database query returns complete nested structure (user with all positions, education, contacts). Relational requires multi-way JOIN or multiple queries.</span>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Hierarchical Model (IBM IMS)</strong> Tree-like parent-child relationships; predecessor to relational. Limited to tree structures; many-to-many modeling difficult.</span>
       </li>
       <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Better Locality</strong>All data for an entity lives together on disk. Cache-friendly; fewer page faults; better I/O characteristics.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Natural Object Mapping</strong>JSON structure mirrors application objects. No impedance mismatch; <code>user.positions[0].job_title</code> works intuitively.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Schema Flexibility</strong>Add optional fields without schema migration. Different documents can have different structures. Useful during rapid prototyping.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Developer Ergonomics</strong>Reduce translation layers (objects ↔ rows). Less boilerplate; faster iteration; fewer bugs from mapping logic.</span>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>CODASYL Network Model (1970s–1980s)</strong> Originated concept of "programmer as navigator" (Bachman, 1973). Required application developers to manually specify access paths; inflexible and error-prone vs. declarative SQL.</span>
       </li>
     </ul>
 
-    <h3>When to Choose Document Model</h3>
-    <div class="insight-strip">
-      <div class="insight-card insight-green">
-        <span class="ic-icon">✅</span>
-        <div class="ic-title">Good Fit</div>
-        <div class="ic-body"><strong>One-to-many trees:</strong> User profiles, product catalogs, blog posts with comments. Data naturally nests; queries fetch complete subtree.</div>
-      </div>
-      <div class="insight-card insight-green">
-        <span class="ic-icon">✅</span>
-        <div class="ic-title">Good Fit</div>
-        <div class="ic-body"><strong>Schema-flexible data:</strong> Sensor readings, event logs, user-generated content. Records vary in structure; early-stage data models.</div>
-      </div>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Problematic</div>
-        <div class="ic-body"><strong>Many-to-many relationships:</strong> Once data graph becomes interconnected (organizations, recommendations, social links), document model loses advantage.</div>
-      </div>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Problematic</div>
-        <div class="ic-body"><strong>Complex transactions:</strong> ACID across multiple documents is hard. Relational ACID transactions preferred for critical business logic.</div>
+    <h3>Graph Database Emergence</h3>
+    <div class="approach-grid" style="grid-template-columns:1fr;">
+      <div class="approach-card">
+        <h3>Neo4j v2.0.0 — Property Graph Model</h3>
+        <p>Graph databases represent data as nodes (vertices) and edges (relationships), with properties on both. Ideal for highly interconnected data: social networks, recommendations, hierarchies, knowledge graphs.</p>
+        <div class="approach-traits">
+          <span class="pill pill-green">Native Traversal Ops</span>
+          <span class="pill pill-green">Low-Latency Joins</span>
+          <span class="pill pill-orange">Smaller Ecosystem</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- SECTION: TRADEOFFS -->
-  <section id="tradeoffs" data-section-id="tradeoffs">
-    <h2><span class="section-num">09</span> Model Tradeoffs: No Universal Winner</h2>
-    <div class="compare-grid" style="grid-template-columns:repeat(5,1fr);">
-      <div class="compare-header" style="grid-template-columns:repeat(5,1fr);">
-        <div class="compare-cell">Dimension</div>
-        <div class="compare-cell">Relational</div>
-        <div class="compare-cell
-</main>
+  <!-- SECTION 09: QUERY LANGUAGES & MODELS -->
+  <section id="query-languages" data-section-id="query-languages">
+    <h2><span class="section-num">09</span> Query Languages & Processing Paradigms</h2>
+    
+    <h3>Declarative Query Languages</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>SQL (Structured Query Language)</strong> Relational; declarative (specify <em>what</em>, not <em>how</em>). Query optimizer decides execution strategy automatically. Industry standard for 40+ years.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Datalog (Green et al., Foundations & Trends in Databases, vol 5 no 2, Nov 2013)</strong> Recursive query processing. Declarative logic programming; foundation for Cascalog (big data). Enables recursive queries naturally.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>RDF / SPARQL 1.1 (W3C, Mar 2013)</strong> RDF = Resource Description Framework (triple format: subject-predicate-object). SPARQL = query language for RDF. Turtle format (Terse RDF Triple Language, W3C Mar 2011) provides more readable triple syntax.</span>
+      </li>
+    </ul>
+
+    <h3>Distributed Processing Frameworks</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-teal">
+        <span class="ic-icon">⚙️</span>
+        <div class="ic-title">MapReduce</div>
+        <div class="ic-body">Dean & Ghemawat (OSDI Dec 2004). Distributed data processing paradigm: map (apply function to dataset), shuffle (group by key), reduce (aggregate by key). Foundation for Hadoop ecosystem.</div>
+      </div>
+      <div class="insight-card insight-teal">
+        <span>
+        <span class="ic-icon">🔗</span>
+        <div class="ic-title">Apache TinkerPop 3.2.3</div>
+        <div class="ic-body">Graph query framework. Enables traversal-based queries across property graphs. Abstracts query execution from underlying graph database (Neo4j, etc.).</div>
+      </div>
+      <div class="insight-card insight-teal">
+        <span class="ic-icon">📊</span>
+        <div class="ic-title">Cascalog</div>
+        <div class="ic-body">Datalog implementation for big data. Runs on Hadoop/MapReduce; provides recursive query processing for distributed systems without manual map-reduce coding.</div>
+      </div>
+    </div>
+
+    <h3>Schema-on-Write vs. Schema-on-Read</h3>
+    <div class="compare-grid" style="grid-template-columns:1fr 1fr; grid-template-rows:auto auto;">
+      <div class="compare-header" style="grid-column:1 / 3;">
+        <div class="compare-cell">Characteristic</div>
+        <div class="compare-cell">Schema-on-Write</div>
+        <div class="compare-cell">Schema-on-Read</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>When Validation Occurs</strong></div>
+        <div class="compare-cell neutral">Write time</div>
+        <div class="compare-cell neutral">Read time</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Model</strong></div>
+        <div class="compare-cell good">Relational (enforced schema)</div>
+        <div class="compare-cell neutral">Document DBs (flexible schema)</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Error Catching</strong></div>
+        <div class="compare-cell good">✔ Immediate (at write)</div>
+        <div class="compare-cell bad">✘ Delayed (at read/process)</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Flexibility</strong></div>
+        <div class="compare-cell bad">✘ Rigid schema changes</div>
+        <div class="compare-cell good">✔ Any structure anytime</div>
+      </div>
+      <div class="compare-row" style="grid-column:1 / 3; grid-template-columns:1fr 1fr 1fr;">
+        <div class="compare-cell"><strong>Cited Reference</strong></div>
+        <div class="compare-cell neutral">Traditional RDBMS</div>
+        <div class="compare-cell neutral">Parikh & Stirman, Oct 2013</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 10: SCHEMA EVOLUTION -->
+  <section id="schema-evolution" data-section-id="schema-evolution">
+    <h2><span class="section-num">10</span> Schema Migration & Evolution Strategies</h2>
+    
+    <h3>The Relational Schema Change Problem</h3>
+    <p>Relational databases have historically made schema changes expensive—often requiring downtime or complex, multi-step migrations. This limitation is a major driver toward schema-flexible (document) databases.</p>
+
+    <h3>Online Schema Change Tools for MySQL</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Percona pt-online-schema-change</h4>
+          <p>Early solution for zero-downtime MySQL schema changes. Creates shadow table, copies data incrementally, swaps at end. Allows read/write traffic to continue during migration.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>SoundCloud Large Hadron Migrator (LHM)</h4>
+          <p>GitHub reference. Similar principle: non-blocking schema changes for large tables. Reduces lock contention and downtime risk.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>GitHub gh-ost (August 2016)</h4>
+          <p>GitHub's modern online schema migration tool for MySQL. Enables non-blocking DDL (Data Definition Language) operations. More sophisticated ghost table approach; becomes industry standard for production MySQL migrations.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Schema Flexibility Trade-off</h3>
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>✅ Document / Schemaless DBs</h3>
+        <ul>
+          <li><strong>Avoid explicit schema changes:</strong> Add new fields without migration</li>
+          <li><strong>Development speed:</strong> Iterate on data structure mid-project</li>
+          <li><strong>Mixed versions:</strong> Old and new document formats coexist</li>
+          <li style="color:var(--accent3);">✘ But: validation burden shifts to application</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>❌ Relational (Explicit Schema)</h3>
+        <ul>
+          <li><strong>Schema enforcement:</strong> DB prevents invalid writes</li>
+          <li><strong>Type safety:</strong> Column types guaranteed at storage</li>
+          <li><strong>Consistency:</strong> No surprises on read (all rows have columns)</li>
+          <li style="color:var(--accent3);">✘ But: schema changes are expensive</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Specialized Schema Use Cases</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>Time Series Data (MongoDB Pattern, Parikh & Stirman, Oct 2013)</strong> Temporal data requires different optimization (bucketing by time, compression). Specialized schemas evolve for timeseries workloads.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>JSON in Relational Systems (IBM DB2, June 2013)</strong> Hybrid approach: store JSON natively within RDBMS. Combine relational structure (tables, ACID) with document flexibility (JSON columns).</span>
+      </li>
+    </ul>
+
+    <div class="callout callout-warn">
+      <strong>MIGRATION LESSON</strong> Schema-on-read (document DBs) doesn't eliminate schema—it makes it implicit and distributed. Validation moves from database to application code, increasing risk of silent inconsistency if not carefully managed.
+    </div>
+  </section>
+
+  <!-- SECTION 11: ARCHITECTURE & DESIGN PRINCIPLES -->
+  <section id="model-evolution" data-section-id="model-evolution">
+    <h2><span class="section-num">11</span> Architectural Principles & Concurrency Implications</h2>
+
+    <h3>Declarative vs. Imperative: The Fundamental Divide</h3>
+    <div class="diagram-container">
+      <div class="diagram-title">Query Strategy Spectrum</div>
+      <div class="box-row" style="flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-orange" style="flex:1;">Imperative ("How")<small>Programmer specifies step-by-step execution: navigate to A, then to B, then fetch</small></div>
+        </div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-gray" style="flex:1;">Mixed Approach<small>Some declarative logic, some manual optimization hints</small></div>
+        </div>
+        <div class="arrow-down"><div class="arrow-down-line"></div></div>
+        <div style="display:flex; align-items:center; gap:12px; width:100%;">
+          <div class="box box-blue" style="flex:1;">Declarative ("What")<small>Programmer states desired result; optimizer decides execution strategy</small></div>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top:16px;"><strong>Relational advantage:</strong> SQL is declarative. Write once, optimizer continuously improves execution over time (hardware changes, statistics updates, index additions). <strong>Network model disadvantage:</strong> CODASYL required imperative navigation; optimizations couldn't be retrofitted without rewriting application code.</p>
+
+    <h3>The Concurrency Revolution: Herb Sutter's "The Free Lunch Is Over" (Mar 2005)</h3>
+    <div class="highlight-band">
+      <h3>⚡ Hardware Trend → Software Imperative</h3>
+      <p><strong>Context:</strong> Single-core CPU performance stopped improving (~2005). Manufacturers shifted to multi-core processors. Implication: concurrency is mandatory for performance scaling, not optional.</p>
+      <p><strong>Database Impact:</strong> Systems must handle concurrent reads/writes efficiently. Single-threaded, synchronous designs become uncompetitive. Modern DBs (Bigtable, Spanner) architected for distributed concurrency from day one.</p>
+    </div>
+
+    <h3>Database System Architecture Foundations</h3>
+    <div class="callout callout-info">
+      <strong>COMPREHENSIVE REFERENCE</strong> Hellerstein, Stonebraker, and Hamilton (Foundations & Trends in Databases, vol 1 no 2, Nov 2007). 119-page survey covering DB architecture: storage engines, query processing, indexing, concurrency control, recovery, distributed coordination. Foundational reading for understanding modern system design.
+    </div>
+
+    <h3>Optimization Techniques Across Systems</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Oracle Cluster Tables (Burleson)</strong> Reduce I/O via co-location: store related rows together on disk. Similar concept: Google Bigtable locality groups (column families stored separately for independent access patterns).</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Type System Trade-offs (Martin Odersky, "The Trouble with Types," Strange Loop Sep 2013)</strong> Relevance to DBs: schema flexibility vs. type safety. Strong schemas (relational) catch errors early; flexible schemas (document) enable rapid iteration but defer error detection.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>PostgreSQL JavaScript Support (Heroku Blog, June 2013)</strong> Stored procedures in non-SQL languages. Enables procedural logic within DB; trade-off: complexity vs. performance (avoiding network round-trips).</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECTION 12: KEY TAKEAWAYS -->
+  <section id="key-takeaways" data-section-id="key-takeaways">
+    <h2><span class="section-num">12</span> Core Insights & Takeaways</h2>
+
+    <div class="takeaway">
+      <span class="takeaway-icon">🏗️</span>
+      <div class="takeaway-text"><strong>Data Model is Foundational:</strong> Your choice of data model (relational, document, graph, hierarchical) profoundly shapes application architecture, query patterns, and scalability limits. It embodies hidden assumptions about usage patterns. Mastery requires understanding not just the model, but the trade-offs it imposes.</div>
+    </div>
+
+    <div class="takeaway">
+      <span class="takeaway-icon">🎯</span>
+      <div class="takeaway-text"><strong>Relational's Enduring Strength:</strong> For 40+ years (1970–2010+), relational databases dominated because the query optimizer—built once, benefiting all applications forever—was a revolutionary innovation. Competitors required application developers to manually specify execution strategies, making them unmaintainable.</div>
+    </div>
+
+    <div class="takeaway">
+      <span class="takeaway-icon">🔄</span>
+      <div class="takeaway-text"><strong>Impedance Mismatch is Real:</strong> OO application objects don't map cleanly to relational tables. Document models reduce this friction by aligning data structure to object shape. However, as interconnections grow (many-to-many relationships, shared entities), document advantages diminish and graph models become optimal.</div>
+    </div>
+
+    <div class="takeaway">
+      <span class="takeaway-icon">📊</span>
+      <div class="takeaway-text"><strong>Polyglot Persistence is the Future:</strong> No single database will dominate the next 25 years as SQL did. Applications will choose specialized datastores: relational for transactions, document for flexible schemas, graph for relationships, time-series for temporal data, search engines for text. Architect for heterogeneity.</div>
+    </div>
+
+    <div class="takeaway">
+      <span class="takeaway-icon">⚖️</span>
+      <div class="takeaway-text"><strong>Normalization vs. Denormalization:</strong> Normalize when data is shared and frequently updated. Denormalize when locality (one query fetching all data) matters more than update complexity. This trade-off has no universal answer—it depends on your access patterns and consistency requirements.</div>
+    </div>
+
+    <h3>Key Metrics & Numbers</h3>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent3);">25–30</div>
+        <div class="stat-label">Years of Relational Dominance</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent);">1970</div>
+        <div class="stat-label">Relational Model Proposed (Codd)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent2);">4</div>
+        <div class="stat-label">Data Model Abstraction Layers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent5);">2009</div>
+        <div class="stat-label">NoSQL Movement Birth (Twitter Hashtag)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent4);">4</div>
+        <div class="stat-label">Driving Forces Behind NoSQL</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:#39d9d9">∞</div>
+        <div class="stat-label">Optimal for Many-to-Many (Graph)</div>
+      </div>
+    </div>
+
+    <h3>Decision Framework: Which Model?</h3>
+    <div class="approach-grid" style="grid-template-columns:1fr;">
+      <div class="approach-card">
+        <h3 style="color:var(--accent2);">Choose Relational When:</h3>
+        <ul style="font-size:13px; color:var(--text-muted);">
+          <li>✓ Data is highly normalized with frequent updates to shared entities</li>
+          <li>✓ Complex joins across multiple tables are common</li>
+          <li>✓ ACID transactions are mandatory</li>
+          <li>✓ Schema is stable and well-defined upfront</li>
+          <li>✓ Team expertise is SQL-centric</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="approach-grid" style="grid-template-columns:1fr;">
+      <div class="approach-card">
+        <h3 style="color:var(--accent);">Choose Document When:</h3>
+        <ul style="font-size:13px; color:var(--text-muted);">
+          <li>✓ Data is naturally hierarchical or tree-like (one-to-many)</li>
+          <li>✓ Schema is flexible or evolving (varied structures)</li>
+          <li>✓ Locality matters (reading entire entity in one query)</li>
+          <li>✓ Relationships are primarily one-way</li>
+          <li>✓ Write frequency is moderate; update consistency isn't critical</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="approach-grid" style="grid-template-columns:1fr;">
+      <div class="approach-card">
+        <h3 style="color:var(--accent5);">Choose Graph When:</h3>
+        <ul style="font-size:13px; color:var(--text-muted);">
+          <li>✓ Data is highly interconnected (many-to-many at scale)</li>
+          <li>✓ Traversal depth and breadth are key queries</li>
+          <li>✓ Relationships themselves carry semantic meaning</li>
+          <li>✓ Examples: social networks, recommendations, knowledge graphs</li>
+          <li>✓ Join-heavy relational queries become the bottleneck</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 13: RESEARCH FOUNDATIONS -->
+  <section id="takeaways" data-section-id="takeaways" style="margin-top:80px;">
+    <h2><span class="section-num">13</span> Seminal Works & Further Reading</h2>
+
+    <h3>Core References Cited Throughout</h3>
+    <table>
+      <tr>
+        <th>Work</th>
+        <th>Authors</th>
+        <th>Year</th>
+        <th>Relevance</th>
+      </tr>
+      <tr>
+        <td><strong>Foundations of Databases</strong></td>
+        <td>Abiteboul, Hull, Vianu</td>
+        <td>1995</td>
+        <td>Comprehensive theoretical foundation for database systems; available online at webdam. Essential for query semantics, constraints, and data models.</td>
+      </tr>
+      <tr>
+        <td><strong>Database System Architecture (vol 1 no 2)</strong></td>
+        <td>Hellerstein, Stonebraker, Hamilton</td>
+        <td>Nov 2007</td>
+        <td>119-page survey covering storage engines, query processing, indexing, concurrency, recovery. Foundational for system design understanding.</td>
+      </tr>
+      <tr>
+        <td><strong>Datalog: A Logical Query Language (vol 5 no 2)</strong></td>
+        <td>Green et al.</td>
+        <td>Nov 2013</td>
+        <td>Foundations & Trends in Databases. Recursive query processing; basis for Cascalog and logical query optimization.</td>
+      </tr>
+      <tr>
+        <td><strong>MapReduce: Simplified Data Processing on Large Clusters</strong></td>
+        <td>Dean & Ghemawat</td>
+        <td>OSDI Dec 2004</td>
+        <td>Distributed processing paradigm; foundation for Hadoop, Spark, and modern data analytics.</td>
+      </tr>
+      <tr>
+        <td><strong>Bigtable: A Distributed Storage System</strong></td>
+        <td>Google Research</td>
+        <td>OSDI Nov 2006</td>
+        <td>Distributed columnar storage with locality groups; influences modern NoSQL architectures.</td>
+      </tr>
+      <tr>
+        <td><strong>Spanner: Google's Globally-Distributed Database</strong></td>
+        <td>Google Research</td>
+        <td>OSDI Oct 2012</td>
+        <td>Globally-distributed SQL with ACID guarantees; demonstrates relational model at planetary scale.</td>
+      </tr>
+      <tr>
+        <td><strong>TAO: Facebook's Distributed Data Store</strong></td>
+        <td>Facebook Research</td>
+        <td>USENIX ATC June 2013</td>
+        <td>Social graph data store; optimized for many-to-many relationships at billions-of-user scale.</td>
+      </tr>
+    </table>
+
+    <h3>Specialized Topics</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>RDF & SPARQL (W3C Standards)</strong> Resource Description Framework (Feb 2004) and query language SPARQL 1.1 (Mar 2013). Turtle syntax (Mar 2011) provides readable triple representation. Standard for semantic web and linked data.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>CODASYL Network Model History (Bachman, 1973)</strong> Introduced "programmer as navigator" concept. Historically important for understanding why relational's declarative approach was revolutionary.</span>
+      </li>
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Online Schema Migration (Percona pt-online-schema-change, SoundCloud LHM, GitHub gh-ost)</strong> Practical tools for zero-downtime MySQL changes. Critical for production systems with uptime requirements.</span>
+      </li>
+    </ul>
+
+    <div class="callout callout-success">
+      <strong>FURTHER STUDY</strong> Start with "Foundations of Databases" (Abiteboul et al., 1995, available online) for theoretical grounding. Then read Hellerstein et al. (2007) for practical system design. For modern distributed systems, study Bigtable, Spanner, and TAO papers directly. Understanding the historical progression (hierarchical → network → relational → document → graph) illuminates why each model emerged and what problems it solved.
+    </div>
+  </section>
+
+  <!-- CLOSING SUMMARY -->
+  <div class="section-divider"></div>
+  <section style="background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:32px; text-align:center;">
+    <h2 style="justify-content:center; margin-bottom:16px;">The Takeaway</h2>
+    <p style="font-size:16px; color:var(--text-muted); max-width:700px; margin:0 auto;">Data models are not neutral technical choices—they embody philosophical commitments about how data should be organized, updated, and queried. The relational model's 40-year dominance came from a single innovation: the query optimizer. The NoSQL movement isn't about rejecting SQL; it's about choosing the right model for your specific problem. The future belongs to teams that master multiple models and select wisely.</p>
+  </section>
+
+</div>
+
+<script>
+  // Sidebar navigation active state & scroll tracking
+  const sections = document.querySelectorAll('section[data-section-id]');
+  const navLinks = document.querySelectorAll('#sidebar nav a');
+  const progressBar = document.getElementById('progress-bar');
+
+  function updateActiveSection() {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (window.pageYOffset >= sectionTop - 100) {
+        current = section.getAttribute('data-section-id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === `#${current}`) {
+        link.classList.add('active');
+      }
+    });
+    // Update progress bar
+    const scrollTop = window.pageYOffset;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = scrollPercent + '%';
+  }
+
+  window.addEventListener('scroll', updateActiveSection);
+  updateActiveSection();
+
+  // Smooth scroll for nav links
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  });
+</script>
+
 <script>
 (function() {
   // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks
