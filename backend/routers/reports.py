@@ -6,7 +6,10 @@ from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.orm import Session
 from database import get_db, SessionLocal
 from models import DocumentORM, ReportORM, ReportSchema, ReportMetaSchema
-from services.report_service import generate_report_html, pick_signature_color
+from services.report_service import (
+    generate_report_html, pick_signature_color, make_client,
+    split_into_chunks, summarize_chunk, LARGE_DOC_THRESHOLD,
+)
 
 router = APIRouter()
 
@@ -37,13 +40,42 @@ def generate_report(
         db.close()
         raise
 
+    def _prog(msg: str) -> str:
+        return f"data: {json.dumps({'event': 'progress', 'data': msg})}\n\n"
+
     def event_stream():
         done_payload = None
         try:
-            yield f"data: {json.dumps({'event': 'progress', 'data': f'Analyzing {len(docs)} document(s)...'})}\n\n"
             color = pick_signature_color(report_index)
-            yield f"data: {json.dumps({'event': 'progress', 'data': 'Generating rich HTML report...'})}\n\n"
-            html = generate_report_html(docs, signature_color=color)
+
+            # ── Build document context (chunked for large docs) ───────────────
+            client = make_client()
+            context_parts: list = []
+            for doc in docs:
+                text = doc.extracted_text
+                if len(text) <= LARGE_DOC_THRESHOLD:
+                    context_parts.append(f"[DOCUMENT: {doc.filename}]\n{text}")
+                    continue
+
+                # Large doc — summarize in chunks
+                chunks = split_into_chunks(text)
+                n = len(chunks)
+                yield _prog(
+                    f"📖 Large document detected ({len(text):,} chars / {n} sections). "
+                    f"Reading in full depth…"
+                )
+                summaries: list = []
+                for i, chunk in enumerate(chunks, 1):
+                    yield _prog(f"Summarizing '{doc.filename}': section {i} of {n}…")
+                    summary = summarize_chunk(client, chunk, i, n, doc.filename)
+                    summaries.append(summary)
+                context_parts.append(
+                    f"[DOCUMENT: {doc.filename}]\n\n" + "\n\n".join(summaries)
+                )
+
+            doc_context = "\n\n---\n\n".join(context_parts)
+            yield _prog("Generating rich HTML report from full document analysis…")
+            html = generate_report_html(docs, signature_color=color, doc_context=doc_context)
 
             report_id = str(uuid.uuid4())
             title_match = re.search(r"<h1[^>]*>(.*?)</h1>", html, re.S)

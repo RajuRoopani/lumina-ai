@@ -5,26 +5,56 @@ from prompts.report_prompt import get_report_prompt, SIGNATURE_COLORS
 from config import ANTHROPIC_API_KEY
 from services.learnings_service import get_prompt_hints, record_report_generation
 
-# Per-document truncation ceiling — keep high for quality
-_MAX_DOC_CHARS = 12000
+# Docs under this threshold are sent directly; larger docs are chunked + summarized
+LARGE_DOC_THRESHOLD = 12_000   # chars
+SUMMARY_CHUNK_SIZE  = 80_000   # chars per chunk (~20k tokens)
 
 
 def pick_signature_color(report_index: int) -> str:
     return SIGNATURE_COLORS[report_index % len(SIGNATURE_COLORS)]
 
 
-def build_document_context(docs: list[DocumentORM]) -> str:
-    parts: list[str] = []
-    for i, doc in enumerate(docs, start=1):
-        text = doc.extracted_text
-        truncated = len(text) > _MAX_DOC_CHARS
-        if truncated:
-            text = text[:_MAX_DOC_CHARS] + "\n... [truncated] ..."
-        parts.append(f"[DOCUMENT {i}: {doc.filename}]\n{text}")
-    return "\n\n---\n\n".join(parts)
+def make_client() -> anthropic.Anthropic:
+    if not ANTHROPIC_API_KEY:
+        raise ValueError("ANTHROPIC_API_KEY is not configured")
+    return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
-# Injected into every report before </body> — guaranteed regardless of what the model writes
+def split_into_chunks(text: str, chunk_size: int = SUMMARY_CHUNK_SIZE) -> list:
+    """Split text into chunks, preferring paragraph boundaries."""
+    chunks: list = []
+    while len(text) > chunk_size:
+        # Prefer splitting at double newline (paragraph boundary)
+        split_at = text.rfind('\n\n', 0, chunk_size + 3000)
+        if split_at < chunk_size // 2:
+            split_at = text.rfind('\n', 0, chunk_size + 500)
+        if split_at < chunk_size // 2:
+            split_at = chunk_size
+        chunks.append(text[:split_at].strip())
+        text = text[split_at:].strip()
+    if text:
+        chunks.append(text)
+    return chunks
+
+
+def summarize_chunk(client: anthropic.Anthropic, chunk: str, idx: int, total: int, doc_name: str) -> str:
+    """Extract dense technical key points from one chunk of a large document."""
+    resp = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=1200,
+        messages=[{"role": "user", "content": (
+            f"Extract ALL key technical concepts, architectural patterns, data structures, algorithms, "
+            f"trade-offs, numbers/stats, and important insights from this section of '{doc_name}' "
+            f"(section {idx} of {total}).\n\n"
+            f"Be thorough and specific — include exact terminology, formulas, and real examples. "
+            f"Organize by topic. Be dense, not verbose.\n\n"
+            f"---\n{chunk}"
+        )}]
+    )
+    return f"[Section {idx}/{total}]\n{resp.content[0].text}"
+
+
+# Injected into every report before </body>
 _NAV_FIX_JS = """<script>
 (function() {
   // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks
@@ -76,8 +106,6 @@ def _strip_orphan_nav_links(html: str) -> str:
 
 def _inject_nav_js(html: str) -> str:
     """Inject reliable nav JS before </body>, replacing any existing progress/observer scripts."""
-    # Remove any script blocks the model wrote that handle scroll/progress/observer
-    # (they use href-based navigation which breaks in srcdoc iframes)
     html = re.sub(
         r'<script>\s*(?:(?:window\.addEventListener|document\.querySelectorAll|const obs|var obs)[^<]*)+</script>',
         '',
@@ -89,21 +117,23 @@ def _inject_nav_js(html: str) -> str:
     return html + _NAV_FIX_JS
 
 
-def generate_report_html(docs: list[DocumentORM], signature_color: str) -> str:
-    """Generate a rich HTML report from one or more documents using Claude.
-
-    Raises:
-        ValueError: if docs is empty, API key is missing, API call fails,
-                    or Claude returns an unusable response.
-    """
+def generate_report_html(docs: list, signature_color: str, doc_context: str = None) -> str:
+    """Generate a rich HTML report. If doc_context is provided (pre-built from chunks),
+    use it directly instead of building from docs."""
     if not docs:
         raise ValueError("Need at least one document to generate a report")
-    if not ANTHROPIC_API_KEY:
-        raise ValueError("ANTHROPIC_API_KEY is not configured")
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    doc_context = build_document_context(docs)
+    client = make_client()
     is_multi = len(docs) > 1
+
+    if doc_context is None:
+        # Small doc — build context directly
+        parts: list = []
+        for i, doc in enumerate(docs, start=1):
+            text = doc.extracted_text[:LARGE_DOC_THRESHOLD]
+            parts.append(f"[DOCUMENT {i}: {doc.filename}]\n{text}")
+        doc_context = "\n\n---\n\n".join(parts)
+
     multi_instruction = (
         "\n\nThis is a MULTI-DOCUMENT report. Include per-doc-analysis, "
         "comparison, and synthesis sections in addition to the standard sections."
@@ -139,7 +169,6 @@ def generate_report_html(docs: list[DocumentORM], signature_color: str) -> str:
     html = _strip_orphan_nav_links(first_block.text)
     html = _inject_nav_js(html)
 
-    # Record quality signals for retro loop (non-blocking)
     try:
         record_report_generation(html)
     except Exception:
