@@ -104,6 +104,22 @@ def _strip_orphan_nav_links(html: str) -> str:
     return re.sub(r'<a href="#([^"]+)"[^>]*>.*?</a>', replace_link, html, flags=re.DOTALL)
 
 
+def _close_truncated_html(html: str) -> str:
+    """If Claude was cut off before closing tags, append them so the browser renders cleanly."""
+    if '</html>' in html:
+        return html
+    # Close any unclosed structural tags in reverse order
+    closing = ''
+    if '</main>' not in html:
+        closing += '\n</main>'
+    if '</div>' not in html.split('</main>')[-1]:
+        closing += '\n</div>'
+    if '</body>' not in html:
+        closing += '\n</body>'
+    closing += '\n</html>'
+    return html + closing
+
+
 def _inject_nav_js(html: str) -> str:
     """Inject reliable nav JS before </body>, replacing any existing progress/observer scripts."""
     html = re.sub(
@@ -112,9 +128,8 @@ def _inject_nav_js(html: str) -> str:
         html,
         flags=re.DOTALL,
     )
-    if '</body>' in html:
-        return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
-    return html + _NAV_FIX_JS
+    html = _close_truncated_html(html)
+    return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
 
 
 def generate_report_html(docs: list, signature_color: str, doc_context: str = None) -> str:
