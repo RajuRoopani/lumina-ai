@@ -108,7 +108,10 @@ def delete_report(report_id: str, db: Session = Depends(get_db)):
 @router.get("/{report_id}/export")
 def export_report(report_id: str, db: Session = Depends(get_db)):
     r = _get_report_or_404(report_id, db)
-    filename = r.title.replace(" ", "-").lower()[:50] + ".html"
+    safe = re.sub(r'[^\x00-\x7F]', '', r.title)  # strip non-ASCII (emojis)
+    safe = re.sub(r'[^a-zA-Z0-9\s\-_]', '', safe).strip()
+    filename = re.sub(r'\s+', '-', safe).lower()[:50].strip('-') or 'report'
+    filename += ".html"
     return Response(
         content=r.html_content,
         media_type="text/html",
