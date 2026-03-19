@@ -95,6 +95,67 @@ _NAV_FIX_JS = """<script>
 </script>"""
 
 
+def _fix_sections_outside_main(html: str) -> str:
+    """Ensure all <section> elements are inside <div id="main">.
+
+    Claude sometimes emits a premature </div> that closes #main, leaving the
+    last N sections outside it (no margin-left → content renders behind sidebar).
+    Strategy: collect every <section>...</section> block, remove them from their
+    current positions, and re-inject them all inside #main before it closes.
+    """
+    main_open_tag = '<div id="main">'
+    main_pos = html.find(main_open_tag)
+    if main_pos == -1:
+        return html
+
+    # Find all complete section blocks
+    section_pattern = re.compile(
+        r'<section[^>]*data-section-id="[^"]*".*?</section>', re.DOTALL
+    )
+    sections = section_pattern.findall(html)
+    if not sections:
+        return html
+
+    # Find position of last section end in the raw HTML
+    last_section_end = 0
+    for m in section_pattern.finditer(html):
+        last_section_end = m.end()
+
+    # Find the first </div> that appears AFTER #main opens but BEFORE the last section ends
+    # — this is the premature closing div
+    between = html[main_pos + len(main_open_tag): last_section_end]
+    # Count opening vs closing divs to find where #main actually gets closed early
+    depth = 0
+    premature_close = -1
+    i = 0
+    while i < len(between):
+        open_m = re.search(r'<div[^>]*>', between[i:])
+        close_m = re.search(r'</div>', between[i:])
+        if not close_m:
+            break
+        if open_m and open_m.start() < close_m.start():
+            depth += 1
+            i += open_m.start() + len(open_m.group(0))
+        else:
+            if depth == 0:
+                # This </div> closes #main — it's premature if sections follow it
+                abs_pos = main_pos + len(main_open_tag) + i + close_m.start()
+                if abs_pos < last_section_end:
+                    premature_close = abs_pos
+                    # Remove this premature close and re-add it after the last section
+                    html = html[:abs_pos] + html[abs_pos + 6:]  # remove </div>
+                    # Now find updated last section end (indices shifted by 6)
+                    updated_last = 0
+                    for m in section_pattern.finditer(html):
+                        updated_last = m.end()
+                    html = html[:updated_last] + '\n</div>' + html[updated_last:]
+                break
+            depth -= 1
+            i += close_m.start() + len(close_m.group(0))
+
+    return html
+
+
 def _strip_orphan_nav_links(html: str) -> str:
     """Remove sidebar <a href="#id"> links that have no matching <section id="id"> in the body."""
     section_ids = set(re.findall(r'<section[^>]+id="([^"]+)"', html))
@@ -104,20 +165,34 @@ def _strip_orphan_nav_links(html: str) -> str:
     return re.sub(r'<a href="#([^"]+)"[^>]*>.*?</a>', replace_link, html, flags=re.DOTALL)
 
 
-def _close_truncated_html(html: str) -> str:
-    """If Claude was cut off before closing tags, append them so the browser renders cleanly."""
-    if '</html>' in html:
-        return html
-    # Close any unclosed structural tags in reverse order
-    closing = ''
-    if '</main>' not in html:
-        closing += '\n</main>'
-    if '</div>' not in html.split('</main>')[-1]:
-        closing += '\n</div>'
-    if '</body>' not in html:
-        closing += '\n</body>'
-    closing += '\n</html>'
-    return html + closing
+def _fix_close_tags(html: str) -> str:
+    """Fix structural close-tag issues that Claude frequently produces:
+    1. </main> with no matching <main> opener → replace with </section></div>
+    2. Unclosed last <section> → insert </section> before </div> closing #main
+    3. Truncated HTML (no </html>) → append closing tags
+    """
+    # Fix spurious </main>: Claude uses <div id="main"> but sometimes closes with </main>
+    has_main_open = bool(re.search(r'<main[\s>]', html))
+    if not has_main_open and '</main>' in html:
+        # Count unclosed sections at the point of </main>
+        before_main_close = html[:html.index('</main>')]
+        n_open = len(re.findall(r'<section[^>]*>', before_main_close))
+        n_close = len(re.findall(r'</section>', before_main_close))
+        missing_closes = '\n</section>' * (n_open - n_close)
+        html = html.replace('</main>', missing_closes + '\n</div>', 1)
+
+    # If still truncated (no </html>), append closing tags
+    if '</html>' not in html:
+        closing = ''
+        n_open = len(re.findall(r'<section[^>]*>', html))
+        n_close = len(re.findall(r'</section>', html))
+        closing += '\n</section>' * (n_open - n_close)
+        if '</body>' not in html:
+            closing += '\n</body>'
+        closing += '\n</html>'
+        html = html + closing
+
+    return html
 
 
 def _inject_nav_js(html: str) -> str:
@@ -128,7 +203,8 @@ def _inject_nav_js(html: str) -> str:
         html,
         flags=re.DOTALL,
     )
-    html = _close_truncated_html(html)
+    html = _fix_close_tags(html)
+    html = _fix_sections_outside_main(html)
     return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
 
 

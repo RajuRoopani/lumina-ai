@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA Ch03: Storage & Retrieval — Technical Deep Dive</title>
+  <title>DDIA Ch03: Storage & Retrieval — Lumina Report</title>
   <style>
     :root {
       --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
@@ -14,6 +14,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height: 1.7; font-size: 15px; }
+    /* SIDEBAR */
     #sidebar { position: fixed; top:0; left:0; width:260px; height:100vh; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:100; transition:transform .3s; }
     #sidebar-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); }
     #sidebar-header h1 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent); }
@@ -22,7 +23,9 @@
     #sidebar nav a { display:block; padding:7px 16px; font-size:12.5px; color:var(--text-muted); text-decoration:none; border-left:2px solid transparent; transition:all .15s; }
     #sidebar nav a:hover, #sidebar nav a.active { color:var(--accent); background:rgba(56,139,253,.07); border-left-color:var(--accent); }
     #sidebar nav .section-label { padding:14px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-dim); }
+    /* MAIN */
     #main { margin-left:260px; padding:48px 48px 100px; max-width:960px; }
+    /* HERO */
     .hero { background:linear-gradient(135deg,#1a2332 0%,#0f1c2e 40%,#161b22 100%); border:1px solid var(--border); border-radius:12px; padding:48px; margin-bottom:48px; position:relative; overflow:hidden; }
     .hero::before { content:''; position:absolute; top:-60px; right:-60px; width:300px; height:300px; background:radial-gradient(circle,rgba(56,139,253,.15) 0%,transparent 70%); pointer-events:none; }
     .hero .badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.3); color:var(--accent); font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; letter-spacing:.5px; margin-bottom:20px; }
@@ -32,6 +35,7 @@
     .hero .meta { display:flex; gap:20px; margin-top:24px; flex-wrap:wrap; }
     .hero .meta-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); }
     .hero .meta-item .dot { width:8px; height:8px; border-radius:50%; }
+    /* SECTIONS */
     section { margin-bottom:64px; scroll-margin-top:24px; }
     h2 { font-size:22px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
     h2 .section-num { font-size:12px; font-weight:700; color:var(--accent); background:rgba(56,139,253,.1); padding:2px 8px; border-radius:4px; }
@@ -43,12 +47,14 @@
     strong { color:var(--text); }
     em { color:var(--text-muted); }
     .section-divider { height:1px; background:var(--border); margin:0 0 48px; }
+    /* CALLOUT */
     .callout { border-left:3px solid; padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; margin:16px 0; font-size:14px; }
     .callout-info { border-color:var(--accent); background:rgba(56,139,253,.06); }
     .callout-warn { border-color:var(--accent5); background:rgba(255,166,87,.06); }
     .callout-success { border-color:var(--accent2); background:rgba(63,185,80,.06); }
     .callout-danger { border-color:var(--accent3); background:rgba(247,129,102,.06); }
     .callout strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; opacity:.8; }
+    /* PILLS */
     .pill-list { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
     .pill { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:500; border:1px solid; }
     .pill-blue { background:rgba(56,139,253,.1); color:var(--accent); border-color:rgba(56,139,253,.3); }
@@ -57,19 +63,23 @@
     .pill-purple { background:rgba(210,168,255,.1); color:var(--accent4); border-color:rgba(210,168,255,.3); }
     .pill-orange { background:rgba(255,166,87,.1); color:var(--accent5); border-color:rgba(255,166,87,.3); }
     .pill-teal { background:rgba(57,217,217,.1); color:#39d9d9; border-color:rgba(57,217,217,.3); }
+    /* TABLE */
     table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
     th { background:var(--surface2); padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); border-bottom:1px solid var(--border); }
     td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
     tr:hover td { background:rgba(255,255,255,.02); }
     .check { color:var(--accent2); } .cross { color:var(--accent3); } .partial { color:var(--accent5); }
+    /* CODE */
     pre { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; margin:12px 0; color:#e6edf3; }
     code { font-family:var(--font-mono); font-size:12.5px; background:rgba(110,118,129,.2); padding:1px 6px; border-radius:4px; }
+    /* APPROACH CARDS */
     .approach-grid { display:grid; gap:16px; margin:16px 0; }
     .approach-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; }
     .approach-card .preferred-badge { position:absolute; top:-1px; right:16px; background:var(--accent2); color:#000; font-size:10px; font-weight:800; padding:2px 10px; border-radius:0 0 6px 6px; letter-spacing:.5px; }
     .approach-card h3 { margin:0 0 8px; font-size:15px; }
     .approach-card p { font-size:13.5px; color:var(--text-muted); margin-bottom:12px; }
     .approach-traits { display:flex; flex-wrap:wrap; gap:6px; }
+    /* BOX DIAGRAMS */
     .diagram-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
     .diagram-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
     .diagram-title::after { content:''; flex:1; height:1px; background:var(--border); }
@@ -86,30 +96,37 @@
     .arrow { color:var(--text-dim); font-size:18px; padding:0 6px; white-space:nowrap; }
     .arrow-down { display:flex; justify-content:center; height:30px; align-items:center; }
     .arrow-down-line { width:2px; height:30px; opacity:.4; }
+    /* TIMELINE */
     .timeline { position:relative; padding-left:28px; }
     .timeline::before { content:''; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--border); }
     .tl-item { position:relative; margin-bottom:20px; }
     .tl-item::before { content:''; position:absolute; left:-25px; top:5px; width:12px; height:12px; border-radius:50%; border:2px solid var(--accent); background:var(--bg); }
     .tl-item h4 { margin:0 0 4px; font-size:13.5px; color:var(--text); text-transform:none; letter-spacing:0; }
     .tl-item p { font-size:13px; margin:0; }
+    /* PRO/CON */
     .pro-con-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
     .pro-card { background:rgba(63,185,80,.05); border:1px solid rgba(63,185,80,.2); border-radius:var(--radius); padding:16px; }
     .con-card { background:rgba(247,129,102,.05); border:1px solid rgba(247,129,102,.2); border-radius:var(--radius); padding:16px; }
     .pro-card h3 { color:var(--accent2); font-size:14px; margin:0 0 10px; }
     .con-card h3 { color:var(--accent3); font-size:14px; margin:0 0 10px; }
     .pro-card li,.con-card li { font-size:13px; }
+    /* TAGS */
     .tag { display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:3px; font-weight:600; margin-right:4px; }
     .tag-new { background:rgba(63,185,80,.15); color:var(--accent2); }
     .tag-change { background:rgba(56,139,253,.15); color:var(--accent); }
     .tag-risk { background:rgba(247,129,102,.15); color:var(--accent3); }
+    /* STAT CARDS */
     .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:16px 0; }
     .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
     .stat-card .stat-value { font-size:28px; font-weight:800; color:var(--accent); line-height:1; }
     .stat-card .stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+    /* PROGRESS BAR */
     #progress-bar { position:fixed; top:0; left:0; height:3px; background:var(--accent); z-index:200; transition:width .1s; }
+    /* SCROLLBAR */
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    /* SEQUENCE DIAGRAM */
     .seq-diagram { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
     .seq-participants { display:flex; gap:0; justify-content:flex-start; margin-bottom:0; }
     .seq-actor { display:flex; flex-direction:column; align-items:center; min-width:120px; flex:1; }
@@ -124,9 +141,10 @@
     .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
     .seq-msg-head { color:var(--accent); font-size:14px; }
     .seq-msg-head-left { color:var(--accent2); font-size:14px; }
-    .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; border-top:2px dashed rgba(63,185,80,.5); height:0; }
+    .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; }
     .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
     .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
+    /* ── VISUAL SUMMARY ── */
     .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
     .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
     .vs-card:hover { border-color:var(--accent); }
@@ -135,11 +153,13 @@
     .vs-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
     .vs-value { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
     .vs-sub { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    /* ── ICON LIST ── */
     .icon-list { list-style:none; padding:0; margin:12px 0; }
     .icon-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-muted); }
     .icon-list li:last-child { border-bottom:none; }
     .icon-list .il-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
     .icon-list .il-text strong { display:block; color:var(--text); font-size:13.5px; margin-bottom:2px; }
+    /* ── DATA BAR ── */
     .data-bar-list { margin:12px 0; }
     .data-bar-item { margin-bottom:10px; }
     .data-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12.5px; }
@@ -147,6 +167,7 @@
     .data-bar-value { color:var(--text); font-weight:600; }
     .data-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
     .data-bar-fill { height:100%; border-radius:3px; background:var(--accent); }
+    /* ── INSIGHT CARD ── */
     .insight-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:16px 0; }
     .insight-card { border-radius:10px; padding:16px 18px; border:1px solid; position:relative; overflow:hidden; }
     .insight-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:.08; transform:translate(20px,-20px); background:currentColor; }
@@ -159,6 +180,7 @@
     .insight-red { background:rgba(247,129,102,.07); border-color:rgba(247,129,102,.25); color:var(--accent3); }
     .insight-purple { background:rgba(210,168,255,.07); border-color:rgba(210,168,255,.25); color:var(--accent4); }
     .insight-teal { background:rgba(57,217,217,.07); border-color:rgba(57,217,217,.25); color:#39d9d9; }
+    /* ── STEP FLOW ── */
     .step-flow { display:flex; flex-direction:column; gap:0; margin:16px 0; }
     .step-item { display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:24px; }
     .step-item:last-child { padding-bottom:0; }
@@ -168,1147 +190,1140 @@
     .step-content { flex:1; padding-top:8px; }
     .step-content h4 { margin:0 0 4px; font-size:14px; color:var(--text); text-transform:none; letter-spacing:0; }
     .step-content p { margin:0; font-size:13px; color:var(--text-muted); }
+    /* ── COMPARISON TABLE ── */
     .compare-grid { display:grid; gap:2px; margin:16px 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
-    .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
-    .compare-row { display:grid; background:var(--surface); transition:background .15s; }
+    .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); grid-template-columns: repeat(3, 1fr); }
+    .compare-row { display:grid; background:var(--surface); grid-template-columns: repeat(3, 1fr); transition:background .15s; }
     .compare-row:hover { background:var(--surface2); }
     .compare-cell { padding:10px 14px; font-size:13px; border-right:1px solid var(--border); }
     .compare-cell:last-child { border-right:none; }
     .compare-cell.good { color:var(--accent2); }
     .compare-cell.bad { color:var(--accent3); }
     .compare-cell.neutral { color:var(--text-muted); }
+    /* ── HIGHLIGHT BAND ── */
     .highlight-band { background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:24px; margin:20px 0; }
     .highlight-band h3 { color:var(--accent); margin:0 0 8px; font-size:16px; }
+    /* ── KEY TAKEAWAY ── */
     .takeaway { background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(57,217,217,.05)); border:1px solid rgba(63,185,80,.25); border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
     .takeaway-icon { font-size:20px; flex-shrink:0; }
     .takeaway-text { font-size:13.5px; color:var(--text-muted); line-height:1.6; }
     .takeaway-text strong { color:var(--accent2); }
+    /* RESPONSIVE */
     @media (max-width:900px) { #sidebar { transform:translateX(-260px); } #main { margin-left:0; padding:24px; } }
   </style>
 </head>
 <body>
-
 <div id="progress-bar"></div>
 
 <div id="sidebar">
   <div id="sidebar-header">
     <h1>DDIA Ch03</h1>
-    <p>Storage & Retrieval</p>
+    <p>Storage & Retrieval Architecture</p>
   </div>
   <nav>
-    <div class="section-label">📚 Overview</div>
+    <div class="section-label">Overview</div>
     <a href="#visual-summary">At a Glance</a>
-    <a href="#foundations">Core Concepts</a>
-    <a href="#architecture">Architecture Landscape</a>
-
-    <div class="section-label">🔍 Data Structures</div>
-    <a href="#hash-indexes">Hash Indexes & Logs</a>
+    <a href="#core-principles">Core Principles</a>
+    
+    <div class="section-label">Storage Engines</div>
+    <a href="#hash-indexes">Hash Indexes</a>
+    <a href="#bitcask-architecture">Bitcask Design</a>
     <a href="#sstables">SSTables & LSM-Trees</a>
-    <a href="#btrees">B-Trees Comparison</a>
-    <a href="#data-flow">Write/Read Flows</a>
-
-    <div class="section-label">⚙️ Implementation</div>
-    <a href="#components">Key Components</a>
-    <a href="#approaches">Design Approaches</a>
-    <a href="#risks">Trade-offs & Risks</a>
-
-    <div class="section-label">📊 Analysis</div>
-    <a href="#performance">Performance Patterns</a>
-    <a href="#implementation-detail">Real-World Details</a>
-    <a href="#takeaways">Key Takeaways</a>
+    <a href="#write-read-paths">Write/Read Paths</a>
+    
+    <div class="section-label">Architecture & Trade-offs</div>
+    <a href="#comparison">Engine Comparison</a>
+    <a href="#implementation-considerations">Implementation Details</a>
+    <a href="#rum-conjecture">RUM Conjecture</a>
+    
+    <div class="section-label">Indexing & Advanced</div>
+    <a href="#indexing-techniques">Indexing Techniques</a>
+    <a href="#probabilistic-structures">Bloom Filters & More</a>
+    <a href="#references">Research References</a>
+    
+    <div class="section-label">Summary</div>
+    
   </nav>
 </div>
 
 <div id="main">
-
   <div class="hero">
-    <span class="badge">🗄️ DDIA Chapter 3</span>
+    <span class="badge">📚 DDIA Chapter 3</span>
     <h1>Storage & <span>Retrieval</span></h1>
-    <p>Deep technical exploration of how databases store, index, and retrieve data—from hash logs to B-trees, LSM-trees, and distributed systems architecture.</p>
+    <p>A deep technical exploration of how modern databases store, index, and retrieve data—including hash indexes, log-structured merge trees, and the architectural trade-offs that define performance.</p>
     <div class="meta">
-      <div class="meta-item"><span class="dot" style="background:var(--accent2)"></span> Two fundamental categories</div>
-      <div class="meta-item"><span class="dot" style="background:var(--accent)"></span> 5+ major storage engines</div>
-      <div class="meta-item"><span class="dot" style="background:var(--accent5)"></span> Read-Write tradeoffs</div>
+      <span class="meta-item"><span class="dot" style="background:var(--accent);"></span>Core Storage Engines</span>
+      <span class="meta-item"><span class="dot" style="background:var(--accent2);"></span>Read/Write Trade-offs</span>
+      <span class="meta-item"><span class="dot" style="background:var(--accent5);"></span>Index Optimization</span>
     </div>
   </div>
 
-  <!-- ==================== SECTION 1: VISUAL SUMMARY ==================== -->
+  <!-- SECTION 1: VISUAL SUMMARY -->
   <section id="visual-summary" data-section-id="visual-summary">
     <h2><span class="section-num">01</span> At a Glance</h2>
     <div class="visual-summary">
       <div class="vs-card">
         <div class="vs-icon">🎯</div>
         <div class="vs-body">
-          <div class="vs-label">Core Mission</div>
-          <div class="vs-value">Store & Retrieve Data</div>
-          <div class="vs-sub">Trade performance across read, write, memory</div>
+          <div class="vs-label">Core Challenge</div>
+          <div class="vs-value">Store & Retrieve Trade-off</div>
+          <div class="vs-sub">Indexes speed reads but slow writes</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">📂</div>
+        <div class="vs-icon">🗂️</div>
         <div class="vs-body">
-          <div class="vs-label">Storage Schools</div>
-          <div class="vs-value">2 Main Approaches</div>
-          <div class="vs-sub">Log-Structured vs Update-in-Place</div>
+          <div class="vs-label">Primary Engines</div>
+          <div class="vs-value">Hash, SSTable, LSM</div>
+          <div class="vs-sub">Log-structured & structured</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">🔑</div>
+        <div class="vs-icon">📊</div>
         <div class="vs-body">
-          <div class="vs-label">Index Role</div>
-          <div class="vs-value">Query Acceleration</div>
-          <div class="vs-sub">Derived structure; read boost, write penalty</div>
+          <div class="vs-label">Key Data Structure</div>
+          <div class="vs-value">Log-Structured Merge Tree</div>
+          <div class="vs-sub">O'Neil et al. 1996</div>
         </div>
       </div>
       <div class="vs-card">
         <div class="vs-icon">⚡</div>
         <div class="vs-body">
-          <div class="vs-label">Write Efficiency</div>
-          <div class="vs-value">Sequential >> Random</div>
-          <div class="vs-sub">Magnetic drives: 100x+ difference</div>
+          <div class="vs-label">Workload Match</div>
+          <div class="vs-value">Write-Heavy Systems</div>
+          <div class="vs-sub">LevelDB, RocksDB, Cassandra</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">🔐</div>
+        <div class="vs-icon">🔒</div>
         <div class="vs-body">
-          <div class="vs-label">RUM Conjecture</div>
-          <div class="vs-value">3-Way Tradeoff</div>
-          <div class="vs-sub">Read, Update, Memory—pick 2</div>
+          <div class="vs-label">Recovery Mechanism</div>
+          <div class="vs-value">Write-Ahead Log (WAL)</div>
+          <div class="vs-sub">Durability guarantee</div>
         </div>
       </div>
       <div class="vs-card">
-        <div class="vs-icon">📈</div>
+        <div class="vs-icon">🎓</div>
         <div class="vs-body">
-          <div class="vs-label">LSM Advantage</div>
-          <div class="vs-value">Higher Throughput</div>
-          <div class="vs-sub">Sequential writes cost higher read latency</div>
+          <div class="vs-label">Developer Focus</div>
+          <div class="vs-value">Informed Selection</div>
+          <div class="vs-sub">Understand internals deeply</div>
         </div>
       </div>
     </div>
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 2: FOUNDATIONAL CONCEPTS ==================== -->
-  <section id="foundations" data-section-id="foundations">
-    <h2><span class="section-num">02</span> Foundational Concepts</h2>
-    
+  <!-- SECTION 2: CORE PRINCIPLES -->
+  <section id="core-principles" data-section-id="core-principles">
+    <h2><span class="section-num">02</span> Core Principles & Index Fundamentals</h2>
     <div class="diagram-container">
-      <div class="diagram-title">Two Core Database Operations</div>
+      <div class="diagram-title">Database Operations & Index Impact</div>
       <div class="box-row">
-        <div class="box box-blue">Storage<small>Write data to disk</small></div>
+        <div class="box box-blue">
+          Store Data<br><small>Append/Write</small>
+        </div>
         <div class="arrow">↔</div>
-        <div class="box box-green">Retrieval<small>Find & read data</small></div>
+        <div class="box box-orange">
+          Index Overhead<small>Slows Writes</small>
+        </div>
+        <div class="arrow">↔</div>
+        <div class="box box-green">
+          Retrieve Data<br><small>Read/Query</small>
+        </div>
       </div>
     </div>
-
-    <h3>The Index Principle</h3>
-    <p><strong>Definition:</strong> An <em>index</em> is an <strong>additional structure derived from primary data</strong>—it doesn't change what data exists, only <strong>how quickly we find it</strong>.</p>
+    
+    <h3>The Core Trade-off</h3>
+    <p>Every database fundamentally performs two operations: <strong>store data</strong> and <strong>retrieve data</strong>. The foundational trade-off is unavoidable: well-chosen indexes dramatically accelerate read queries, but every index decelerates write operations. Application developers must understand storage engine internals to select the right engine for their workload.</p>
+    
+    <h3>What is an Index?</h3>
+    <p>An <strong>index</strong> is a <em>derived data structure</em> that acts as a signpost into the main data. It does not affect the database contents—only query performance. The challenge: indexes must be manually selected for creation; most databases do not automatically index all columns. The developer's responsibility is matching index structures to query patterns.</p>
     
     <div class="insight-strip">
       <div class="insight-card insight-blue">
-        <span class="ic-icon">📖</span>
-        <div class="ic-title">Index Purpose</div>
-        <div class="ic-body">Aids location discovery via additional metadata, improving query performance</div>
+        <span class="ic-icon">💡</span>
+        <div class="ic-title">Index Principle</div>
+        <div class="ic-body">Index = performance lever. Trade write cost for read speed. Requires conscious design decisions.</div>
       </div>
       <div class="insight-card insight-orange">
-        <span class="ic-icon">⚙️</span>
-        <div class="ic-title">Read-Write Tradeoff</div>
-        <div class="ic-body">Indexes accelerate reads but decelerate writes; selection depends on workload</div>
+        <span class="ic-icon">⚠️</span>
+        <div class="ic-title">Manual Selection</div>
+        <div class="ic-body">Most databases do NOT auto-index all columns. Developers must explicitly decide what to index.</div>
       </div>
       <div class="insight-card insight-green">
         <span class="ic-icon">🎯</span>
-        <div class="ic-title">Workload-Dependent</div>
-        <div class="ic-body">Choice of index structure must match application access patterns</div>
+        <div class="ic-title">Knowledge Required</div>
+        <div class="ic-body">Understanding storage engine internals is essential for optimal database design.</div>
       </div>
     </div>
-
-    <h3>Two Storage Engine Categories</h3>
-    <div class="compare-grid" style="grid-template-columns:1fr 1fr;">
-      <div class="compare-header" style="grid-template-columns:1fr 1fr;"><span>Log-Structured</span><span>Update-in-Place</span></div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Write Pattern</strong></div>
-        <div class="compare-cell"><strong>Write Pattern</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">Append-only files</div>
-        <div class="compare-cell">Fixed-size pages, overwrite</div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Examples</strong></div>
-        <div class="compare-cell"><strong>Examples</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">Bitcask, LevelDB, Cassandra</div>
-        <div class="compare-cell">B-tree (InnoDB, PostgreSQL)</div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Strength</strong></div>
-        <div class="compare-cell"><strong>Strength</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell good">Sequential I/O efficiency</div>
-        <div class="compare-cell good">Point reads fast</div>
-      </div>
-    </div>
-
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 3: ARCHITECTURE LANDSCAPE ==================== -->
-  <section id="architecture" data-section-id="architecture">
-    <h2><span class="section-num">03</span> Architecture Landscape</h2>
-    
-    <div class="diagram-container">
-      <div class="diagram-title">Storage Engine Hierarchy</div>
-      <div class="box-row" style="flex-direction:column; align-items:stretch;">
-        <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-          <div class="box box-purple" style="flex:1; min-width:auto; text-align:center; padding:14px;">Primary Data File<small>source of truth</small></div>
-        </div>
-        <div style="display:flex; gap:16px; align-items:center; margin-bottom:16px;">
-          <div class="box box-blue" style="flex:1; min-width:auto;">Log-Structured Append<small>Bitcask, LSM</small></div>
-          <div class="box box-orange" style="flex:1; min-width:auto;">Update-in-Place<small>B-tree</small></div>
-        </div>
-        <div style="display:flex; gap:16px; align-items:center;">
-          <div class="box box-green" style="flex:1; min-width:auto;">Hash Indexes<small>in-memory</small></div>
-          <div class="box box-green" style="flex:1; min-width:auto;">Sorted Indexes<small>SSTable, B-tree</small></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout callout-info">
-      <strong>KEY INSIGHT</strong> Each storage engine makes explicit trade-offs. The RUM Conjecture (Read/Update/Memory) proves you cannot simultaneously optimize all three dimensions—you must choose which to sacrifice.
-    </div>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 4: HASH INDEXES ==================== -->
+  <!-- SECTION 3: HASH INDEXES ARCHITECTURE -->
   <section id="hash-indexes" data-section-id="hash-indexes">
-    <h2><span class="section-num">04</span> Hash Indexes & Log-Structured Approach</h2>
+    <h2><span class="section-num">03</span> Hash Indexes: Log-Structured Approach</h2>
+    <div class="seq-diagram">
+      <div class="seq-participants">
+        <div class="seq-actor"><div class="seq-actor-box">Write Request</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Append-Only Log</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">In-Memory Hash Map</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Read Request</div><div class="seq-actor-line"></div></div>
+      </div>
+      <div class="seq-messages">
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 60px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-line"></div>
+              <div class="seq-msg-head">→</div>
+            </div>
+            <div class="seq-msg-label">append KV</div>
+          </div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 120px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-line"></div>
+              <div class="seq-msg-head">→</div>
+            </div>
+            <div class="seq-msg-label">update offset</div>
+          </div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 180px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-head">←</div>
+              <div class="seq-msg-line"></div>
+            </div>
+            <div class="seq-msg-label">offset lookup, seek, read</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <h3>Core Architecture</h3>
+    <p>Hash indexes use a simple append-only log mechanism paired with an in-memory hash table:</p>
+    
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>In-Memory Hash Map</h4>
-          <p>Maintain a dictionary: <code>key → byte offset in data file</code>. This enables O(1) lookup of where a key is stored on disk.</p>
+          <h4>Write Operation</h4>
+          <p>Append key-value pair to the end of the data file; update the in-memory hash map with the key and the new byte offset of this entry.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>Append-Only Writes</h4>
-          <p>All writes go to the end of an immutable log file. Update the in-memory hash map to point to the new offset. Sequential I/O is orders of magnitude faster than random I/O.</p>
+          <h4>Read Operation</h4>
+          <p>Look up the key in the hash map to retrieve the byte offset. Seek to that location in the file and read the value.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Segment Compaction</h4>
-          <p>When the log grows too large, break it into segments and run a background compaction process: discard duplicate keys, keep only the most recent value per key.</p>
+          <h4>Single Disk Seek</h4>
+          <p>If the value is not in the filesystem cache, reading requires only one disk seek—highly efficient for random access.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Advantages of Append-Only Writes</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">⚡</span>
+        <span class="il-text"><strong>Sequential Writes >> Random Writes</strong>Sequential writes to disk (especially on magnetic drives, but also on SSDs) are dramatically faster than random writes because they avoid seeking.</span>
+      </li>
+      <li>
+        <span class="il-icon">🔒</span>
+        <span class="il-text"><strong>Simpler Concurrency & Crash Recovery</strong>Append-only eliminates the risk of in-place overwrites corrupting data. No locks needed for writes if single-writer thread; immutable segments allow multi-reader.</span>
+      </li>
+      <li>
+        <span class="il-icon">🧹</span>
+        <span class="il-text"><strong>No Fragmentation</strong>Data file grows sequentially without the fragmentation patterns that plague file systems with in-place updates.</span>
+      </li>
+    </ul>
+
+    <h3>Fundamental Limitations</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-red">
+        <span class="ic-icon">🚨</span>
+        <div class="ic-title">All Keys Must Fit in RAM</div>
+        <div class="ic-body">The hash map lives entirely in memory. If you have billions of keys, RAM becomes prohibitive. On-disk hash maps suffer from random I/O, poor expansion, and collision handling overhead.</div>
+      </div>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">⚠️</span>
+        <div class="ic-title">No Range Queries</div>
+        <div class="ic-body">Must look up each key individually. Cannot scan from key A to key Z in sorted order. This is a hard constraint of hash-based indexes.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: BITCASK ARCHITECTURE -->
+  <section id="bitcask-architecture" data-section-id="bitcask-architecture">
+    <h2><span class="section-num">04</span> Bitcask: Practical Hash Index Implementation</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Bitcask Write & Read Flow</div>
+      <div class="box-row">
+        <div class="box box-blue">
+          Active Segment<small>In-memory hash</small>
+        </div>
+        <div class="arrow">→</div>
+        <div class="box box-orange">
+          Closed Segments<small>Immutable</small>
+        </div>
+        <div class="arrow">→</div>
+        <div class="box box-green">
+          Merge & Compact<small>Deduplicate</small>
+        </div>
+      </div>
+    </div>
+
+    <h3>Bitcask Overview</h3>
+    <p><strong>Bitcask</strong> is the default storage engine in Riak. It implements the hash-index pattern with segment management for practical scalability. A critical constraint: <em>all keys must fit in RAM</em>. However, values can exceed RAM—disk seeks retrieve them on demand.</p>
+
+    <h3>Optimal Workload Match</h3>
+    <p>Bitcask excels when:</p>
+    <div class="data-bar-list">
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Frequent updates per key</span>
+          <span class="data-bar-value">High Fit</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:95%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Small number of distinct keys</span>
+          <span class="data-bar-value">High Fit</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:90%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">High write throughput</span>
+          <span class="data-bar-value">High Fit</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:92%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Example: URL → Play Count</span>
+          <span class="data-bar-value">Perfect</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:98%;background:var(--accent2);"></div></div>
+      </div>
+    </data-bar-list>
+
+    <h3>Segment Management & Compaction</h3>
+    <p>As the append-only log grows indefinitely, Bitcask divides it into <strong>segments</strong> and applies compaction and merging:</p>
+
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Threshold-Based Segmentation</h4>
+          <p>When an active segment reaches a size threshold (e.g., 100 MB), it is closed and becomes immutable. A new segment becomes active.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Compaction</h4>
+          <p>Remove duplicate keys from closed segments. Retain only the most recent value per key. Discard older entries.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Merging</h4>
+          <p>Combine multiple segments into one, further reducing file count and total disk space used.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">4</div>
         <div class="step-content">
-          <h4>Merge Segments</h4>
-          <p>Combine multiple compacted segments while maintaining sorted order. Old segments remain readable; switch to new merged segment atomically.</p>
+          <h4>Concurrent Reads/Writes</h4>
+          <p>Background threads handle merging on old segments. Reads and writes continue on the active segment. When merge completes, atomic switch to the merged segment.</p>
         </div>
       </div>
     </div>
 
-    <h3>Bitcask Pattern (Riak's Storage Engine)</h3>
-    <div class="highlight-band">
-      <h3>🎯 Design Goal: Maximize Write Throughput</h3>
-      <p><strong>Bitcask</strong> is optimized for workloads where keys fit in RAM but values are large. All keys must reside in-memory hash map; values retrieved from disk with a single seek.</p>
-    </div>
+    <h3>Per-Segment Hash Maps</h3>
+    <p>Each segment has its own in-memory hash map. On read:</p>
+    <ol>
+      <li>Check the most recent segment's hash map first</li>
+      <li>If key not found, check the previous segment</li>
+      <li>Continue backward to oldest segment</li>
+    </ol>
+    <p>Because merging keeps segment count small (often just 3–5 segments), the lookup overhead remains minimal.</p>
 
-    <div class="data-bar-list">
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">Write Operation Cost</span>
-          <span class="data-bar-value">1 append + 1 hash update</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:15%;background:var(--accent2)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">Read Operation Cost</span>
-          <span class="data-bar-value">1 hash lookup + 1 disk seek</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:25%;background:var(--accent)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">Range Query Cost</span>
-          <span class="data-bar-value">Individual key lookups (no sorting)</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:100%;background:var(--accent3)"></div></div>
-      </div>
-    </div>
-
-    <h3>Hash Index Advantages</h3>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Appending is Efficient</strong> File appends are "generally very efficient" due to sequential disk access; much faster than random writes</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Concurrency Simplified</strong> Immutable segment files enable parallel reads without locks; single writer thread</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Crash Recovery Easy</strong> Immutable log enables quick recovery; checksums detect corruption</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>No Fragmentation</strong> Append-only avoids file fragmentation that plagues in-place updates</span>
-      </li>
-    </ul>
-
-    <h3>Hash Index Limitations</h3>
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Hash Table RAM Bottleneck</strong> The entire hash map must fit in memory; no way to efficiently page to disk</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>No Range Queries</strong> Query for kitty00000 to kitty99999 requires individual hash lookups per key—no index ordering</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Linear Scan Without Index</strong> Reading all data is O(n) sequential file scan if you have no index</span>
-      </li>
-    </ul>
-
-    <h3>Segment Compaction & Merging Details</h3>
+    <h3>Implementation Considerations</h3>
     <table>
       <tr>
-        <th>Issue</th>
-        <th>Solution in Bitcask</th>
+        <th>Concern</th>
+        <th>Solution</th>
       </tr>
       <tr>
-        <td><strong>File Format</strong></td>
-        <td><span class="check">Binary</span> (length prefix + raw bytes), not CSV or JSON</td>
+        <td>File format robustness</td>
+        <td>Binary (length-prefixed strings) preferred over CSV for parsing efficiency</td>
       </tr>
       <tr>
-        <td><strong>Deletion</strong></td>
-        <td>Append tombstone record; during merging, skip all older versions of that key</td>
+        <td>Deletion</td>
+        <td>Tombstone marker in log; discarded during merge, not immediate removal</td>
       </tr>
       <tr>
-        <td><strong>Crash Recovery</strong></td>
-        <td>Store snapshots of segment hash maps on disk for fast reload on restart</td>
+        <td>Crash recovery</td>
+        <td>Snapshot hash maps to disk; much faster reload than rescanning log</td>
       </tr>
       <tr>
-        <td><strong>Partial Writes</strong></td>
-        <td>Checksums detect corrupted segments; discard and replay from before corruption</td>
+        <td>Partial writes</td>
+        <td>Checksums detect and ignore corrupted log fragments</td>
       </tr>
       <tr>
-        <td><strong>Concurrency</strong></td>
-        <td>Single writer; segments immutable so reads fully parallel</td>
+        <td>Concurrent access</td>
+        <td>Single writer thread (enforces sequential log); immutable segments → multiple readers</td>
       </tr>
     </table>
 
-    <div class="takeaway">
-      <span class="takeaway-icon">💡</span>
-      <div class="takeaway-text"><strong>Bitcask model works best for:</strong> Key-value stores where all keys fit in RAM and write throughput matters more than range query speed. Good for time-series data, event logs, caches.</div>
+    <div class="callout callout-success">
+      <strong>STRENGTH</strong>Bitcask is simple, proven, and excellent for workloads with frequent overwrites of a limited key set.
     </div>
-
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 5: SSTABLES & LSM-TREES ==================== -->
+  <!-- SECTION 5: SSTABLES & LSM-TREES -->
   <section id="sstables" data-section-id="sstables">
-    <h2><span class="section-num">05</span> SSTables & LSM-Trees</h2>
-
+    <h2><span class="section-num">05</span> SSTables & LSM-Trees: Sorted Storage</h2>
     <div class="diagram-container">
-      <div class="diagram-title">SSTable: Sorted String Table</div>
+      <div class="diagram-title">LSM-Tree Layer Structure</div>
       <div class="box-row">
-        <div class="box box-blue">Keys sorted<small>key1 ≤ key2 ≤ key3</small></div>
+        <div class="box box-blue">
+          Memtable<small>In-Memory<br>Sorted Tree</small>
+        </div>
         <div class="arrow">→</div>
-        <div class="box box-green">One value per key<small>no duplicates</small></div>
+        <div class="box box-orange">
+          L0 SSTables<small>Most Recent</small>
+        </div>
         <div class="arrow">→</div>
-        <div class="box box-orange">Sparse index<small>few KB per entry</small></div>
+        <div class="box box-orange">
+          L1 SSTables<small>Intermediate</small>
+        </div>
+        <div class="arrow">→</div>
+        <div class="box box-green">
+          L2+ SSTables<small>Oldest</small>
+        </div>
       </div>
     </div>
 
-    <h3>Why SSTables Beat Hash Indexes</h3>
-    <div class="insight-strip">
-      <div class="insight-card insight-green">
-        <span class="ic-icon">⚡</span>
-        <div class="ic-title">Efficient Merging</div>
-        <div class="ic-body">Merge-sort algorithm scales to files larger than RAM. Compare smallest key in each input file, copy winner to output, repeat.</div>
+    <h3>SSTable Definition</h3>
+    <p>A <strong>Sorted String Table (SSTable)</strong> is a sequence of key-value pairs stored in sorted order by key. Within each merged segment, every key appears only once (duplicates are discarded during merges, retaining the most recent value).</p>
+
+    <h3>Advantages over Hash-Indexed Logs</h3>
+    <div class="approach-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="approach-card">
+        <h3 style="color: var(--accent2); font-size: 14px;">1. Efficient Merging</h3>
+        <p style="font-size: 12.5px;">Mergesort-like algorithm. Read from multiple input files simultaneously, compare first keys, copy lowest to output. Scale to thousands of segments.</p>
       </div>
-      <div class="insight-card insight-blue">
-        <span class="ic-icon">💾</span>
-        <div class="ic-title">Sparse Index</div>
-        <div class="ic-body">Not all keys indexed. One entry per few KB suffices. Use binary search to locate key range, then linear scan a small block.</div>
+      <div class="approach-card">
+        <h3 style="color: var(--accent5); font-size: 14px;">2. Sparse Index</h3>
+        <p style="font-size: 12.5px;">Don't index every key. One entry per few KB is sufficient. Seek to indexed key, then scan linearly. Dramatically reduce RAM.</p>
       </div>
-      <div class="insight-card insight-purple">
-        <span class="ic-icon">📦</span>
-        <div class="ic-title">Block Compression</div>
-        <div class="ic-body">Group records into blocks, compress entire block before disk write. Saves space and bandwidth. Index points to block boundaries.</div>
-      </div>
-      <div class="insight-card insight-teal">
-        <span class="ic-icon">🔍</span>
-        <div class="ic-title">Range Queries</div>
-        <div class="ic-body">Because data is sorted, finding kitty00000 to kitty99999 is a contiguous scan—no random seeks required.</div>
+      <div class="approach-card">
+        <h3 style="color: var(--accent3); font-size: 14px;">3. Block Compression</h3>
+        <p style="font-size: 12.5px;">Group KV pairs into blocks, compress before write. Sparse index points to block start. Saves disk space and I/O.</p>
       </div>
     </div>
 
-    <h3>LSM-Tree Write Flow (Memtable Based)</h3>
+    <h3>Sparse Index Example</h3>
+    <p>Instead of indexing every key, maintain just a few strategic entries:</p>
+    <pre>Indexed entries:
+  handbag → offset 0
+  handsome → offset 50000
+
+To find "handiwork":
+  1. Seek to "handbag" (offset 0)
+  2. Scan linearly: handbag → handball → ... → handiwork ✓
+  3. Stop at "handsome" (offset 50000) — handiwork is sandwiched</pre>
+
+    <h3>Key Insight: Range Queries</h3>
+    <div class="highlight-band">
+      <h3>✨ Breakthrough Feature</h3>
+      <p>Because SSTables are sorted, you <strong>can efficiently scan a range of keys</strong>. For example, find all entries from <code>kitty00000</code> to <code>kitty99999</code> by seeking to <code>kitty00000</code> and scanning forward to <code>kitty99999</code>. This is impossible with hash indexes.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 6: WRITE/READ PATHS -->
+  <section id="write-read-paths" data-section-id="write-read-paths">
+    <h2><span class="section-num">06</span> Write Path, Read Path & Crash Recovery</h2>
+    <div class="seq-diagram">
+      <div class="seq-participants">
+        <div class="seq-actor"><div class="seq-actor-box">Write Request</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">WAL (Write-Ahead Log)</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">Memtable</div><div class="seq-actor-line"></div></div>
+        <div class="seq-actor"><div class="seq-actor-box">SSTable File</div><div class="seq-actor-line"></div></div>
+      </div>
+      <div class="seq-messages">
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 60px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-line"></div>
+              <div class="seq-msg-head">→</div>
+            </div>
+            <div class="seq-msg-label">append entry</div>
+          </div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 120px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-line"></div>
+              <div class="seq-msg-head">→</div>
+            </div>
+            <div class="seq-msg-label">add to tree</div>
+          </div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+        </div>
+        <div class="seq-row">
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-spacer"><div class="seq-spacer-line"></div></div>
+          <div class="seq-msg" style="margin-left: 180px;">
+            <div class="seq-msg-arrow">
+              <div class="seq-msg-line"></div>
+              <div class="seq-msg-head">→</div>
+            </div>
+            <div class="seq-msg-label">flush when size threshold</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Write Path in LSM-Tree</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
           <h4>Append to Write-Ahead Log (WAL)</h4>
-          <p>Unsorted writes go to disk-based log for crash recovery. This log is append-only and can be discarded after the step below.</p>
+          <p>Every write is immediately appended to a durability log on disk. This ensures that even if the database crashes, committed writes are not lost.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>Add to In-Memory Tree</h4>
-          <p>Insert key-value into <strong>memtable</strong> (red-black tree or AVL tree, kept sorted). This is in-RAM and fast.</p>
+          <h4>Add to In-Memory Memtable</h4>
+          <p>Simultaneously, add the key-value pair to the in-memory memtable (usually a red-black tree or AVL tree). The tree automatically keeps keys sorted.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Memtable Exceeds Threshold</h4>
-          <p>When memtable reaches size limit (e.g., few MB), flush to disk as an immutable SSTable file.</p>
+          <h4>Continue Writes to New Memtable</h4>
+          <p>When the memtable reaches a threshold (typically a few MB), a background thread flushes it to disk as an SSTable. Concurrent writes continue to a new memtable instance.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Read Path in LSM-Tree</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Check In-Memory Memtable</h4>
+          <p>First, look up the key in the active memtable. If found, return immediately (fastest path).</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Check Most Recent On-Disk Segment</h4>
+          <p>If not in memtable, search the most recently flushed SSTable. Use sparse index and binary search or linear scan within a block.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Iterate Backward Through Segments</h4>
+          <p>Continue through older segments in reverse order (newest to oldest). Stop at first match or conclude key not found after checking all segments.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Crash Recovery</h3>
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>✅ WAL Durability</h3>
+        <ul>
+          <li>Memtable loss on crash is handled by WAL</li>
+          <li>Restore memtable from WAL entries at startup</li>
+          <li>Discard WAL log after SSTable flush</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>⚠️ Recovery Cost</h3>
+        <ul>
+          <li>Replaying WAL can be slow for large logs</li>
+          <li>Periodic snapshots of memtable reduce replay time</li>
+          <li>Trade-off: storage overhead vs. recovery speed</li>
+        </ul>
+      </div>
+    </pro-con-grid>
+
+    <div class="callout callout-info">
+      <strong>LSM-TREE DEFINITION</strong>Log-Structured Merge-Tree (LSM-Tree) is an algorithm for merging and compacting sorted files. Originated with Patrick O'Neil et al. (1996). Powers LevelDB, RocksDB, Cassandra, and many modern systems.
+    </div>
+  </section>
+
+  <!-- SECTION 7: ENGINE COMPARISON -->
+  <section id="comparison" data-section-id="comparison">
+    <h2><span class="section-num">07</span> Hash Index vs. SSTable/LSM Trade-offs</h2>
+    <table>
+      <tr>
+        <th>Dimension</th>
+        <th>Hash Index (Bitcask)</th>
+        <th>SSTable/LSM-Tree</th>
+      </tr>
+      <tr>
+        <td><strong>Write Performance</strong></td>
+        <td>⚡ Excellent (append-only)</td>
+        <td>⚡ Excellent (append, compaction in background)</td>
+      </tr>
+      <tr>
+        <td><strong>Read Performance</strong></td>
+        <td>✔ Good (1 seek if cache miss)</td>
+        <td>✔ Good (sparse index, block compression)</td>
+      </tr>
+      <tr>
+        <td><strong>Range Queries</strong></td>
+        <td><span class="cross">✘ Not possible</span></td>
+        <td><span class="check">✔ Fully supported</span></td>
+      </tr>
+      <tr>
+        <td><strong>Key Set Size</strong></td>
+        <td>Limited by RAM (all keys in memory)</td>
+        <td>Unlimited (sparse index, tiered storage)</td>
+      </tr>
+      <tr>
+        <td><strong>Compaction Overhead</strong></td>
+        <td>Simple (merge sorted logs)</td>
+        <td>Higher (multi-level merging)</td>
+      </tr>
+      <tr>
+        <td><strong>Space Efficiency</strong></td>
+        <td>Good (compaction removes dupes)</td>
+        <td>Excellent (block compression)</td>
+      </tr>
+      <tr>
+        <td><strong>Ideal Workload</strong></td>
+        <td>Few keys, many updates per key</td>
+        <td>Large key sets, range-heavy queries</td>
+      </tr>
+    </table>
+
+    <h3>The Fundamental Trade-off: RUM Conjecture</h3>
+    <div class="highlight-band">
+      <h3>🎯 Cannot Optimize All Three</h3>
+      <p>According to the <strong>RUM Conjecture</strong> (Athanassoulis et al., 2016), no single data structure can simultaneously optimize Read performance, Update (write) performance, AND Memory efficiency. Every system must choose which two to prioritize.</p>
+    </div>
+
+    <div class="insight-strip">
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔵</span>
+        <div class="ic-title">Hash Index Focus</div>
+        <div class="ic-body"><strong>Read + Update:</strong> Excellent on both, but memory efficiency suffers (all keys in RAM).</div>
+      </div>
+      <div class="insight-card insight-teal">
+        <span class="ic-icon">🩵</span>
+        <div class="ic-title">LSM-Tree Focus</div>
+        <div class="ic-body"><strong>Update + Memory:</strong> Excellent write performance, sparse indexes save RAM, but read amplification fromchecking multiple levels.</div>
+      </div>
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">🟣</span>
+        <div class="ic-title">B-Tree Focus</div>
+        <div class="ic-body"><strong>Read + Memory:</strong> Balanced I/O, good cache locality, but write amplification from node splits and rewrites.</div>
+      </div>
+    </div>
+
+    <h3>Modern System Implementations</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>LevelDB</strong>Google's embedded LSM-Tree database; widely used as reference implementation and in Chrome IndexedDB.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>RocksDB</strong>Facebook's fork of LevelDB; optimized for high concurrency and SSD performance; powers numerous production systems.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>Cassandra</strong>Distributed database using LSM-Tree design at scale with log-structured merging across nodes.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>MySQL/InnoDB</strong>Traditional B-Tree index structure; balanced design for read-heavy OLTP workloads.</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- SECTION 8: IMPLEMENTATION CONSIDERATIONS -->
+  <section id="implementation-considerations" data-section-id="implementation-considerations">
+    <h2><span class="section-num">08</span> Implementation Details & Storage Engine Tuning</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">LSM Compaction Strategy Levels</div>
+      <div class="box-row">
+        <div class="box box-blue">L0<br><small>Recent Flushes</small></div>
+        <div class="arrow">→</div>
+        <div class="box box-orange">L1<br><small>Intermediate</small></div>
+        <div class="arrow">→</div>
+        <div class="box box-orange">L2<br><small>Merging</small></div>
+        <div class="arrow">→</div>
+        <div class="box box-green">L3+<br><small>Cold Data</small></div>
+      </div>
+    </div>
+
+    <h3>Compaction Strategies</h3>
+    <p>Different LSM implementations use different compaction policies to balance read and write amplification:</p>
+
+    <h4>Size-Tiered Compaction (Cassandra)</h4>
+    <p>When L0 reaches N SSTables, merge all into one L1 SSTable. Continues up the hierarchy. Trade-off: fewer compactions but larger merges.</p>
+
+    <h4>Leveled Compaction (LevelDB, RocksDB)</h4>
+    <p>Each level has a fixed target size (e.g., L0=4MB, L1=40MB, L2=400MB). Merges are triggered to maintain level invariants. Trade-off: more frequent but smaller compactions, better read performance.</p>
+
+    <h3>SSD-Specific Considerations</h3>
+    <p>Modern storage engines must account for SSD characteristics:</p>
+    <div class="data-bar-list">
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Sequential Write Advantage</span>
+          <span class="data-bar-value">Less Pronounced on SSD</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:40%;background:var(--accent5);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Random I/O Cost</span>
+          <span class="data-bar-value">Much Lower than HDD</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:25%;background:var(--accent2);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Write Amplification</span>
+          <span class="data-bar-value">Still Critical</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:85%;background:var(--accent3);"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label">Erasure Block Lifetime</span>
+          <span class="data-bar-value">Constrained Resource</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:80%;background:var(--accent3);"></div></div>
+      </div>
+    </data-bar-list>
+
+    <h3>Write-Ahead Logging (WAL) Variants</h3>
+    <table>
+      <tr>
+        <th>Mechanism</th>
+        <th>Purpose</th>
+        <th>Trade-off</th>
+      </tr>
+      <tr>
+        <td><strong>Write-Ahead Log (WAL)</strong></td>
+        <td>Durability guarantee; replay on crash</td>
+        <td>Every write = 2 disk ops (log + memtable); slows sequential write throughput</td>
+      </tr>
+      <tr>
+        <td><strong>Double-Write Buffer (InnoDB)</strong></td>
+        <td>Protect against partial-page writes on SSD</td>
+        <td>Writes go to buffer first, then page; prevents torn page on crash</td>
+      </tr>
+      <tr>
+        <td><strong>Full-Page Writes (PostgreSQL)</strong></td>
+        <td>Ensure consistency when page written partially during crash</td>
+        <td>Increases WAL size; performance impact on high-velocity writes</td>
+      </tr>
+    </table>
+
+    <h3>Bloom Filters in LSM Compaction</h3>
+    <p>Bloom filters are probabilistic data structures used to answer "Is this key in this SSTable?" with certainty for yes and probabilistic for no.</p>
+    <div class="callout callout-success">
+      <strong>OPTIMIZATION</strong>During LSM read, check the Bloom filter first. If it says "definitely not present," skip the SSTable entirely. Eliminates many disk seeks, dramatically reducing read amplification.
+    </div>
+
+    <h3>Covering Indexes & Full-Text Search</h3>
+    <p><strong>Covering indexes</strong> store the actual value within the index, not just the key and offset. This enables index-only scans without accessing the main data file.</p>
+    <p><strong>Full-text search</strong> (Lucene-style inverted indexes) builds separate indexes per word, mapping word → list of document IDs. Merges use the same segment-based approach as LSM-Trees.</p>
+
+    <div class="insight-strip">
+      <div class="insight-card insight-green">
+        <span class="ic-icon">🟢</span>
+        <div class="ic-title">Bloom Filter Benefit</div>
+        <div class="ic-body">Space/Time trade-off: 1% false positive rate saves orders of magnitude in disk seeks.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔵</span>
+        <div class="ic-title">Fuzzy Matching</div>
+        <div class="ic-body">Levenshtein automata enable typo-tolerant search at scale; 100× faster in modern Lucene versions.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 9: RUM CONJECTURE DEEP DIVE -->
+  <section id="rum-conjecture" data-section-id="rum-conjecture">
+    <h2><span class="section-num">09</span> RUM Conjecture: The Fundamental Design Constraint</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">RUM Triangle: Pick Two Corners</div>
+      <div style="text-align: center; padding: 20px 0;">
+        <div style="font-size: 48px; line-height: 1; margin-bottom: 20px;">
+          <span style="color: var(--accent);">R</span>ead &nbsp;&nbsp;&nbsp;&nbsp;
+          <span style="color: var(--accent2);">U</span>pdate &nbsp;&nbsp;&nbsp;&nbsp;
+          <span style="color: var(--accent4);">M</span>emory
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted);">No single index structure can simultaneously optimize all three</p>
+      </div>
+    </div>
+
+    <h3>The RUM Conjecture Framework</h3>
+    <p>Athanassoulis et al. (2016) in <em>"Designing Access Methods: The RUM Conjecture"</em> established that any data structure optimizing storage and retrieval must balance three competing objectives:</p>
+
+    <div class="approach-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="approach-card" style="border-color:rgba(56,139,253,.5)">
+        <h3 style="color:var(--accent); margin:0 0 8px; font-size:14px;">Read Efficiency</h3>
+        <p style="font-size:12.5px; margin:0; color: var(--text-muted);">Cost of accessing stored data. Lower is better. Achieved via indexes, caching, spatial locality.</p>
+      </div>
+      <div class="approach-card" style="border-color:rgba(63,185,80,.5)">
+        <h3 style="color:var(--accent2); margin:0 0 8px; font-size:14px;">Update Efficiency</h3>
+        <p style="font-size:12.5px; margin:0; color: var(--text-muted);">Cost of writing/modifying data. Lower is better. Append-only and sequential writes minimize this.</p>
+      </div>
+      <div class="approach-card" style="border-color:rgba(210,168,255,.5)">
+        <h3 style="color:var(--accent4); margin:0 0 8px; font-size:14px;">Memory Efficiency</h3>
+        <p style="font-size:12.5px; margin:0; color: var(--text-muted);">Space overhead of index structures. Lower is better. Sparse indexes and compression help.</p>
+      </div>
+    </div>
+
+    <h3>Design Trade-offs Across Architectures</h3>
+    <div class="compare-grid">
+      <div class="compare-header">
+        <div class="compare-cell"><strong>Architecture</strong></div>
+        <div class="compare-cell"><strong>Read Focus</strong></div>
+        <div class="compare-cell"><strong>Update Focus</strong></div>
+        <div class="compare-cell"><strong>Memory Focus</strong></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell"><strong>Hash Index (Bitcask)</strong></div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell bad">✘ All keys in RAM</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell"><strong>LSM-Tree</strong></div>
+        <div class="compare-cell neutral">⚠ Adequate</div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell good">✔ Optimized</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell"><strong>B-Tree</strong></div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell neutral">⚠ Moderate</div>
+        <div class="compare-cell good">✔ Optimized</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-cell"><strong>Fractal Tree</strong></div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell good">✔ Optimized</div>
+        <div class="compare-cell neutral">⚠ Moderate</div>
+      </div>
+    </div>
+
+    <h3>Implications for System Design</h3>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Understand Your Workload</h4>
+          <p>Is it read-heavy (OLTP), write-heavy (streaming, time-series), or mixed? This determines which corner of the RUM triangle to prioritize.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Accept Trade-offs</h4>
+          <p>No single engine excels at all three. Acknowledge the cost: hash indexes waste RAM, LSM reads hit multiple levels, B-Trees rewrite pages.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Mitigate Weak Dimensions</h4>
+          <p>Use secondary structures (caching, Bloom filters, covering indexes) to address the dimension you're not optimizing for.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">4</div>
         <div class="step-content">
-          <h4>Create New Memtable</h4>
-          <p>Start fresh in-memory tree for new writes. Old memtable's SSTable becomes a read-only segment.</p>
-        </div>
-      </div>
-      <div class="step-item">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <h4>Background Compaction</h4>
-          <p>Periodically merge and compact segments using size-tiered or leveled strategies. Reduces number of segments, speeds future reads.</p>
+          <h4>Tune Aggressively</h4>
+          <p>Modern systems (RocksDB, Cassandra) expose knobs for tuning compaction strategy, block size, cache size, and more. Invest time in profiling.</p>
         </div>
       </div>
     </div>
-
-    <h3>LSM Read Flow</h3>
-    <ol style="margin-left:20px;">
-      <li><strong>Check memtable first</strong> (in-memory, fastest)</li>
-      <li><strong>Check most recent on-disk SSTable</strong> if not found</li>
-      <li><strong>Check progressively older SSTables</strong> in reverse chronological order</li>
-      <li><strong>Return value</strong> or "not found" if exhausted all segments</li>
-    </ol>
-
-    <h3>LSM-Tree Definition</h3>
-    <p><strong>Log-Structured Merge-Tree</strong> is an algorithm for merging and compacting sorted files, invented by O'Neil et al. (1996, Acta Informatica).</p>
-    
-    <div class="callout callout-success">
-      <strong>KEY ADVANTAGE</strong> LSM transforms random writes into sequential disk writes, yielding higher throughput than B-trees—at the cost of read latency and space amplification.
-    </div>
-
-    <h3>LSM Performance Optimizations</h3>
-    <table>
-      <tr>
-        <th>Technique</th>
-        <th>Purpose</th>
-        <th>Implementations</th>
-      </tr>
-      <tr>
-        <td><strong>Bloom Filters</strong></td>
-        <td>Probabilistic set membership test; eliminate disk reads for non-existent keys</td>
-        <td>LevelDB, RocksDB, Cassandra</td>
-      </tr>
-      <tr>
-        <td><strong>Size-Tiered Compaction</strong></td>
-        <td>Merge smaller newer SSTables into progressively larger older ones</td>
-        <td>HBase, Cassandra</td>
-      </tr>
-      <tr>
-        <td><strong>Leveled Compaction</strong></td>
-        <td>Split key space into fixed-size SSTables per level; older data in separate levels; incremental merging</td>
-        <td>LevelDB, RocksDB</td>
-      </tr>
-    </table>
-
-    <div class="pro-con-grid">
-      <div class="pro-card">
-        <h3>✅ Pros of LSM-Trees</h3>
-        <ul style="margin-left:0; padding-left:20px;">
-          <li>Higher write throughput (sequential I/O)</li>
-          <li>Scales to large data sets (compaction works for huge files)</li>
-          <li>Range queries supported (sorted structure)</li>
-          <li>Compression friendly (block-based)</li>
-        </ul>
-      </div>
-      <div class="con-card">
-        <h3>❌ Cons of LSM-Trees</h3>
-        <ul style="margin-left:0; padding-left:20px;">
-          <li>Read latency higher (multiple segment checks)</li>
-          <li>Space amplification (compaction overhead)</li>
-          <li>Compaction CPU cost (background threads)</li>
-          <li>Tuning complexity (size-tiered vs leveled)</li>
-        </ul>
-      </div>
-    </div>
-
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 6: B-TREES COMPARISON ==================== -->
-  <section id="btrees" data-section-id="btrees">
-    <h2><span class="section-num">06</span> B-Trees: The Update-in-Place Alternative</h2>
-
+  <!-- SECTION 10: INDEXING TECHNIQUES -->
+  <section id="indexing-techniques" data-section-id="indexing-techniques">
+    <h2><span class="section-num">10</span> Advanced Indexing Techniques & Strategies</h2>
     <div class="diagram-container">
-      <div class="diagram-title">B-Tree vs LSM-Tree Design Philosophy</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:16px;">
-        <div>
-          <div class="box box-blue" style="margin-bottom:12px; padding:16px;">
-            <strong>B-Tree</strong><small>Update-in-Place</small>
-          </div>
-          <p style="font-size:12px; color:var(--text-muted); margin:0;">Overwrite fixed-size pages on disk. Keeps data sorted. Widely used (InnoDB, PostgreSQL).</p>
-        </div>
-        <div>
-          <div class="box box-orange" style="margin-bottom:12px; padding:16px;">
-            <strong>LSM-Tree</strong><small>Append-Only</small>
-          </div>
-          <p style="font-size:12px; color:var(--text-muted); margin:0;">Append-only log with periodic merging. Sequential I/O efficient. Newer approach (LevelDB, RocksDB).</p>
-        </div>
+      <div class="diagram-title">Index Type Landscape</div>
+      <div class="box-row" style="flex-wrap: wrap; justify-content: space-around; gap: 12px;">
+        <div class="box box-blue">Primary Index<small>Unique</small></div>
+        <div class="box box-purple">Secondary Index<small>Non-unique</small></div>
+        <div class="box box-orange">Composite Index<small>Multi-column</small></div>
+        <div class="box box-green">Covering Index<small>Value stored</small></div>
+        <div class="box box-teal">Full-Text Index<small>Inverted</small></div>
+        <div class="box box-red">Spatial Index<small>UB-Tree</small></div>
       </div>
     </div>
 
-    <h3>B-Tree Trade-offs</h3>
+    <h3>Index Fundamentals Recap</h3>
+    <p>Indexes are essential for query optimization but impose write-time costs. The decision to index is a balance—add indexes for frequently queried columns, avoid redundant indexes, and monitor query patterns.</p>
+
+    <h3>Covering Indexes (Index-Only Scans)</h3>
+    <p>A <strong>covering index</strong> stores the actual column values in the index structure, not just the key and pointer to the main table. This allows a query to be satisfied entirely from the index without accessing the main data file.</p>
+    <pre>Example: Index on (user_id, email, age)
+  User 123 → email "alice@example.com", age 28
+  
+Query: SELECT email, age WHERE user_id = 123
+  Result: Served directly from index (no main table access)</pre>
+
+    <h3>Full-Text Search (Inverted Indexes)</h3>
+    <p>Full-text search engines (Lucene, Elasticsearch) build <strong>inverted indexes</strong> mapping each word to the list of documents containing it. Construction mirrors LSM-Tree segment merging:</p>
+    <ul>
+      <li>Index documents in-memory as they arrive</li>
+      <li>Periodically flush to disk as a segment</li>
+      <li>Merge segments in the background using similar algorithms as LSM</li>
+      <li>Supports fuzzy/approximate matching via Levenshtein automata (100× faster in modern versions)</li>
+    </ul>
+
+    <h3>Spatial Indexing (Multi-Dimensional)</h3>
+    <p>For multi-dimensional data (geographic coordinates, image feature vectors), spatial indexes like the <strong>UB-Tree</strong> (Ramsak et al., 2000) map n-dimensional points to a 1-dimensional linear order while preserving spatial locality. Enables range queries across multiple dimensions.</p>
+
+    <h3>Index Selection Strategy</h3>
     <div class="insight-strip">
       <div class="insight-card insight-green">
-        <span class="ic-icon">⚡</span>
-        <div class="ic-title">Fast Point Reads</div>
-        <div class="ic-body">Binary search directly to leaf page, single I/O to retrieve key. O(log n) page lookups.</div>
+        <span class="ic-icon">✅</span>
+        <div class="ic-title">Index This</div>
+        <div class="ic-body">Frequently queried columns, especially in WHERE clauses, JOIN conditions, and ORDER BY operations. High cardinality. Selective filters.</div>
+      </div>
+      <div class="insight-card insight-red">
+        <span class="ic-icon">❌</span>
+        <div class="ic-title">Avoid Indexing</div>
+        <div class="ic-body">Low cardinality (gender, status). Columns rarely queried. Tables with very frequent writes and infrequent reads. Redundant indexes (duplicate of existing compound index).</div>
       </div>
       <div class="insight-card insight-orange">
         <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Write Penalty: Double-Write</div>
-        <div class="ic-body">InnoDB double-write buffer: first write to buffer, then to page. Guards against torn writes.</div>
-      </div>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Full-Page Writes</div>
-        <div class="ic-body">PostgreSQL full-page write: log entire page on first modification after checkpoint (Vondra, 2016).</div>
-      </div>
-      <div class="insight-card insight-blue">
-        <span class="ic-icon">📚</span>
-        <div class="ic-title">Wide Industry Adoption</div>
-        <div class="ic-body">Bayer & McCreight (1970). Comer's survey (1979) deemed it "The Ubiquitous B-Tree." Still dominant.</div>
+        <div class="ic-title">Profile & Monitor</div>
+        <div class="ic-body">Use query logs and explain plans. Identify slow queries. Test index impact with production-like data volumes. Remove unused indexes periodically.</div>
       </div>
     </div>
 
-    <h3>Covering Indexes & Read Optimization</h3>
-    <p>B-tree systems leverage <strong>covering indexes</strong> (Webb, 2008): if index contains all columns needed for a query, the database avoids the main table read entirely.</p>
-
-    <div class="callout callout-warn">
-      <strong>SSD CONSIDERATIONS</strong> I/O patterns matter significantly on SSDs (Grand, 2014). Random vs. sequential access has less dramatic cost difference than on magnetic drives, but still present.
-    </div>
-
+    <h3>Composite & Partial Indexes</h3>
+    <p><strong>Composite indexes</strong> (multi-column) are effective for queries filtering on multiple columns or using a prefix scan. Order matters: put the most selective column first.</p>
+    <p><strong>Partial indexes</strong> index only rows satisfying a WHERE condition (e.g., active users only). Reduces index size and write overhead for cold/inactive data.</p>
   </section>
 
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 7: WRITE & READ FLOWS ==================== -->
-  <section id="data-flow" data-section-id="data-flow">
-    <h2><span class="section-num">07</span> Data Flows & Operational Patterns</h2>
-
-    <h3>Comparing Data Flows: LSM vs B-Tree Write Path</h3>
-    <div class="seq-diagram">
-      <div class="seq-participants">
-        <div class="seq-actor"><div class="seq-actor-box">Client</div><div class="seq-actor-line" style="min-height:200px;"></div></div>
-        <div class="seq-actor"><div class="seq-actor-box">LSM Memtable</div><div class="seq-actor-line" style="min-height:200px;"></div></div>
-        <div class="seq-actor"><div class="seq-actor-box">WAL (Disk)</div><div class="seq-actor-line" style="min-height:200px;"></div></div>
-        <div class="seq-actor"><div class="seq-actor-box">Compaction</div><div class="seq-actor-line" style="min-height:200px;"></div></div>
+  <!-- SECTION 11: PROBABILISTIC STRUCTURES -->
+  <section id="probabilistic-structures" data-section-id="probabilistic-structures">
+    <h2><span class="section-num">11</span> Probabilistic Data Structures: Bloom Filters & Beyond</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Bloom Filter Query Path</div>
+      <div class="box-row">
+        <div class="box box-blue">Key Lookup<small>query</small></div>
+        <div class="arrow">→</div>
+        <div class="box box-orange">Check Bloom Filter<small>O(1)</small></div>
+        <div class="arrow">→</div>
+        <div class="box box-green">If "Possible" → Disk Seek<br><span style="font-size: 10px;">If "Definitely No" → Skip</span></div>
       </div>
     </div>
 
-    <div style="margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-      <div>
-        <h4 style="color:var(--accent); margin:0 0 12px;">LSM Write Path</h4>
-        <ol style="padding-left:20px; font-size:13px;">
-          <li>Write to WAL append-only log</li>
-          <li>Insert into memtable (sorted tree)</li>
-          <li>Return to client immediately</li>
-          <li>When memtable full → flush to SSTable</li>
-          <li>Background thread merges SSTables</li>
-        </ol>
-        <p style="font-size:12px; color:var(--accent2); margin-top:12px;">✓ Fast write throughput (sequential I/O)</p>
-      </div>
-      <div>
-        <h4 style="color:var(--accent); margin:0 0 12px;">B-Tree Write Path</h4>
-        <ol style="padding-left:20px; font-size:13px;">
-          <li>Write to redo log (WAL)</li>
-          <li>Write to double-write buffer</li>
-          <li>Overwrite page in main file</li>
-          <li>Update index pointers</li>
-          <li>Return to client</li>
-        </ol>
-        <p style="font-size:12px; color:var(--accent3); margin-top:12px;">⚠ Slower writes (random I/O + double-write)</p>
-      </div>
-    </div>
-
-    <h3>Read Paths Comparison</h3>
-    <table>
-      <tr>
-        <th>Aspect</th>
-        <th>LSM-Tree</th>
-        <th>B-Tree</th>
-      </tr>
-      <tr>
-        <td><strong>Cost of Key Lookup</strong></td>
-        <td>Check memtable, then N segments (O(log n) per segment)</td>
-        <td>Direct binary search to leaf (O(log n))</td>
-      </tr>
-      <tr>
-        <td><strong>Best Case Latency</strong></td>
-        <td>Found in memtable (very fast)</td>
-        <td>Single page lookup (very fast)</td>
-      </tr>
-      <tr>
-        <td><strong>Worst Case Latency</strong></td>
-        <td>Check all segments + disk seeks</td>
-        <td>Leaf page I/O (predictable)</td>
-      </tr>
-      <tr>
-        <td><strong>Bloom Filter Boost</strong></td>
-        <td><span class="check">✓ Eliminates</span> many segment checks</td>
-        <td><span class="cross">✗</span> Less applicable</td>
-      </tr>
-    </table>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 8: KEY COMPONENTS ==================== -->
-  <section id="components" data-section-id="components">
-    <h2><span class="section-num">08</span> Key Components & Their Roles</h2>
-
-    <ul class="icon-list">
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Hash Index (In-Memory)</strong> Maps key → byte offset in append-only log. O(1) lookup, but hash table must fit in RAM. Used by Bitcask (Riak).</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Memtable (Sorted Tree)</strong> In-memory red-black or AVL tree holding recent writes. When full, flushed to disk as SSTable. Enables batched writes to disk.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>SSTable (Sorted String Table)</strong> Immutable sorted key-value file on disk. Supports efficient merging and range queries. Foundation of LSM-tree compaction.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟣</span>
-        <span class="il-text"><strong>Write-Ahead Log (WAL)</strong> Append-only disk log of all writes before they enter memtable. Enables recovery on crash; can be discarded after SSTable is flushed.</span>
-      </li>
-      <li>
-        <span class="il-icon">🔴</span>
-        <span class="il-text"><strong>Bloom Filter</strong> Probabilistic data structure (Burton Bloom, 1970). Tests set membership with allowed false positives but no false negatives. Speeds LSM reads by eliminating segments.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟦</span>
-        <span class="il-text"><strong>Compaction Process</strong> Background thread merging multiple SSTables using merge-sort. Discards old values for duplicate keys, reduces segment count, frees disk space.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟦</span>
-        <span class="il-text"><strong>B-Tree Node</strong> Fixed-size page (typically 4 KB) holding sorted keys and child pointers. Maintains logarithmic height regardless of dataset size.</span>
-      </li>
-      <li>
-        <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Sparse Index</strong> LSM optimization: one index entry per few KB of data. Uses binary search to find key range, then linear scan within block. Reduces index size.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Block Compression</strong> Groups SSTable records into blocks, compresses before disk write. Sparse index points to block boundaries. Saves I/O bandwidth and disk space.</span>
-      </li>
-      <li>
-        <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>Crash Recovery Snapshot</strong> Disk snapshot of segment hash maps (Bitcask). Enables fast reload of in-memory state on restart without replaying entire log.</span>
-      </li>
+    <h3>Bloom Filters: Answering "Does This Key Exist?"</h3>
+    <p>A <strong>Bloom filter</strong> is a space-efficient probabilistic data structure (Burton H. Bloom, 1970). It answers membership queries with:</p>
+    <ul>
+      <li><span class="check">✔ Definite "no"</span>: key is certainly not in the set</li>
+      <li><span class="partial">⚠ Probabilistic "yes"</span>: key might be in the set (false positive rate ≈ 1%)</li>
     </ul>
 
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 9: DESIGN APPROACHES ==================== -->
-  <section id="approaches" data-section-id="approaches">
-    <h2><span class="section-num">09</span> Design Approaches & Strategy Selection</h2>
-
-    <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
-      <div class="approach-card" style="border-color:rgba(56,139,253,.5);">
-        <div class="preferred-badge">★ WRITE-HEAVY</div>
-        <h3 style="color:var(--accent);">Log-Structured Append</h3>
-        <p>Bitcask, LevelDB, RocksDB, Cassandra, HBase. All writes go to append-only log; background compaction merges segments.</p>
-        <div class="approach-traits">
-          <span class="pill pill-green">✔ Sequential I/O</span>
-          <span class="pill pill-green">✔ High Throughput</span>
-          <span class="pill pill-orange">⚠ Read Latency</span>
-          <span class="pill pill-red">✘ Space Overhead</span>
-        </div>
-      </div>
-
-      <div class="approach-card" style="border-color:rgba(255,166,87,.5);">
-        <h3 style="color:var(--accent5);">Update-in-Place (B-Tree)</h3>
-        <p>InnoDB, PostgreSQL, SQLite. Fixed-size pages; overwrite in place. Maintains balanced tree structure. Slower writes, faster point reads.</p>
-        <div class="approach-traits">
-          <span class="pill pill-green">✔ Fast Point Reads</span>
-          <span class="pill pill-green">✔ Predictable Latency</span>
-          <span class="pill pill-orange">⚠ Write Penalty</span>
-          <span class="pill pill-orange">⚠ Random I/O</span>
-        </div>
-      </div>
-    </div>
-
-    <h3>Compaction Strategy Selection</h3>
-    <div class="compare-grid" style="grid-template-columns:1fr 1fr;">
-      <div class="compare-header" style="grid-template-columns:1fr 1fr;"><span>Size-Tiered</span><span>Leveled</span></div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Merge Behavior</strong></div>
-        <div class="compare-cell"><strong>Merge Behavior</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">Merge smaller tables into larger ones progressively</div>
-        <div class="compare-cell">Split by key range; merge within same level</div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Read Amplification</strong></div>
-        <div class="compare-cell"><strong>Read Amplification</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">Higher (more segments to check)</div>
-        <div class="compare-cell good">Lower (fewer segments)</div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Space Amplification</strong></div>
-        <div class="compare-cell"><strong>Space Amplification</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">Higher (more temporary files)</div>
-        <div class="compare-cell good">Lower (incremental)</div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell"><strong>Used By</strong></div>
-        <div class="compare-cell"><strong>Used By</strong></div>
-      </div>
-      <div class="compare-row" style="grid-template-columns:1fr 1fr;">
-        <div class="compare-cell">HBase (Ellis et al., 2011)</div>
-        <div class="compare-cell good">LevelDB, RocksDB (Canadi et al., 2016)</div>
-      </div>
-    </table>
-
-    <h3>Full-Text Search Indexing (Lucene Approach)</h3>
-    <p>Beyond key-value stores, <strong>full-text search engines</strong> like Lucene use inverted indexes with segment-based architecture (McCandless, 2011, 2013):</p>
-    <ul style="margin-left:20px;">
-      <li><strong>Inverted Index:</strong> Maps term → list of documents containing that term</li>
-      <li><strong>Segment Merging:</strong> Visualized in McCandless blog (Feb 2011); similar to LSM-tree compaction</li>
-      <li><strong>Fuzzy Matching:</strong> Levenshtein automata (Schulz & Mihov, 2002) for typo-tolerant search</li>
-      <li><strong>FuzzyQuery Optimization:</strong> 100x faster in Lucene 4.0 (McCandless, March 2011)</li>
-      <li><strong>String Data Structures:</strong> Burst Tries (Heinz et al., 2002) for efficient key handling</li>
-    </ul>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">🎯</span>
-      <div class="takeaway-text"><strong>Strategy Selection Rule:</strong> If your workload is write-heavy with large keys or values → LSM-tree. If reads dominate and you need predictable latency → B-tree. For full-text → inverted index with segment merging.</div>
-    </div>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 10: TRADE-OFFS & RISKS ==================== -->
-  <section id="risks" data-section-id="risks">
-    <h2><span class="section-num">10</span> Trade-offs & Risk Analysis</h2>
-
-    <h3>The RUM Conjecture: Fundamental Limit</h3>
-    <p><strong>Athanassoulis et al. (2016, EDBT)</strong> proved that you cannot simultaneously optimize all three:</p>
-    <div class="stat-grid" style="margin:20px 0;">
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent);">R</div>
-        <div class="stat-label">Read Cost</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent5);">U</div>
-        <div class="stat-label">Update Cost</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent2);">M</div>
-        <div class="stat-label">Memory Cost</div>
-      </div>
-    </div>
-    <p style="font-size:13px; color:var(--text-muted); margin-top:16px;">Each storage engine makes explicit trade-offs. <strong>You must pick which dimension to sacrifice.</strong> This is not a tuning problem—it's a fundamental mathematical constraint.</p>
-
-    <h3>Critical Risks & Mitigations</h3>
-    <div class="insight-strip">
-      <div class="insight-card insight-red">
-        <span class="ic-icon">🚨</span>
-        <div class="ic-title">Hash Index RAM Limit</div>
-        <div class="ic-body">All keys must fit in memory (Bitcask). If you have 10M keys, need 10M hash entries. No eviction possible. Mitigation: Use SSTable/LSM for larger datasets.</div>
-      </div>
-
-      <div class="insight-card insight-red">
-        <span class="ic-icon">🚨</span>
-        <div class="ic-title">LSM Write Amplification</div>
-        <div class="ic-body">Compaction causes data to be rewritten multiple times (size-tiered more than leveled). With 10GB dataset, may write 100GB total during compaction. Mitigation: Choose leveled compaction; tune thresholds.</div>
-      </div>
-
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">B-Tree Double-Write Overhead</div>
-        <div class="ic-body">InnoDB writes each page twice (double-write buffer + main file) to guard against torn writes. Reduces write throughput. Mitigation: Use power-fail safe hardware; tune innodb_doublewrite.</div>
-      </div>
-
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Range Query Performance Gap</div>
-        <div class="ic-body">Hash-indexed logs (Bitcask) cannot efficiently query kitty00000 to kitty99999. Must do individual lookups. Mitigation: Use SSTable/B-tree if range queries are critical.</div>
-      </div>
-
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">⚠️</span>
-        <div class="ic-title">Compaction CPU/Disk Load Spikes</div>
-        <div class="ic-body">Background compaction threads can steal CPU and I/O from user queries. P99 latency degrades during compaction. Mitigation: Separate compaction thread pools; rate-limit compaction.</div>
-      </div>
-
-      <div class="insight-card insight-blue">
-        <span class="ic-icon">💡</span>
-        <div class="ic-title">SSD vs HDD Considerations</div>
-        <div class="ic-body">Magnetic drives: sequential >> random (100x+ faster). SSDs: smaller gap but still present. Random I/O patterns matter on both. Tune based on hardware (Grand, 2014).</div>
-      </div>
-    </div>
-
-    <h3>Crash Recovery Challenges</h3>
-    <table>
-      <tr>
-        <th>Failure Mode</th>
-        <th>LSM Mitigation</th>
-        <th>B-Tree Mitigation</th>
-      </tr>
-      <tr>
-        <td><strong>Partial Write</strong></td>
-        <td>Checksums in log; discard corrupted segment</td>
-        <td>Double-write buffer ensures atomic page write</td>
-      </tr>
-      <tr>
-        <td><strong>Memtable Loss</strong></td>
-        <td>Replay WAL (write-ahead log) to restore state</td>
-        <td>Redo log (WAL) replayed automatically</td>
-      </tr>
-      <tr>
-        <td><strong>Mid-Compaction Crash</strong></td>
-        <td>Old segments still readable; merge incomplete</td>
-        <td>Page overwrite may be partial; recovery logs fix</td>
-      </tr>
-    </table>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 11: REAL-WORLD IMPLEMENTATION DETAILS ==================== -->
-  <section id="implementation-detail" data-section-id="implementation-detail">
-    <h2><span class="section-num">11</span> Real-World Implementation Details</h2>
-
-    <h3>File Format Choices</h3>
-    <div class="highlight-band">
-      <h3>⚙️ Binary vs Text Encoding</h3>
-      <p><strong>Best Practice:</strong> Use binary format (length prefix + raw bytes), not CSV or JSON. Binary is faster to parse, smaller on disk, and avoids escaping issues. All production LSM engines use binary.</p>
-    </div>
-
-    <h3>Deletion & Tombstones</h3>
-    <p>To delete a key in append-only logs, you cannot erase the original value. Instead:</p>
+    <h3>How Bloom Filters Work</h3>
     <div class="step-flow">
       <div class="step-item">
         <div class="step-num">1</div>
         <div class="step-content">
-          <h4>Append Tombstone Record</h4>
-          <p>Write a special record marking the key as deleted (e.g., key with null/empty value).</p>
+          <h4>Hash Multiple Times</h4>
+          <p>Hash the key using k independent hash functions, each producing an offset into a bit array.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
         <div class="step-content">
-          <h4>During Compaction</h4>
-          <p>When merging segments and encountering the same key in multiple files, keep only the value from the most recent segment. If that value is a tombstone, discard all older versions and skip the key in output.</p>
+          <h4>Set Bits During Insert</h4>
+          <p>Set the bits at all k positions to 1 when inserting a key. Multiple keys may set overlapping bits.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
         <div class="step-content">
-          <h4>Read Returns Nil</h4>
-          <p>After compaction, key is effectively deleted. Subsequent reads return "not found" or null.</p>
+          <h4>Test on Lookup</h4>
+          <p>Check if all k bits are set. If any bit is 0, key is definitely absent. If all are 1, key might be present (false positives possible).</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>LSM Application</h4>
+          <p>Store a Bloom filter in each SSTable. On read, check filter before seeking disk. Eliminates many fruitless disk accesses.</p>
         </div>
       </div>
     </div>
 
-    <h3>Checksums & Corruption Detection</h3>
-    <p>Protect against partial writes:</p>
-    <ul style="margin-left:20px;">
-      <li><strong>Per-Record Checksum:</strong> Compute CRC32 or SHA1 of each record; store with record</li>
-      <li><strong>Detect Corruption:</strong> On read or recovery, recalculate checksum and compare</li>
-      <li><strong>Discard Bad Segments:</strong> If checksum fails, that segment is corrupted; discard and replay WAL from before corruption</li>
-    </ul>
+    <h3>Space/Time Trade-off</h3>
+    <div class="callout callout-success">
+      <strong>EFFICIENCY GAIN</strong>A 1% false positive rate requires ~10 bits per element. To read 1 billion keys across 100 SSTables (100 segments checked = 100 disk seeks worst case), Bloom filters reduce this to ~1 seek on average by eliminating 99% of false positives.
+    </div>
 
-    <h3>Concurrency Model</h3>
-    <table>
-      <tr>
-        <th>Aspect</th>
-        <th>LSM-Trees</th>
-        <th>B-Trees</th>
-      </tr>
-      <tr>
-        <td><strong>Write Concurrency</strong></td>
-        <td>Single writer thread (append to memtable + WAL), ordered writes</td>
-        <td>Locking on modified pages; conflict potential</td>
-      </tr>
-      <tr>
-        <td><strong>Read Concurrency</strong></td>
-        <td>Fully parallel (segments immutable); no locks needed</td>
-        <td>Page-level locks; readers block during page modifications</td>
-      </tr>
-      <tr>
-        <td><strong>Compaction Impact</strong></td>
-        <td>Background thread; old segments readable during merge</td>
-        <td>Rebalancing happens in-place; can block reads temporarily</td>
-      </tr>
-    </table>
+    <h3>Burst Tries for String Keys</h3>
+    <p><strong>Burst Tries</strong> (Heinz et al., 2002) are a specialized index structure for string-based keys. They perform faster than traditional hash tries by bursting into sorted arrays when a prefix bucket reaches a size threshold. Excellent for autocomplete and prefix-matching queries.</p>
 
-    <h3>Crash Recovery: WAL & Snapshots</h3>
+    <h3>Other Probabilistic Approaches</h3>
     <ul class="icon-list">
       <li>
         <span class="il-icon">🔵</span>
-        <span class="il-text"><strong>Write-Ahead Log (WAL)</strong> All writes appended to disk log before modifying memtable. On crash, replay WAL to reconstruct memtable state.</span>
+        <span class="il-text"><strong>Cuckoo Hashing</strong>Variant of hash tables with guaranteed O(1) lookups and higher space efficiency than standard hash tables.</span>
       </li>
       <li>
         <span class="il-icon">🟢</span>
-        <span class="il-text"><strong>Segment Snapshots</strong> Periodically save hash map (Bitcask) or compact data structure state to disk. On restart, load snapshot + replay WAL since snapshot = fast recovery.</span>
+        <span class="il-text"><strong>Count-Min Sketch</strong>Approximate frequency counter; answers "how many times did this event occur?" with bounded error.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>HyperLogLog</strong>Approximate cardinality estimator; answers "how many unique items?" with < 2% error using constant memory.</span>
       </li>
       <li>
         <span class="il-icon">🟠</span>
-        <span class="il-text"><strong>ARIES Protocol</strong> Mohan & Levine (1992, SIGMOD) formalized recovery with redo/undo logs. Used by many commercial databases for comprehensive crash safety.</span>
+        <span class="il-text"><strong>T-Digest</strong>Streaming percentile approximation; enables quantile queries on unbounded data streams.</span>
       </li>
     </ul>
+  </section>
 
-    <h3>Distributed Considerations</h3>
+  <!-- SECTION 12: RESEARCH REFERENCES & FOUNDATIONS -->
+  <section id="references" data-section-id="references">
+    <h2><span class="section-num">12</span> Research Foundations & Key References</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Historical Timeline of Key Papers</div>
+      <div style="padding: 20px 0;">
+        <div class="timeline">
+          <div class="tl-item">
+            <h4>1970 — Bloom Filters</h4>
+            <p>Burton H. Bloom, "Space/Time Trade-offs in Hash Coding with Allowable Errors." Foundation for probabilistic data structures.</p>
+          </div>
+          <div class="tl-item">
+            <h4>1970 — B-Tree</h4>
+            <p>Bayer & McCreight. Standard for balanced search trees; basis for traditional RDBMS (MySQL, SQL Server).</p>
+          </div>
+          <div class="tl-item">
+            <h4>1992 — Log-Structured File Systems</h4>
+            <p>Rosenblum & Ousterhout. Foundational concept for sequential write optimization; inspired LSM-Trees.</p>
+          </div>
+          <div class="tl-item">
+            <h4>1992 — ARIES/IM</h4>
+            <p>Mohan & Levine, "Efficient and High Concurrency Index Management." Write-Ahead Logging architecture.</p>
+          </div>
+          <div class="tl-item">
+            <h4>1996 — LSM-Tree</h4>
+            <p>Patrick O'Neil et al., "The Log-Structured Merge-Tree." Foundational for modern write-optimized systems (LevelDB, RocksDB, Cassandra).</p>
+          </div>
+          <div class="tl-item">
+            <h4>2002 — Burst Tries</h4>
+            <p>Heinz et al., "Fast, Efficient Data Structure for String Keys." Optimized trie variant for string-based indexing.</p>
+          </div>
+          <div class="tl-item">
+            <h4>2006 — Bigtable</h4>
+            <p>Chang et al. Google's distributed structured storage; demonstrates LSM-Tree design at petabyte scale.</p>
+          </div>
+          <div class="tl-item">
+            <h4>2014 — SSD Considerations</h4>
+            <p>Goossaert, "Coding for SSDs." Critical insights on erasure blocks, write amplification, and SSD-specific optimizations.</p>
+          </div>
+          <div class="tl-item">
+            <h4>2014 — Fractal Trees</h4>
+            <p>Kuszmaul. Comparative analysis vs. LSM-Trees; hybrid approach balancing reads and writes.</p>
+          </div>
+          <div class="tl-item">
+            <h4>2016 — RUM Conjecture</h4>
+            <p>Athanassoulis et al., "Designing Access Methods: The RUM Conjecture." Proves the fundamental read/update/memory trade-off.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Core Data Structure Papers</h3>
+    <div class="approach-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="approach-card">
+        <h3 style="color: var(--accent); margin: 0 0 8px; font-size: 14px;">LSM-Tree (O'Neil et al., 1996)</h3>
+        <p style="font-size: 12.5px; margin: 0 0 8px; color: var(--text-muted);">The foundational paper. Basis for LevelDB, RocksDB, Cassandra, and HBase. Read this first.</p>
+        <div class="pill-list" style="margin-top: 8px;">
+          <span class="pill pill-blue">Write-Optimized</span>
+          <span class="pill pill-orange">Compaction</span>
+        </div>
+      </div>
+      <div class="approach-card">
+        <h3 style="color: var(--accent2); margin: 0 0 8px; font-size: 14px;">B-Tree (Bayer & McCreight, 1970)</h3>
+        <p style="font-size: 12.5px; margin: 0 0 8px; color: var(--text-muted);">The ubiquitous balanced search tree. Foundation for MySQL InnoDB, PostgreSQL, most traditional RDBMS.</p>
+        <div class="pill-list" style="margin-top: 8px;">
+          <span class="pill pill-green">Balanced</span>
+          <span class="pill pill-blue">RDBMS Standard</span>
+        </div>
+      </div>
+      <div class="approach-card">
+        <h3 style="color: var(--accent4); margin: 0 0 8px; font-size: 14px;">Log-Structured File Systems (Rosenblum & Ousterhout, 1992)</h3>
+        <p style="font-size: 12.5px; margin: 0 0 8px; color: var(--text-muted);">Concept of sequential writes with garbage collection. Inspired LSM-Tree design.</p>
+        <div class="pill-list" style="margin-top: 8px;">
+          <span class="pill pill-orange">Foundational Concept</span>
+        </div>
+      </div>
+      <div class="approach-card">
+        <h3 style="color: var(--accent5); margin: 0 0 8px; font-size: 14px;">Bloom Filters (Burton H. Bloom, 1970)</h3>
+        <p style="font-size: 12.5px; margin: 0 0 8px; color: var(--text-muted);">Space/time trade-off in probabilistic membership testing. Essential for reducing LSM read amplification.</p>
+        <div class="pill-list" style="margin-top: 8px;">
+          <span class="pill pill-purple">Probabilistic</span>
+          <span class="pill pill-green">Read Optimization</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Advanced & Implementation Papers</h3>
     <table>
       <tr>
-        <th>System</th>
-        <th>Storage Engine</th>
-        <th>Key Innovation</th>
+        <th>Paper</th>
+        <th>Author(s)</th>
+        <th>Year</th>
+        <th>Key Topic</th>
       </tr>
       <tr>
-        <td><strong>Bigtable</strong> (Chang et al., 2006, OSDI)</td>
-        <td>SSTable + memtable (LSM-inspired)</td>
-        <td>Distributed sorted key-value with tablets; foundation for HBase, Cassandra</td>
-      </tr>
-      <tr>
-        <td><strong>Cassandra</strong></td>
-        <td>LSM-tree (compaction redesigned CASSANDRA-1608)</td>
-        <td>Tunable consistency; size-tiered or leveled compaction selectable</td>
-      </tr>
-      <tr>
-        <td><strong>HBase</strong></td>
-        <td>LSM-tree (size-tiered compaction)</td>
-        <td>HDFS-backed storage; high write throughput for analytics</td>
-      </tr>
-      <tr>
-        <td><strong>HyperDex</strong> (Escriva et al., 2012, SIGCOMM)</td>
-        <td>Distributed searchable key-value</td>
-        <td>Multi-dimensional search without full-table scan</td>
-      </tr>
-    </table>
+        <td>RUM Conjecture</td>
+        <td>
 
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 12: PERFORMANCE PATTERNS ==================== -->
-  <section id="performance" data-section-id="performance">
-    <h2><span class="section-num">12</span> Performance Patterns & Empirical Analysis</h2>
-
-    <h3>Write Throughput: Sequential vs Random</h3>
-    <div class="data-bar-list">
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">Magnetic Drive: Sequential Write</span>
-          <span class="data-bar-value">~100 MB/s</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:100%;background:var(--accent2)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">Magnetic Drive: Random Write</span>
-          <span class="data-bar-value">~1 MB/s</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:1%;background:var(--accent3)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">SSD: Sequential Write</span>
-          <span class="data-bar-value">~500 MB/s</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:100%;background:var(--accent2)"></div></div>
-      </div>
-      <div class="data-bar-item">
-        <div class="data-bar-header">
-          <span class="data-bar-label">SSD: Random Write</span>
-          <span class="data-bar-value">~200 MB/s</span>
-        </div>
-        <div class="data-bar-track"><div class="data-bar-fill" style="width:40%;background:var(--accent)"></div></div>
-      </div>
-    </div>
-
-    <div class="callout callout-success">
-      <strong>INSIGHT</strong> On magnetic drives, sequential writes are 100x faster. On SSDs, gap is smaller (~2.5x) but still significant. LSM-trees exploit this by turning random writes into sequential writes.
-    </div>
-
-    <h3>LSM vs B-Tree: Callaghan's Analysis (Code Mesh 2016)</h3>
-    <p><strong>Jeff Callaghan</strong> compared LSM (RocksDB) vs B-Tree performance empirically:</p>
-    <ul style="margin-left:20px;">
-      <li><strong>LSM Advantage:</strong> Higher write throughput on high-load workloads (better utilization of disk I/O bandwidth)</li>
-      <li><strong>B-Tree Advantage:</strong> More predictable read latency; lower P99 on point lookups</li>
-      <li><strong>Trade-off:</strong> LSM reads suffer higher latency due to checking multiple segments; B-tree reads benefit from single binary search</li>
-    </ul>
-
-    <h3>Tuning RocksDB (Canadi, Dong, Callaghan 2016)</h3>
-    <p>RocksDB offers extensive tuning knobs for balancing read/write/space:</p>
-    <div class="approach-grid">
-      <div class="approach-card">
-        <h3>Write-Optimized Tuning</h3>
-        <p>Large memtable (e.g., 128 MB), fewer compaction threads, rate-limit compaction to prevent stalls.</p>
-        <div class="approach-traits">
-          <span class="pill pill-green">✔ Higher write throughput</span>
-          <span class="pill pill-red">✘ Slower reads</span>
-        </div>
-      </div>
-      <div class="approach-card">
-        <h3>Read-Optimized Tuning</h3>
-        <p>Smaller memtable, more aggressive compaction, leveled strategy, block cache tuning.</p>
-        <div class="approach-traits">
-          <span class="pill pill-green">✔ Faster reads</span>
-          <span class="pill pill-orange">⚠ Compaction overhead</span>
-        </div>
-      </div>
-      <div class="approach-card">
-        <h3>Space-Optimized Tuning</h3>
-        <p>Compression enabled, leveled compaction, smaller block size, aggressive cleanup.</p>
-        <div class="approach-traits">
-          <span class="pill pill-green">✔ Lower disk usage</span>
-          <span class="pill pill-orange">⚠ CPU cost</span>
-        </div>
-      </div>
-    </div>
-
-    <h3>OLTP vs OLAP Architecture Mismatch</h3>
-    <p><strong>Stonebraker et al. (2007, VLDB)</strong> argued that traditional OLTP databases are poorly suited for analytical queries. <strong>Harizopoulos et al. (2008, SIGMOD)</strong> analyzed this in "OLTP Through the Looking Glass":</p>
-    <div class="insight-strip">
-      <div class="insight-card insight-red">
-        <span class="ic-icon">❌</span>
-        <div class="ic-title">OLTP Drawback for Analytics</div>
-        <div class="ic-body">Optimized for point lookups + small transactions. Analytical queries scan large ranges, aggregate columns → slow on B-tree.</div>
-      </div>
-      <div class="insight-card insight-green">
-        <span class="ic-icon">✅</span>
-        <div class="ic-title">In-Memory OLTP Solution</div>
-        <div class="ic-body">VoltDB (2014) stores data in RAM, eliminates disk overhead. Good for high-throughput OLTP; separate analytical engine for large scans.</div>
-      </div>
-      <div class="insight-card insight-blue">
-        <span class="ic-icon">💡</span>
-        <div class="ic-title">Anti-Caching Technique</div>
-        <div class="ic-body">DeBrabant et al. (2013) proposed evicting cold data to disk, keeping hot working set in RAM. Hybrid approach between in-memory and disk-based OLTP.</div>
-      </div>
-    </div>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ==================== SECTION 13: KEY TAKEAWAYS ==================== -->
-  <section id="takeaways" data-section-id="takeaways">
-    <h2><span class="section-num">13</span> Key Takeaways & Critical Insights</h2>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">🎯</span>
-      <div class="takeaway-text"><strong>Index Selection is Workload-Dependent:</strong> Indexes accelerate reads but slow writes. Choice of index structure (hash, SSTable, B-tree) must match your access patterns. There is no one-size-fits-all solution.</div>
-    </div>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">⚡</span>
-      <div class="takeaway-text"><strong>Sequential I/O Dominates on Magnetic Drives:</strong> Appending to a file is ~100x faster than random page overwrites on HDDs. LSM-trees exploit this principle; B-trees suffer from random I/O despite better conceptual simplicity.</div>
-    </div>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">🔐</span>
-      <div class="takeaway-text"><strong>RUM Conjecture is Fundamental:</strong> You cannot simultaneously optimize Read cost, Update cost, and Memory cost. Every storage engine sacrifices one dimension. Understand your system's bottleneck and tune accordingly.</div>
-    </div>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">🏗️</span>
-      <div class="takeaway-text"><strong>LSM-Trees Win on Write Throughput:</strong> By batching writes in memtable and deferring sorting/merging to background, LSM achieves higher sustained write throughput than B-trees. Cost: higher read latency (check multiple segments) + space amplification (compaction rewrites data).</div>
-    </div>
-
-    <div class="takeaway">
-      <span class="takeaway-icon">🔍</span>
-      <div class="takeaway-text"><strong>B-Trees Provide Predictable Point Reads:</strong> Direct binary search to leaf page; no segment checking. Favored for OLTP where latency consistency matters. But random I/O on writes makes them slower for write-heavy workloads.</div>
-    </div>
-
-    <h3>Critical Numbers & Metrics</h3>
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent3);">100x</div>
-        <div class="stat-label">Sequential vs Random (HDD)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent2);">1970</div>
-        <div class="stat-label">B-Tree Invention (Bayer & McCreight)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent5);">1996</div>
-        <div class="stat-label">LSM-Tree Paper (O'Neil et al.)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent);">2016</div>
-        <div class="stat-label">RUM Conjecture Proof (Athanassoulis)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent4);">3</div>
-        <div class="stat-label">Storage Engine Schools</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent);">5+</div>
-        <div class="stat-label">Major Implementations Covered</div>
-      </div>
-    </div>
-
-    <h3>Decision Tree: Choosing Your Storage Engine</h3>
-    <div class="diagram-container">
-      <div class="diagram-title">Storage Engine Selection Flow</div>
-      <div style="display:flex; flex-direction:column; gap:20px; margin-top:16px;">
-        <div style="padding:16px; background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.25); border-radius:8px;">
-          <p style="margin:0; font-weight:600; color:var(--accent);">Q: Do you write 10x more than you read?</p>
-          <p style="margin:8px 0 0; font-size:12px; color:var(--text-muted);">YES → LSM-Tree (LevelDB, RocksDB) | NO → Continue</p>
-        </div>
-        <div style="padding:16px; background:rgba(255,166,87,.1); border:1px solid rgba(255,166,87,.25); border-radius:8px;">
-          <p style="margin:0; font-weight:600; color:var(--accent5);">Q: Do you need range queries (SELECT * WHERE key BETWEEN)?</p>
-          <p style="margin:8px 0 0; font-size:12px; color:var(--text-muted);">YES → LSM or B-Tree | NO → Continue</p>
-        </div>
-        <div style="padding:16px; background:rgba(63,185,80,.1); border:1px solid rgba(63,185,80,.25); border-radius:8px;">
-          <p style="
-</main>
+</section>
+</div>
 <script>
 (function() {
   // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks

@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DDIA Ch08 — The Trouble with Distributed Systems</title>
+  <title>DDIA Chapter 8: The Trouble with Distributed Systems</title>
   <style>
     :root {
       --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
@@ -142,10 +141,9 @@
     .seq-msg-line { flex:1; height:2px; background:var(--accent); opacity:.6; }
     .seq-msg-head { color:var(--accent); font-size:14px; }
     .seq-msg-head-left { color:var(--accent2); font-size:14px; }
-    .seq-msg-line-return { flex:1; height:2px; background:var(--accent2); opacity:.6; border-top:2px dashed rgba(63,185,80,.5); height:0; }
     .seq-msg-label { font-size:11px; color:var(--text-muted); text-align:center; margin:2px 0 4px; }
     .seq-note { background:rgba(255,214,0,.07); border:1px solid rgba(255,214,0,.2); border-radius:4px; padding:4px 10px; font-size:11px; color:#e6c97a; margin:4px 0; text-align:center; }
-    /* ── VISUAL SUMMARY (at-a-glance section) ── */
+    /* VISUAL SUMMARY */
     .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
     .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
     .vs-card:hover { border-color:var(--accent); }
@@ -154,13 +152,13 @@
     .vs-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
     .vs-value { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
     .vs-sub { font-size:11px; color:var(--text-muted); margin-top:3px; }
-    /* ── ICON LIST ── */
+    /* ICON LIST */
     .icon-list { list-style:none; padding:0; margin:12px 0; }
     .icon-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-muted); }
     .icon-list li:last-child { border-bottom:none; }
     .icon-list .il-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
     .icon-list .il-text strong { display:block; color:var(--text); font-size:13.5px; margin-bottom:2px; }
-    /* ── DATA BAR ── */
+    /* DATA BAR */
     .data-bar-list { margin:12px 0; }
     .data-bar-item { margin-bottom:10px; }
     .data-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12.5px; }
@@ -168,7 +166,7 @@
     .data-bar-value { color:var(--text); font-weight:600; }
     .data-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
     .data-bar-fill { height:100%; border-radius:3px; background:var(--accent); }
-    /* ── INSIGHT CARD ── */
+    /* INSIGHT CARD */
     .insight-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:16px 0; }
     .insight-card { border-radius:10px; padding:16px 18px; border:1px solid; position:relative; overflow:hidden; }
     .insight-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:.08; transform:translate(20px,-20px); background:currentColor; }
@@ -181,7 +179,7 @@
     .insight-red { background:rgba(247,129,102,.07); border-color:rgba(247,129,102,.25); color:var(--accent3); }
     .insight-purple { background:rgba(210,168,255,.07); border-color:rgba(210,168,255,.25); color:var(--accent4); }
     .insight-teal { background:rgba(57,217,217,.07); border-color:rgba(57,217,217,.25); color:#39d9d9; }
-    /* ── STEP FLOW ── */
+    /* STEP FLOW */
     .step-flow { display:flex; flex-direction:column; gap:0; margin:16px 0; }
     .step-item { display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:24px; }
     .step-item:last-child { padding-bottom:0; }
@@ -191,7 +189,7 @@
     .step-content { flex:1; padding-top:8px; }
     .step-content h4 { margin:0 0 4px; font-size:14px; color:var(--text); text-transform:none; letter-spacing:0; }
     .step-content p { margin:0; font-size:13px; color:var(--text-muted); }
-    /* ── COMPARISON TABLE (visual) ── */
+    /* COMPARISON TABLE */
     .compare-grid { display:grid; gap:2px; margin:16px 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
     .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
     .compare-row { display:grid; background:var(--surface); transition:background .15s; }
@@ -201,10 +199,10 @@
     .compare-cell.good { color:var(--accent2); }
     .compare-cell.bad { color:var(--accent3); }
     .compare-cell.neutral { color:var(--text-muted); }
-    /* ── HIGHLIGHT BAND ── */
+    /* HIGHLIGHT BAND */
     .highlight-band { background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:24px; margin:20px 0; }
     .highlight-band h3 { color:var(--accent); margin:0 0 8px; font-size:16px; }
-    /* ── KEY TAKEAWAY ── */
+    /* KEY TAKEAWAY */
     .takeaway { background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(57,217,217,.05)); border:1px solid rgba(63,185,80,.25); border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
     .takeaway-icon { font-size:20px; flex-shrink:0; }
     .takeaway-text { font-size:13.5px; color:var(--text-muted); line-height:1.6; }
@@ -215,86 +213,70 @@
 </head>
 <body>
   <div id="progress-bar"></div>
-
   <div id="sidebar">
     <div id="sidebar-header">
-      <h1>DDIA Ch08</h1>
-      <p>Distributed Systems Trouble</p>
+      <h1>DDIA Chapter 8</h1>
+      <p>Distributed Systems Faults</p>
     </div>
     <nav>
       <div class="section-label">Core Concepts</div>
       <a href="#visual-summary" class="nav-link">At a Glance</a>
-      <a href="#paradigm-shift" class="nav-link">Paradigm Shift</a>
-      <a href="#network-reality" class="nav-link">Network Reality</a>
+      <a href="#fault-types" class="nav-link">Fault Categories</a>
+      <a href="#single-vs-distributed" class="nav-link">Single vs. Distributed</a>
+      <a href="#reliability-construction" class="nav-link">Building Reliability</a>
+      
+      <div class="section-label">Network Reality</div>
+      <a href="#unreliable-networks" class="nav-link">Unreliable Networks</a>
+      <a href="#failure-modes" class="nav-link">Six Failure Modes</a>
       <a href="#fault-detection" class="nav-link">Fault Detection</a>
-      <a href="#Byzantine" class="nav-link">Byzantine Faults</a>
+      <a href="#network-practice" class="nav-link">Real-World Faults</a>
       
-      <div class="section-label">System Models</div>
-      <a href="#system-models" class="nav-link">Timing & Fault Models</a>
-      <a href="#correctness" class="nav-link">Safety vs Liveness</a>
-      
-      <div class="section-label">Practical Implications</div>
-      
-      <a href="#mitigations" class="nav-link">Safeguards & Design</a>
-      
-      
+      <div class="section-label">Byzantine &amp; Formal</div>
+      <a href="#byzantine-faults" class="nav-link">Byzantine Faults</a>
+      <a href="#system-models" class="nav-link">System Models</a>
+      <a href="#safety-liveness" class="nav-link">Safety &amp; Liveness</a>
+      <a href="#takeaways" class="nav-link">Key Takeaways</a>
     </nav>
   </div>
 
   <div id="main">
     <div class="hero">
-      <div class="badge">📚 Distributed Systems Masterclass</div>
+      <div class="badge">📖 DDIA DEEP DIVE</div>
       <h1>The Trouble with <span>Distributed Systems</span></h1>
-      <p>Why single-machine abstractions fail at scale—nondeterminism, Byzantine faults, partial failures, and the harsh realities of asynchronous networks that change everything.</p>
+      <p>Understanding faults, partial failures, nondeterminism, and the fundamental constraints that make distributed systems fundamentally different from single-node systems.</p>
       <div class="meta">
-        <div class="meta-item"><span class="dot" style="background:var(--accent)"></span>DDIA Chapter 08</div>
-        <div class="meta-item"><span class="dot" style="background:var(--accent5)"></span>Kleppmann</div>
-        <div class="meta-item"><span class="dot" style="background:var(--accent2)"></span>Fundamentals</div>
+        <div class="meta-item"><span class="dot" style="background:var(--accent)"></span>Chapter 8 Analysis</div>
+        <div class="meta-item"><span class="dot" style="background:var(--accent5)"></span>Multi-section extraction</div>
+        <div class="meta-item"><span class="dot" style="background:var(--accent2)"></span>12+ concept areas</div>
       </div>
     </div>
 
     <!-- SECTION 01: VISUAL SUMMARY -->
     <section id="visual-summary" data-section-id="visual-summary">
-      <h2><span class="section-num">01</span> At a Glance</h2>
+      <h2><span class="section-num">01</span>At a Glance</h2>
       <div class="visual-summary">
-        <div class="vs-card">
-          <div class="vs-icon">🎯</div>
-          <div class="vs-body">
-            <div class="vs-label">Core Problem</div>
-            <div class="vs-value">Partial Failure</div>
-            <div class="vs-sub">System parts fail unpredictably while others work</div>
-          </div>
-        </div>
-        <div class="vs-card">
-          <div class="vs-icon">🌐</div>
-          <div class="vs-body">
-            <div class="vs-label">Root Cause</div>
-            <div class="vs-value">Async Networks</div>
-            <div class="vs-sub">Unbounded delays, no delivery guarantees</div>
-          </div>
-        </div>
-        <div class="vs-card">
-          <div class="vs-icon">🔍</div>
-          <div class="vs-body">
-            <div class="vs-label">Detection Problem</div>
-            <div class="vs-value">6 Indistinguishable Scenarios</div>
-            <div class="vs-sub">No way to know if request succeeded</div>
-          </div>
-        </div>
         <div class="vs-card">
           <div class="vs-icon">⚡</div>
           <div class="vs-body">
-            <div class="vs-label">Timing Model</div>
-            <div class="vs-value">Partially Synchronous</div>
-            <div class="vs-sub">Most realistic for real systems</div>
+            <div class="vs-label">Core Challenge</div>
+            <div class="vs-value">Partial Failures</div>
+            <div class="vs-sub">Some components broken, others work—nondeterministic outcomes</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🔄</div>
+          <div class="vs-body">
+            <div class="vs-label">Key Distinction</div>
+            <div class="vs-value">Indistinguishability</div>
+            <div class="vs-sub">Cannot distinguish delay from failure over network</div>
           </div>
         </div>
         <div class="vs-card">
           <div class="vs-icon">🛡️</div>
           <div class="vs-body">
-            <div class="vs-label">Fault Tolerance</div>
-            <div class="vs-value">Crash-Recovery</div>
-            <div class="vs-sub">Nodes crash & restart; data persists</div>
+            <div class="vs-label">Approach</div>
+            <div class="vs-value">Fault Tolerance</div>
+            <div class="vs-sub">Build reliability from unreliable components</div>
           </div>
         </div>
         <div class="vs-card">
@@ -302,535 +284,962 @@
           <div class="vs-body">
             <div class="vs-label">Architecture</div>
             <div class="vs-value">Shared-Nothing</div>
-            <div class="vs-sub">Only communication = network messages</div>
+            <div class="vs-sub">Network-connected commodity machines + geographic distribution</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🔐</div>
+          <div class="vs-body">
+            <div class="vs-label">Consensus Problem</div>
+            <div class="vs-value">Byzantine Generals</div>
+            <div class="vs-sub">Rarely needed; mostly cloud infrastructure trust exists</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">📐</div>
+          <div class="vs-body">
+            <div class="vs-label">Formal Framework</div>
+            <div class="vs-value">System Models</div>
+            <div class="vs-sub">Synchronous, partially synchronous, asynchronous definitions</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SECTION 02: PARADIGM SHIFT -->
-    <section id="paradigm-shift" data-section-id="paradigm-shift">
-      <h2><span class="section-num">02</span> Single Machine vs Distributed Paradigm</h2>
-      <div class="diagram-container">
-        <div class="diagram-title">System Model Evolution</div>
-        <div class="box-row">
-          <div class="box box-blue">Single Machine<small>Deterministic</small></div>
-          <div class="arrow">🔄</div>
-          <div class="box box-orange">Distributed Systems<small>Nondeterministic</small></div>
-        </div>
-      </div>
-
+    <!-- SECTION 02: FAULT TYPES AND CATEGORIES -->
+    <section id="fault-types" data-section-id="fault-types">
+      <h2><span class="section-num">02</span>Fault Categories</h2>
       <div class="insight-strip">
-        <div class="insight-card insight-blue">
-          <span class="ic-icon">💻</span>
-          <div class="ic-title">Single Machine Model</div>
-          <div class="ic-body">Deterministic behavior: system either <strong>works or crashes</strong>. Hide fuzzy physical reality behind idealized abstractions.</div>
-        </div>
         <div class="insight-card insight-red">
-          <span class="ic-icon">🌐</span>
-          <div class="ic-title">Distributed Systems Reality</div>
-          <div class="ic-body">Confront messy physical reality directly. No choice but to accept <strong>nondeterminism</strong> as fundamental.</div>
+          <span class="ic-icon">💥</span>
+          <div class="ic-title">Partial Failures</div>
+          <div class="ic-body"><strong>Definition:</strong> System components fail independently while others continue operating, creating nondeterministic outcomes. The fundamental challenge of distributed systems.</div>
         </div>
         <div class="insight-card insight-orange">
-          <span class="ic-icon">⚙️</span>
-          <div class="ic-title">Partial Failure</div>
-          <div class="ic-body">System parts fail unpredictably while others continue operating. This is the <strong>core difficulty</strong> of distributed systems.</div>
+          <span class="ic-icon">⏱️</span>
+          <div class="ic-title">Indistinguishability Problem</div>
+          <div class="ic-body">Network gives no information about arrival time or delivery confirmation. Delays ≈ failures at the sender. Only success evidence: positive application response.</div>
+        </div>
+        <div class="insight-card insight-purple">
+          <span class="ic-icon">🎲</span>
+          <div class="ic-title">Nondeterminism</div>
+          <div class="ic-body">Operations may succeed, fail, or remain indeterminate. Same request may work once and fail later. Software must handle: wrong assumptions about state.</div>
+        </div>
+      </div>
+      <h3>Specific Failure Modes in the Wild</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Network Transient Glitches</strong>Packet drops, reordering, delays—especially in public cloud (EC2) and datacenter upgrades. Switch software upgrade caused >1 minute packet delays.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Asymmetric Link Failures</strong>One-directional connectivity loss: inbound packets accepted, outbound dropped. Detected only by application layer timeout.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Infrastructure Failures</strong>Rack disconnections (~50% of medium datacenter faults), undersea cable cuts, router misconfigurations (majority cause of redundant gear faults).</span>
+        </li>
+        <li>
+          <span class="il-icon">🟣</span>
+          <span class="il-text"><strong>Garbage Collection Pauses</strong>Remote node temporarily unresponsive while GC runs—indistinguishable from crash to sender.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- SECTION 03: SINGLE VS DISTRIBUTED SYSTEM PHILOSOPHY -->
+    <section id="single-vs-distributed" data-section-id="single-vs-distributed">
+      <h2><span class="section-num">03</span>Single-Node vs. Distributed System Design Philosophy</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Design Philosophy Comparison</div>
+        <table style="width:100%; font-size:13px; margin-top:16px;">
+          <tr>
+            <th style="width:25%;">Dimension</th>
+            <th style="width:35%;">Single-Node Systems</th>
+            <th style="width:40%;">Distributed Systems</th>
+          </tr>
+          <tr>
+            <td style="font-weight:600; color:var(--accent);">Determinism</td>
+            <td>Same operation always produces identical results</td>
+            <td>Nondeterministic outcomes; must handle uncertainty</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600; color:var(--accent);">Error Handling</td>
+            <td>Prefer total crash (kernel panic) over silent wrong results</td>
+            <td>Accept partial failures; service must remain available</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600; color:var(--accent);">Failure Model</td>
+            <td>Idealized system model with mathematical perfection</td>
+            <td>Confront messy reality; no shared model between nodes</td>
+          </tr>
+          <tr>
+            <td style="font-weight:600; color:var(--accent);">Recovery</td>
+            <td>System crash = restart; clear state transition</td>
+            <td>Rolling upgrades, VM replacement, geographic distribution</td>
+          </tr>
+        </table>
+      </div>
+
+      <h3>HPC (Supercomputers) vs. Cloud Computing Paradigms</h3>
+      <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="approach-card" style="border-color:rgba(255,166,87,.5)">
+          <h3 style="color:var(--accent5)">🖥️ HPC Supercomputers</h3>
+          <p><strong>Failure Philosophy:</strong> Escalate partial failures → total failure</p>
+          <ul style="font-size:12.5px; margin:12px 0; padding-left:16px; color:var(--text-muted);">
+            <li>Checkpoint & restart on any node failure</li>
+            <li>Specialized high-reliability hardware (RDMA, shared memory)</li>
+            <li>Mesh/torus network topologies optimized for throughput</li>
+            <li>Acceptable for batch jobs (offline computation)</li>
+          </ul>
+        </div>
+        <div class="approach-card" style="border-color:rgba(56,139,253,.5)">
+          <h3 style="color:var(--accent)">☁️ Cloud Computing</h3>
+          <p><strong>Failure Philosophy:</strong> Tolerate partial failures; maintain availability</p>
+          <ul style="font-size:12.5px; margin:12px 0; padding-left:16px; color:var(--text-muted);">
+            <li>Service remains online despite component failures</li>
+            <li>Commodity hardware; higher failure rates expected</li>
+            <li>IP/Ethernet Clos topologies; packet networks</li>
+            <li>Mandatory for online services requiring low latency</li>
+          </ul>
         </div>
       </div>
 
-      <h3>Key Design Implication</h3>
-      <p>Cloud systems <strong>MUST tolerate failed nodes</strong>. Rolling upgrades, VM replacement, and geo-distribution require fault-tolerance baked into software architecture—not optional, fundamental.</p>
-
-      <div class="callout callout-info">
-        <strong>PARADIGM SHIFT</strong> You cannot design distributed systems with single-machine assumptions. Nondeterminism is not a bug; it's the defining characteristic you must build around.
+      <div class="callout callout-warn">
+        <strong>SCALING IMPLICATION</strong> System with thousands of nodes: reasonable to assume something is always broken. The benefit of fault tolerance is realized through rolling upgrades, VM replacement, and geographic data distribution (Chapter 4).
       </div>
     </section>
 
-    <!-- SECTION 03: NETWORK REALITY -->
-    <section id="network-reality" data-section-id="network-reality">
-      <h2><span class="section-num">03</span> Unreliable Networks: The Six Indistinguishable Scenarios</h2>
-      <div class="step-flow">
-        <div class="step-item">
-          <div class="step-num">?</div>
-          <div class="step-content">
-            <h4>You send a request → receive no response</h4>
-            <p>Six equally plausible explanations, all identical from your perspective:</p>
+    <!-- SECTION 04: BUILDING RELIABILITY FROM UNRELIABLE COMPONENTS -->
+    <section id="reliability-construction" data-section-id="reliability-construction">
+      <h2><span class="section-num">04</span>Building Reliable Systems from Unreliable Components</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Reliability Layering Principle</div>
+        <div class="box-row">
+          <div class="box box-red" style="min-width:120px">
+            <strong>Unreliable Hardware</strong>
+            <small>Bit errors, packet loss</small>
+          </div>
+          <div class="arrow">↑</div>
+          <div class="box box-orange">
+            <strong>Error Correction</strong>
+            <small>TCP, checksums</small>
+          </div>
+          <div class="arrow">↑</div>
+          <div class="box box-blue">
+            <strong>Application Logic</strong>
+            <small>Retries, timeouts</small>
+          </div>
+          <div class="arrow">↑</div>
+          <div class="box box-green">
+            <strong>System Reliability</strong>
+            <small>Tolerate failures</small>
           </div>
         </div>
       </div>
 
-      <table>
-        <tr>
-          <th style="width:15%">Scenario</th>
-          <th>Description</th>
-          <th>What You See</th>
-        </tr>
-        <tr>
-          <td><span class="partial">①</span> Request Lost</td>
-          <td>Network drops your message before it reaches the remote node</td>
-          <td>No response</td>
-        </tr>
-        <tr>
-          <td><span class="partial">②</span> Delayed Arrival</td>
-          <td>Request received but arrives much later than expected</td>
-          <td>No response (yet)</td>
-        </tr>
-        <tr>
-          <td><span class="partial">③</span> Node Crashed</td>
-          <td>Remote node failed; process no longer running</td>
-          <td>No response</td>
-        </tr>
-        <tr>
-          <td><span class="partial">④</span> Paused Node</td>
-          <td>Remote node paused (GC, load spike, VM preemption); will recover</td>
-          <td>No response (yet)</td>
-        </tr>
-        <tr>
-          <td><span class="partial">⑤</span> Response Lost</td>
-          <td>Remote node processed successfully; response lost in network</td>
-          <td>No response (but action succeeded!)</td>
-        </tr>
-        <tr>
-          <td><span class="partial">⑥</span> Response Delayed</td>
-          <td>Remote node processed; response delayed in network queues</td>
-          <td>No response (yet)</td>
-        </tr>
-      </table>
-
-      <div class="callout callout-danger">
-        <strong>CORE PROBLEM</strong> Asynchronous packet networks provide <strong>zero guarantees</strong> on delivery timing or arrival at all. It is <em>impossible to distinguish</em> these scenarios on timeout.
-      </div>
-
-      <h3>Network Fault Empiricism</h3>
-      <div class="data-bar-list">
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Faults per month (medium datacenter)</span>
-            <span class="data-bar-value">~12 network faults</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:100%;background:var(--accent3)"></div></div>
-        </div>
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Single machine failures</span>
-            <span class="data-bar-value">~50%</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:50%;background:var(--accent5)"></div></div>
-        </div>
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Entire rack failures</span>
-            <span class="data-bar-value">~50%</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:50%;background:var(--accent5)"></div></div>
-        </div>
-      </div>
-
-      <h3>Real-World Network Fault Examples</h3>
+      <h3>Proven Approaches</h3>
       <ul class="icon-list">
         <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>EC2 Transient Glitches</strong>AWS's own infrastructure notorious for causing packet delays and drops</span>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>Error-Correcting Codes</strong>Detect and correct bit errors in unreliable communication channels—proven to work for decades in telecommunications.</span>
         </li>
         <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Software Switch Upgrade</strong>Topology reconfiguration caused >1 minute packet delays during upgrade window</span>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>TCP over Unreliable IP</strong>IP network provides no delivery guarantees (drops, delays, duplicates, reordering); TCP adds retransmission, duplicate elimination, and packet reordering logic on top.</span>
         </li>
         <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Physical Damage</strong>Undersea cables damaged by shark bites affecting intercontinental links</span>
-        </li>
-        <li>
-          <span class="il-icon">🟠</span>
-          <span class="il-text"><strong>Asymmetric Faults</strong>NIC (network interface card) drops inbound packets while successfully sending outbound traffic</span>
-        </li>
-        <li>
-          <span class="il-icon">🟠</span>
-          <span class="il-text"><strong>Human Misconfiguration</strong>Top-of-rack & aggregation switch failures often due to config errors, not hardware defects</span>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>Redundancy &amp; Replication</strong>Multiple copies ensure data survives single-component failures; quorum reads/writes ensure consistency.</span>
         </li>
       </ul>
 
       <div class="highlight-band">
-        <h3>💡 Critical Design Lesson</h3>
-        <p>Even rare network faults require explicit handling in your application. Unhandled faults lead to deadlock, data deletion, or arbitrary bad behavior. You cannot assume "rare = won't happen."</p>
+        <h3>🏆 Core Principle: Higher-Level Systems Hide Low-Level Faults</h3>
+        <p><strong>Once low-level faults are masked,</strong> remaining faults at application level become easier to reason about and handle. System reliability emerges from layered abstractions that progressively isolate higher layers from physical unreliability.</p>
+      </div>
+
+      <h3>Fundamental Limits</h3>
+      <div class="callout callout-danger">
+        <strong>CANNOT REMOVE DELAYS</strong> Reliability construction cannot magically eliminate network latencies. We can retry, duplicate-check, and reorder—but the inherent unpredictability of packet arrival times remains. This bounds achievable system performance.
       </div>
     </section>
 
-    <!-- SECTION 04: FAULT DETECTION & TIMEOUTS -->
-    <section id="fault-detection" data-section-id="fault-detection">
-      <h2><span class="section-num">04</span> Detecting Faults & The Timeout Problem</h2>
-      
-      <h3>Explicit Fault Signals: Why They Fail</h3>
-      <div class="pro-con-grid">
-        <div class="pro-card">
-          <h3>✅ What Works</h3>
-          <ul>
-            <li><strong>Positive application response</strong> — Only reliable proof of success</li>
-            <li>Explicit application-level messages acknowledging completion</li>
-            <li>End-to-end application semantics</li>
-          </ul>
-        </div>
-        <div class="con-card">
-          <h3>❌ What Doesn't</h3>
-          <ul>
-            <li>TCP RST/FIN (only if OS running; not node crashed)</li>
-            <li>In-band crash notifications (requires scripting; fragile)</li>
-            <li>Network switch management interfaces (unavailable in datacenters)</li>
-            <li>ICMP Destination Unreachable (same limitations as any network packet)</li>
-          </ul>
-        </div>
-      </div>
-
-      <h3>The Timeout Paradox: Theory vs Reality</h3>
+    <!-- SECTION 05: UNRELIABLE NETWORKS -->
+    <section id="unreliable-networks" data-section-id="unreliable-networks">
+      <h2><span class="section-num">05</span>The Shared-Nothing Architecture &amp; Asynchronous Packet Networks</h2>
       <div class="diagram-container">
-        <div class="diagram-title">Fictitious Synchronous System Model</div>
-        <div style="font-size:13px; line-height:1.8; color:var(--text-muted);">
-          <p><strong>Ideal assumptions:</strong></p>
-          <p>max network delay = <code style="background:rgba(56,139,253,.15); padding:2px 6px; border-radius:4px;">d</code></p>
-          <p>max request processing time = <code style="background:rgba(56,139,253,.15); padding:2px 6px; border-radius:4px;">r</code></p>
-          <p><strong style="color:var(--accent);">timeout should be = 2d + r</strong> (request + processing + response)</p>
+        <div class="diagram-title">Typical Distributed System Architecture</div>
+        <div class="box-row" style="flex-wrap:wrap; gap:12px; justify-content:flex-start;">
+          <div class="box box-purple">Commodity Server A<small>CPU, RAM, Disk</small></div>
+          <div class="arrow" style="align-self:flex-start; margin-top:0;">⟷</div>
+          <div class="box box-purple">Commodity Server B<small>CPU, RAM, Disk</small></div>
+          <div class="arrow" style="align-self:flex-start; margin-top:0;">⟷</div>
+          <div class="box box-purple">Commodity Server C<small>CPU, RAM, Disk</small></div>
+        </div>
+        <div style="margin-top:16px; font-size:12px; color:var(--text-muted);">
+          <strong style="color:var(--text);">Connection:</strong> IP/Ethernet packet network (Clos topology)
+          <br/><strong style="color:var(--text);">No shared:</strong> Memory, disk, or clock
+          <br/><strong style="color:var(--text);">Characteristics:</strong> Cost-effective, commodity hardware, geographic distribution possible
         </div>
       </div>
 
-      <div class="insight-strip">
+      <h3>Asynchronous Packet Network Guarantees</h3>
+      <div class="callout callout-danger">
+        <strong>NO GUARANTEES</strong> Packet networks provide <em>no</em> guarantees on arrival time or delivery. The network gives zero information about <em>when</em> or <em>whether</em> a packet arrives. This is the fundamental challenge.
+      </div>
+
+      <div class="data-bar-list">
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Packet delivery certainty</span>
+            <span class="data-bar-value">0% guaranteed</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:5%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Timing predictability</span>
+            <span class="data-bar-value">Unbounded variance</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:15%;background:var(--accent5)"></div></div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Packet ordering guarantee</span>
+            <span class="data-bar-value">Not preserved</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:10%;background:var(--accent3)"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 06: SIX FAILURE MODES -->
+    <section id="failure-modes" data-section-id="failure-modes">
+      <h2><span class="section-num">06</span>Six Failure Modes: The Indistinguishability Problem</h2>
+      <p style="margin-bottom:16px;"><strong>Core problem:</strong> When you send a request and receive no response, what actually happened? All six scenarios are <em>indistinguishable at the sender</em>.</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;">
         <div class="insight-card insight-red">
-          <span class="ic-icon">⚠️</span>
-          <div class="ic-title">Unbounded Delays</div>
-          <div class="ic-body"><strong>Asynchronous networks have NO upper bound</strong> on delay. <code>d</code> is infinite; timeout is arbitrary.</div>
+          <span class="ic-icon">1️⃣</span>
+          <div class="ic-title">Request Lost</div>
+          <div class="ic-body">Network dropped your outgoing packet before reaching recipient.</div>
         </div>
         <div class="insight-card insight-red">
-          <span class="ic-icon">⚠️</span>
-          <div class="ic-title">Nondeterministic Processing</div>
-          <div class="ic-body">Server implementations cannot guarantee max processing time. One transient spike breaks all timing assumptions.</div>
+          <span class="ic-icon">2️⃣</span>
+          <div class="ic-title">Network Overloaded</div>
+          <div class="ic-body">Request queued inside network or recipient's NIC; delayed indefinitely.</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">3️⃣</span>
+          <div class="ic-title">Remote Node Crashed</div>
+          <div class="ic-body">Recipient failed; OS will not respond at all.</div>
         </div>
         <div class="insight-card insight-orange">
-          <span class="ic-icon">📊</span>
-          <div class="ic-title">The Paradox</div>
-          <div class="ic-body"><strong>Long timeout:</strong> Long wait to detect failure. <strong>Short timeout:</strong> Risk of premature declaration → cascading failure.</div>
+          <span class="ic-icon">4️⃣</span>
+          <div class="ic-title">Temporary Pause (GC)</div>
+          <div class="ic-body">Remote node paused by garbage collection or OS scheduling; behaves exactly like slow network.</div>
+        </div>
+        <div class="insight-card insight-red">
+          <span class="ic-icon">5️⃣</span>
+          <div class="ic-title">Response Lost</div>
+          <div class="ic-body">Remote processed request successfully; response packet dropped on return path.</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">6️⃣</span>
+          <div class="ic-title">Response Delayed</div>
+          <div class="ic-body">Response queued in network; arbitrary delay before arrival.</div>
         </div>
       </div>
 
-      <h3>Network Queueing: The Real Source of Variability</h3>
-      <p><strong>Primary source of packet delay variability is NOT rare packet loss, but packet queueing at multiple layers:</strong></p>
-      
+      <h3>Critical Insight: TCP Acknowledgment is Insufficient</h3>
+      <div class="callout callout-warn">
+        <strong>TCP ACK ≠ APPLICATION SUCCESS</strong> TCP acknowledgment only confirms that the OS kernel received bytes on the remote machine. The <em>application</em> could crash immediately after TCP ack, losing the request. Only evidence of success: positive response from the application itself, fully processed and returned to you.
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>No Magic Detection:</strong> The sender must assume no response could mean any of six scenarios. No protocol addition eliminates this fundamental ambiguity without central clock synchronization (which is itself unreliable).</div>
+      </div>
+    </section>
+
+    <!-- SECTION 07: NETWORK FAULTS IN PRACTICE -->
+    <section id="network-practice" data-section-id="network-practice">
+      <h2><span class="section-num">07</span>Real-World Network Faults &amp; Empirical Data</h2>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent3)">~12</div>
+          <div class="stat-label">Network Faults / Month (Medium Datacenter)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5)">50%</div>
+          <div class="stat-label">Single Machine Disconnects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5)">50%</div>
+          <div class="stat-label">Entire Rack Disconnects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent)">60%+</div>
+          <div class="stat-label">Faults from Human Misconfiguration</div>
+        </div>
+      </div>
+
+      <h3>Real Failure Examples from the Field</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Switch Software Upgrade</strong>Topology reconfiguration caused >1 minute packet delay window. During this window, timeouts and retries cascade, triggering cascading failures in dependent services.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Undersea Cable Cuts</strong>Sharks and ship anchors physically sever submarine cables. Geographic redundancy (multiple routes, different cables) essential for global services.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Asymmetric Link Failures</strong>One-directional connectivity: inbound packets accepted, outbound dropped. Detected only when application timeout fires; no explicit OS error.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Public Cloud Glitches</strong>EC2 and similar platforms experience frequent transient network glitches; small percentage of requests fail mysteriously.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Well-Managed Private Datacenters</strong>More stable than cloud but not immune. Redundant networking gear doesn't proportionally reduce faults—human misconfiguration is the major cause.</span>
+        </li>
+      </ul>
+
+      <div class="highlight-band">
+        <h3>🏆 Why Redundancy Often Fails</h3>
+        <p>Redundant networking equipment (dual switches, multiple cables) does <em>not</em> proportionally reduce faults because <strong>human misconfiguration is a major fault source.</strong> If both redundant paths are misconfigured identically, redundancy provides zero protection. Requires independent configuration verification and testing.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 08: FAULT DETECTION -->
+    <section id="fault-detection" data-section-id="fault-detection">
+      <h2><span class="section-num">08</span>Detecting Network Faults: Explicit Mechanisms &amp; Limitations</h2>
+
+      <h3>Available Detection Mechanisms (All Unreliable)</h3>
       <div class="step-flow">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Switch Queue</h4>
-            <p>Multiple nodes send to same destination; packets queue one-by-one waiting for egress port</p>
+            <h4>TCP RST / FIN (OS-Level)</h4>
+            <p>Operating system closes connection if no process is listening on the remote port. <em>Limitation:</em> Provides no information about partial request processing; only confirms kernel rejection.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>OS Input Queue</h4>
-            <p>CPU busy; incoming request queued by kernel, delayed until CPU available</p>
+            <h4>Crash Notification Script (Application-Level)</h4>
+            <p>HBase and similar systems notify other nodes before timeout occurs. <em>Limitation:</em> Requires special implementation; not universally available. GC pauses or slow kernel scheduling still trigger false alarms.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>VM Pause</h4>
-            <p>Virtual machine paused 10–100ms while hypervisor schedules another VM; incoming data buffered</p>
+            <h4>Management Interface Queries (Infrastructure)</h4>
+            <p>Network switches provide management ports for status queries. <em>Limitation:</em> Unavailable in internet services; impractical in shared datacenters (EC2, GCP, Azure).</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">4</div>
           <div class="step-content">
-            <h4>TCP Flow Control</h4>
-            <p>Sender self-limits transmission rate; additional queueing at sender before network entry</p>
+            <h4>ICMP Destination Unreachable (Router Feedback)</h4>
+            <p>Router may respond if IP address unreachable. <em>Limitation:</em> No magic capability; same indistinguishability applies. Message can be lost or blocked by firewalls.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>FUNDAMENTAL CONSTRAINT</strong> Rapid fault feedback is useful but <em>never reliable.</em> Must assume worst case: <strong>no response at all.</strong> Timeout-based detection remains the most practical approach, but timeouts are inherently difficult to tune (too short = false positives; too long = slow recovery).
+      </div>
+
+      <h3>Absence of Error Handling = Catastrophe</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Untested Fault Handling</strong>When software encounters unanticipated failures, it does "arbitrary unexpected things"—permanent deadlocks, state corruption, data deletion.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Cascading Failures</strong>One component's error handling triggers errors in dependent systems; failures propagate outward.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>Mitigation Strategy</strong>Deliberately trigger network faults in testing (Chaos Monkey approach). Know <em>exactly</em> how software behaves under specific fault scenarios. Ensure recovery is always possible.</span>
+        </li>
+      </ul>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Not about tolerating faults:</strong> It's acceptable to show error to users during infrastructure problems. <strong>Essential:</strong> Know how software reacts under partial failure; ensure operators can recover. Test fault handling continuously.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 09: BYZANTINE FAULTS -->
+    <section id="byzantine-faults" data-section-id="byzantine-faults">
+      <h2><span class="section-num">09</span>Byzantine Faults &amp; Byzantine Fault Tolerance</h2>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Fault Models Spectrum</div>
+        <div class="box-row" style="flex-wrap:wrap; gap:8px; justify-content:center;">
+          <div class="box box-green">Honest Nodes<small>Always respond truthfully</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-orange">Crash Faults<small>Stop responding</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-red">Byzantine Faults<small>Lie arbitrarily</small></div>
+        </div>
+      </div>
+
+      <h3>Byzantine Fault Definition & History</h3>
+      <div class="callout callout-info">
+        <strong>BYZANTINE FAULT</strong> Node deliberately sends arbitrary, faulty, or corrupted responses. May claim receipt of messages it never received. Different from crash faults (stops responding) or transient faults (delayed response). Named after Lamport et al.'s "Byzantine Generals Problem" (1982)—a diplomatic choice to avoid offending any nation.
+      </div>
+
+      <h3>Byzantine Generals Problem</h3>
+      <p><strong>Setup:</strong> n generals must agree on battle plan. k generals are traitors who may send false/deceptive messages. Loyal generals send truthful messages. Traitors unknown a priori. Requires supermajority (>2/3) honest nodes to reach consensus on correct action.</p>
+
+      <div class="callout callout-warn">
+        <strong>SUPERMAJORITY REQUIREMENT</strong> System with 4 nodes can tolerate at most 1 Byzantine fault (>2/3 = 3 honest). With 7 nodes: 2 faults tolerated. Algorithm overhead grows substantially with required fault tolerance level.
+      </div>
+
+      <h3>When Is Byzantine FT Actually Needed?</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>✅ Relevant Domains</h3>
+          <ul style="font-size:12.5px;">
+            <li><strong>Aerospace:</strong> Radiation-induced memory/CPU corruption → unpredictable node behavior</li>
+            <li><strong>Blockchain/P2P:</strong> Mutually untrusting parties; consensus without central authority</li>
+            <li><strong>ISS / Aircraft Systems:</strong> Failure cost extremely high (collisions, crashes)</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>❌ Impractical for Datacenters</h3>
+          <ul style="font-size:12.5px;">
+            <li><strong>Organizational Trust:</strong> Cloud infrastructure under single organization's control</li>
+            <li><strong>Low Corruption Rates:</strong> Radiation, bit flips rare in well-managed datacenters</li>
+            <li><strong>Protocol Complexity:</strong> Algorithms extremely complex; high deployment cost</li>
+            <li><strong>Same-Software Vulnerability:</strong> Bug in one node = bug in all if same software deployed</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Software Bug Vulnerability</h3>
+      <div class="callout callout-danger">
+        <strong>CANNOT PROTECT AGAINST BUGS</strong> Byzantine FT cannot protect against identical bugs deployed to all nodes. Would require 4+ independent implementations per bug tolerance. Equally ineffective against security vulnerabilities—if one node compromised, likely all are due to shared software/configuration.
+      </div>
+
+      <h3>Weak Forms of Lying: Pragmatic Protections</h3>
+      <p>Instead of full Byzantine FT, defend against invalid messages from hardware, software, or misconfiguration:</p>
+
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Network Corruption Detection</strong>Hardware/driver/OS/router bugs corrupt packets. TCP/UDP checksums catch most; some evade detection. <strong>Mitigation:</strong> Application-level protocol checksums (HMAC, CRC over entire message).</span>
+        </li>
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Input Sanitization</strong>Publicly accessible apps require strict input checks (range validation, string size limits, format validation). Internal services (firewall-protected) can use lighter checks. <strong>All systems:</strong> Basic sanity-checking in protocol parsing.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>NTP Multi-Server Strategy</strong>Client contacts multiple time servers; estimates their errors; requires majority agreement on time range. Misconfigured outlier detected and excluded from sync. <strong>Result:</strong> Robustness exceeds single-server approach without full Byzantine complexity.</span>
+        </li>
+      </ul>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Client-Side Untrust (Web Apps):</strong> End-users control browsers (expected to be arbitrary/malicious). <strong>Defense:</strong> Input validation, sanitization, output escaping (prevent SQL injection, XSS). <strong>Not used:</strong> Byzantine fault-tolerant protocols—instead rely on server as authority for allowed behavior.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 10: SYSTEM MODELS -->
+    <section id="system-models" data-section-id="system-models">
+      <h2><span class="section-num">10</span>Formal System Models: Timing &amp; Fault Assumptions</h2>
+
+      <p><strong>Purpose:</strong> Formalize fault assumptions so algorithms can be reasoned about independently of specific hardware/software configurations. Enables algorithm correctness proofs.</p>
+
+      <h3>Timing-Based Models (3 Categories)</h3>
+      <table>
+        <tr>
+          <th>Model</th>
+          <th>Characteristics</th>
+          <th>Realism</th><th>Best For</th>
+        </tr>
+        <tr>
+          <td style="font-weight:600; color:var(--accent);">Synchronous</td>
+          <td>Bounded network delay, bounded process pauses, bounded clock error (all with fixed upper bounds)</td>
+          <td><span class="cross">✘ Unrealistic</span><br/>Unbounded delays/pauses do occur</td>
+          <td>Theoretical analysis; rarely reflects reality</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600; color:var(--accent);">Partially Synchronous</td>
+          <td>Behaves synchronously <em>most of the time</em>; occasionally exceeds timing bounds arbitrarily</td>
+          <td><span class="check">✔ Realistic</span><br/>Network & process usually well-behaved with occasional failures</td>
+          <td><strong>Most practical systems</strong>; dominant model for datacenter design</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600; color:var(--accent);">Asynchronous</td>
+          <td>No timing assumptions; no clock (no timeouts allowed); only message ordering guarantees</td>
+          <td><span class="cross">✘ Very restrictive</span><br/>Few algorithms viable without timing</td>
+          <td>Theoretical lower bounds; proves what's impossible</td>
+        </tr>
+      </table>
+
+      <div class="highlight-band">
+        <h3>🏆 Practical Choice: Partially Synchronous + Crash-Recovery</h3>
+        <p><strong>Most useful combination for real systems:</strong> Partially synchronous timing model paired with crash-recovery faults. Nodes may crash and restart (preserving stable storage); network behaves normally except during occasional disruptive events. This matches most cloud infrastructure behavior.</p>
+      </div>
+
+      <h3>Node Failure Models</h3>
+      <div class="compare-grid" style="grid-template-columns:1fr 2fr 1.5fr; gap:2px;">
+        <div class="compare-header" style="grid-template-columns:1fr 2fr 1.5fr;">
+          <div class="compare-cell">Model</div>
+          <div class="compare-cell">Behavior</div>
+          <div class="compare-cell">State Preservation</div>
+        </div>
+        <div class="compare-row" style="grid-template-columns:1fr 2fr 1.5fr;">
+          <div class="compare-cell" style="font-weight:600; color:var(--accent);">Crash-Stop</div>
+          <div class="compare-cell">Node stops responding instantly; never returns</div>
+          <div class="compare-cell neutral">N/A (permanently gone)</div>
+        </div>
+        <div class="compare-row" style="grid-template-columns:1fr 2fr 1.5fr;">
+          <div class="compare-cell" style="font-weight:600; color:var(--accent);">Crash-Recovery</div>
+          <div class="compare-cell">Node crashes; responds again after unknown time; in-memory state lost</div>
+          <div class="compare-cell good">Stable storage preserved</div>
+        </div>
+        <div class="compare-row" style="grid-template-columns:1fr 2fr 1.5fr;">
+          <div class="compare-cell" style="font-weight:600; color:var(--accent);">Byzantine (Arbitrary)</div>
+          <div class="compare-cell">Node behaves arbitrarily; may trick/deceive; sends false responses</div>
+          <div class="compare-cell bad">Unpredictable</div>
+        </div>
+      </div>
+
+      <p style="margin-top:16px; font-size:12.5px; color:var(--text-muted);">
+        <strong style="color:var(--text);">Most Common in Cloud:</strong> Crash-recovery model with partially synchronous timing. Captures VM failure patterns (reboot recovery), persistent volume preservation, and occasional network hiccups.
+      </p>
+    </section>
+
+    <!-- SECTION 11: SAFETY AND LIVENESS -->
+    <section id="safety-liveness" data-section-id="safety-liveness">
+      <h2><span class="section-num">11</span>Algorithm Correctness: Safety &amp; Liveness Properties</h2>
+
+      <p><strong>Goal:</strong> Formalize what "correct" means for distributed algorithms using safety and liveness properties. Enables rigorous reasoning about algorithm behavior under failures.</p>
+
+      <h3>Core Property Definitions</h3>
+      <table>
+        <tr>
+          <th>Property Type</th>
+          <th>Definition</th>
+          <th>Violation Nature</th>
+          <th>Recovery</th>
+        </tr>
+        <tr>
+          <td style="font-weight:600; color:var(--accent2);">Safety</td>
+          <td>"Nothing bad happens"<br/>Invariant that must <em>never</em> be violated</td>
+          <td><span class="check">✔ Identifiable</span><br/>Violated at specific point in time</td>
+          <td>Cannot be recovered; system corrupted if violated</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600; color:var(--accent2);">Liveness</td>
+          <td>"Something good eventually happens"<br/>Desired outcome must occur within bounded time</td>
+          <td><span class="partial">⚠ Asymptotic</span><br/>Never violated at finite time; only if waited forever</td>
+          <td>Wait longer or fix system state; no corruption if violated temporarily</td>
+        </tr>
+      </table>
+
+      <h3>Fencing Token Example: Formal Properties</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num" style="background:var(--accent2);">✓</div>
+          <div class="step-content">
+            <h4>Uniqueness (Safety)</h4>
+            <p>No two requests to lock service return the same token. If request X returns token tₓ before request Y returns token tᵧ, then tₓ < tᵧ. <strong>Violation = lock safety broken.</strong></p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" style="background:var(--accent2);">✓</div>
+          <div class="step-content">
+            <h4>Monotonic Sequence (Safety)</h4>
+            <p>Tokens issued in strictly increasing order. Once token N issued, token N-1 can never be issued later. Prevents: duplicate token issuance, token reuse, sequence gaps creating confusion.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num" style="background:var(--accent2);">✓</div>
+          <div class="step-content">
+            <h4>Availability (Liveness)</h4>
+            <p>Non-crashing node eventually receives response to lock request. May be delayed arbitrarily; liveness allows unbounded wait, but guarantees eventual completion under crash-recovery model.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Safety vs. Liveness: Practical Implications</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>🔐 Safety Properties</h3>
+          <ul style="font-size:12.5px;">
+            <li><strong>Cannot be recovered:</strong> Violation = permanent system corruption</li>
+            <li><strong>Must hold even during failures:</strong> Protection during crash-recovery, Byzantine attacks</li>
+            <li><strong>Examples:</strong> Uniqueness, consistency, atomicity, correctness invariants</li>
+            <li><strong>Testing strategy:</strong> Exhaustive state exploration; formal proofs</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>⏱️ Liveness Properties</h3>
+          <ul style="font-size:12.5px;">
+            <li><strong>Temporary violations acceptable:</strong> Delays don't corrupt data; just slow response</li>
+            <li><strong>Harder to guarantee:</strong> Requires system eventually recovers after failures</li>
+            <li><strong>Examples:</strong> Availability, termination, eventual consistency</li>
+            <li><strong>Testing strategy:</strong> Timeout simulation; chaos engineering; recovery verification</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>DESIGN TRADE-OFF</strong> Systems can sacrifice liveness to guarantee safety. Example: Distributed locking that doesn't return response during network partition (violates liveness) but guarantees only one client holds lock (maintains safety). This is often correct trade-off for critical systems.
+      </div>
+
+      <h3>Atomic Read-Modify-Write in Presence of Failures</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;"><strong style="color:var(--text);">Challenge:</strong> Compare-and-swap (CAS) across multiple nodes requires atomic visibility. Network partition or crash mid-operation creates ambiguity: did update occur? System must define semantics under partial failure.</p>
+
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Linearizability (Strong Consistency)</strong>All operations appear to execute in single-threaded order. Safety property. Sacrifices availability during network partition (CP from CAP theorem).</span>
+        </li>
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Eventual Consistency</strong>Liveness property. Read may return stale data during partition; eventually converges to same value. Maintains availability at cost of temporary inconsistency.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Read-Your-Writes</strong>Hybrid property. Your own writes always visible; others' writes eventually consistent. Common in distributed databases (DynamoDB).</span>
+        </li>
+      </ul>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Safety & Liveness Determine Algorithm Design:</strong> Safety requirements (uniqueness, atomicity, correctness) must be non-negotiable. Liveness requirements (availability, latency) determine acceptable trade-offs during failures. Explicit property definition enables rigorous algorithm reasoning.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 12: KEY CONCEPTS SYNTHESIS -->
+    <section id="concepts-synthesis" data-section-id="concepts-synthesis">
+      <h2><span class="section-num">12</span>Interconnections: How Concepts Build System Design</h2>
+
+      <div class="diagram-container">
+        <div class="diagram-title">Distributed System Design Dependencies</div>
+        <div style="margin-top:20px;">
+          <div class="box-row" style="margin-bottom:30px;">
+            <div class="box box-red" style="min-width:140px">Partial Failures<small>Some broken, others work</small></div>
+            <div class="arrow">→</div>
+            <div class="box box-orange" style="min-width:140px">Network Indistinguishability<small>Delay = failure?</small></div>
+            <div class="arrow">→</div>
+            <div class="box box-purple" style="min-width:140px">System Model Required<small>Define assumptions</small></div>
+          </div>
+          <div style="text-align:center; font-size:11px; color:var(--text-dim); margin-bottom:20px;">↓</div>
+          <div class="box-row" style="margin-bottom:30px; justify-content:center;">
+            <div class="box box-blue" style="min-width:140px">Algorithm Design<small>Correctness proofs</small></div>
+            <div class="arrow">←</div>
+            <div class="box box-purple" style="min-width:140px">Safety/Liveness<small>Formal properties</small></div>
+            <div class="arrow">←</div>
+            <div class="box box-green" style="min-width:140px">Fault Tolerance<small>Handle scenarios</small></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Cascading Design Implications</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Acknowledge Partial Failures Are Possible</h4>
+            <p>Unlike single-node systems (crash completely), distributed systems can have some components broken. This nondeterminism is your starting assumption.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Accept Network Indistinguishability</h4>
+            <p>You cannot distinguish delay from failure. TCP ack insufficient. Timeout-based detection is inherently imperfect. Plan for false positives and false negatives.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Choose Your System Model</h4>
+            <p>Synchronous? Partially synchronous? With crash-stop or crash-recovery faults? This choice constrains what algorithms are possible and what guarantees you can make.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Define Safety & Liveness Requirements</h4>
+            <p>What must never happen (safety)? What must eventually happen (liveness)? Trading availability for consistency is explicit trade-off between these properties.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">5</div>
           <div class="step-content">
-            <h4>Cascading Retransmission</h4>
-            <p>TCP timeout waits if packet lost; application sees original delay + retransmit RTT</p>
+            <h4>Implement Fault Tolerance Mechanisms</h4>
+            <p>Retries, timeouts, error-correcting codes, quorum reads/writes, replication. Each addresses specific failure modes; combinations create robust systems.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            <h4>Test Relentlessly Under Failure Scenarios</h4>
+            <p>Chaos monkey. Network fault injection. Byzantine node simulation. Verify software behavior under each failure mode. Ensure operators can recover.</p>
           </div>
         </div>
       </div>
 
-      <h3>TCP vs UDP Trade-off</h3>
-      <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="approach-card" style="border-color:rgba(56,139,253,.5)">
-          <h3 style="color:var(--accent)">TCP</h3>
-          <p><strong>Reliable delivery</strong> but <strong>variable delays</strong> (retransmits, flow control, packet reordering).</p>
+      <h3>Why Distributed Systems Are Hard</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>No Shared State or Clock</strong>Nodes cannot directly observe each other's state. No central truth about time. Coordination requires message passing (fallible network).</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Unbounded Delays</strong>Network/process pauses may exceed any chosen timeout. Causes cascading retries, load spikes, false failure detection.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Asynchronous Execution</strong>No global ordering of events. Causality tracking requires explicit mechanisms (vector clocks, timestamps).</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Fault/Delay Indistinguishability</strong>Core ambiguity: is node down or just slow? Sender cannot know without application-level confirmation.</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Byzantine Scenarios Rare but Possible</strong>Most cloud systems assume organizational trust (not Byzantine). But still must defend against bugs, bit flips, network corruption. Weak-form defenses (checksums, input validation) essential.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- SECTION 13: MITIGATION STRATEGIES AND PRACTICAL PATTERNS -->
+    <section id="mitigations" data-section-id="mitigations">
+      <h2><span class="section-num">13</span>Practical Mitigation Strategies for Distributed System Faults</h2>
+
+      <h3>Core Strategy: Embrace Failure as Expected State</h3>
+      <div class="highlight-band">
+        <h3>🏆 Design Principle: Build Expecting Failure</h3>
+        <p>Do not treat failures as anomalies. Design for partial failures as the normal operating mode. Infrastructure should remain online and serve users (perhaps with degraded experience) even when components break. This shift in mindset determines architecture choices.</p>
+      </div>
+
+      <h3>Proven Mitigation Patterns</h3>
+      <div class="approach-grid" style="grid-template-columns:1fr;">
+        <div class="approach-card" style="border-color:rgba(63,185,80,.5);">
+          <div class="preferred-badge">★ ESSENTIAL</div>
+          <h3 style="color:var(--accent2);">Timeouts &amp; Retries with Exponential Backoff</h3>
+          <p>When no response received, retry after increasing delay (1s, 2s, 4s, 8s...). Prevents thundering herd. Must be idempotent (safe to retry multiple times without changing outcome).</p>
           <div class="approach-traits">
-            <span class="pill pill-green">Guaranteed delivery</span>
-            <span class="pill pill-red">Unpredictable delay</span>
+            <span class="pill pill-green">Reduces cascading failures</span>
+            <span class="pill pill-green">Recovers from transient glitches</span>
+            <span class="pill pill-orange">Adds latency</span>
+            <span class="pill pill-orange">Requires idempotency</span>
           </div>
         </div>
         <div class="approach-card">
-          <h3 style="color:var(--accent5)">UDP</h3>
-          <p><strong>Variable but avoids</strong> some delay sources. Used in VoIP/videoconferencing where delayed data is worthless.</p>
+          <h3 style="color:var(--accent2);">Replication &amp; Quorum Reads/Writes</h3>
+          <p>Multiple copies ensure data survives single-component failures. Quorum (majority) ensures consistency: write to n/2 + 1 replicas; read from n/2 + 1 replicas. Minority node failures tolerated.</p>
           <div class="approach-traits">
-            <span class="pill pill-red">No guaranteed delivery</span>
-            <span class="pill pill-orange">Lower latency</span>
+            <span class="pill pill-green">Survives node failures</span>
+            <span class="pill pill-green">Increases read parallelism</span>
+            <span class="pill pill-orange">Complexity in coordination</span>
+            <span class="pill pill-orange">Network partition splits brain</span>
           </div>
         </div>
+        <div class="approach-card">
+          <h3 style="color:var(--accent2);">Bulkheads &amp; Circuit Breakers</h3>
+          <p>Isolate failed components: don't continue hammering dead service. Circuit breaker opens after threshold failures; stops requests temporarily. Prevents cascading failures from propagating. Bulkheads isolate resources (thread pools, connection pools) per service.</p>
+          <div class="approach-traits">
+            <span class="pill pill-green">Prevents cascade</span>
+            <span class="pill pill-green">Graceful degradation</span>
+            <span class="pill pill-orange">Requires explicit configuration</span>
+            <span class="pill pill-orange">May miss brief recoveries</span>
+          </div>
+        </div>
+        <div class="approach-card">
+          <h3 style="color:var(--accent2);">Health Checks &amp; Proactive Replacement</h3>
+          <p>Periodically verify node health. Remove unhealthy nodes from serving traffic. VMs can be reprovisioned automatically. Prevents cascading requests to sick components.</p>
+          <div class="approach-traits">
+            <span class="pill pill-green">Early detection</span>
+            <span class="pill pill-green">Reduces failed request ratio</span>
+            <span class="pill pill-orange">False positives trigger needless replacements</span>
+            <span class="pill pill-orange">Overhead of health checks</span>
+          </div>
+        </div>
+        <div class="approach-card">
+          <h3 style="color:var(--accent2);">Graceful Shutdown &amp; Draining</h3>
+          <p>Before restarting node (rolling upgrade), stop accepting new requests. Wait for in-flight requests to complete. Prevents data loss and client errors. Drain connection pools cleanly.</p>
+          <div class="approach-traits">
+            <span class="pill pill-green">Zero request loss during restarts</span>
+            <span class="pill pill-green">Improves rolling upgrade reliability</span>
+            <span class="pill pill-orange">Adds latency to drain phase</span>
+            <span class="pill pill-orange">Requires load balancer coordination</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Testing Fault Handling (Chaos Engineering)</h3>
+      <div class="data-bar-list">
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Network delay injection</span>
+            <span class="data-bar-value">Latency testing</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:85%;background:var(--accent)"></div></div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Packet loss simulation</span>
+            <span class="data-bar-value">Partial failure testing</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:75%;background:var(--accent5)"></div></div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Node crash injection</span>
+            <span class="data-bar-value">Recovery verification</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:65%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">Clock skew simulation</span>
+            <span class="data-bar-value">Byzantine detection testing</span>
+          </div>
+          <div class="data-bar-track"><div class="data-bar-fill" style="width:45%;background:var(--accent5)"></div></div>
+        </div>
+      </div>
+
+      <div class="callout callout-success">
+        <strong>CHAOS MONKEY PHILOSOPHY</strong> Systematically break things in production-like environments to discover failure modes before users encounter them. Netflix pioneered this: randomly kill production instances to force teams to design fault tolerance. What you don't test fails in production.
+      </div>
+    </section>
+
+    <!-- SECTION 14: KEY TAKEAWAYS -->
+    <section id="takeaways" data-section-id="takeaways">
+      <h2><span class="section-num">14</span>Key Takeaways &amp; Design Principles</h2>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Partial Failures Define Distributed Systems:</strong> Single-node systems either work completely or crash completely (deterministic). Distributed systems have partial failures—some components broken, others work. This nondeterminism is the core challenge requiring explicit fault tolerance design.</div>
       </div>
 
       <div class="takeaway">
         <span class="takeaway-icon">💡</span>
-        <div class="takeaway-text"><strong>Timeout as a heuristic:</strong> Timeouts cannot distinguish scenarios; they're statistical guesses based on observed latencies. Set based on empirical measurements of your specific network, then add safety margin.</div>
+        <div class="takeaway-text"><strong>Network Indistinguishability Is Fundamental:</strong> You cannot distinguish a failed node from a slow network using timeouts alone. TCP ack insufficient. Only evidence of success: positive application-layer response. Embrace this ambiguity; design around it with retries, idempotence, and deduplication.</div>
       </div>
-    </section>
 
-    <!-- SECTION 05: BYZANTINE FAULTS -->
-    <section id="Byzantine" data-section-id="Byzantine">
-      <h2><span class="section-num">05</span> Byzantine Faults & Fault Models</h2>
-      
-      <h3>Byzantine Fault Definition</h3>
-      <div class="diagram-container">
-        <div class="diagram-title">Node Behavior Spectrum</div>
-        <div class="box-row" style="justify-content:flex-start; gap:12px; flex-wrap:wrap;">
-          <div class="box box-green">Honest<small>Correct behavior</small></div>
-          <div class="box box-orange">Crash<small>Stops; doesn't lie</small></div>
-          <div class="box box-orange">Slow<small>Delayed response</small></div>
-          <div class="box box-red">Byzantine<small>Lies; sends corrupt data</small></div>
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>System Models Enable Reasoning:</strong> Synchronous, partially synchronous, asynchronous; crash-stop, crash-recovery, Byzantine. Choose your model explicitly. It determines what algorithms are possible and what guarantees you can make. Partially synchronous + crash-recovery most reflects reality.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Safety vs. Liveness Is an Explicit Trade-off:</strong> Safety (nothing bad happens) cannot be violated without data corruption. Liveness (something good eventually happens) can be temporarily sacrificed for consistency. CAP theorem formalizes this: choose CP (consistency + partition tolerance) or AP (availability + partition tolerance) based on requirements.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Byzantine Faults Rarely Needed in Cloud:</strong> Organizational infrastructure assumes honest-but-fallible nodes (crash-recovery model). Full Byzantine FT impractical. Defend pragmatically: checksums for corruption detection, input validation for invalid messages, multi-server strategies (NTP) to reject outliers.</div>
+      </div>
+
+      <div class="takeaway">
+        <span class="takeaway-icon">💡</span>
+        <div class="takeaway-text"><strong>Expect Failures; Test Relentlessly:</strong> Chaos engineering discovers actual failure modes. Network fault injection, node crashes, clock skew—systematically break things to verify graceful degradation. What you don't test fails at scale. Operators must understand how software behaves under specific fault scenarios.</div>
+      </div>
+
+      <h3>Critical Statistics from Chapter 8</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent3);">~12</div>
+          <div class="stat-label">Network Faults/Month (Medium Datacenter)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5);">50%</div>
+          <div class="stat-label">Single-Machine Faults</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent5);">50%</div>
+          <div class="stat-label">Entire-Rack Faults</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent4);">>2/3</div>
+          <div class="stat-label">Nodes Needed (Byzantine FT)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent2);">6</div>
+          <div class="stat-label">Indistinguishable Failure Scenarios</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--accent);">3</div>
+          <div class="stat-label">System Timing Models</div>
         </div>
       </div>
 
+      <h3>Chapter 8 Design Checklist</h3>
+      <table>
+        <tr>
+          <th>Design Consideration</th>
+          <th>Questions to Ask</th>
+          <th>Implication If Ignored</th>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Timeout Configuration</td>
+          <td>Too short = false positives; too long = slow recovery. How long can you wait?</td>
+          <td><span class="cross">✘ Cascading failures or slow detection</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Idempotence</td>
+          <td>Can requests be safely retried without changing outcome?</td>
+          <td><span class="cross">✘ Duplicate writes, data corruption</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Partial Failure Handling</td>
+          <td>What happens when subset of nodes fail? Service degradation or complete outage?</td>
+          <td><span class="cross">✘ Cascading failures, user impact</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Network Partition Recovery</td>
+          <td>How does system behave when halves of cluster cannot communicate? Preserve consistency or availability?</td>
+          <td><span class="cross">✘ Data inconsistency or unavailability</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Byzantine/Corruption Detection</td>
+          <td>Are messages checksummed? Is input validated? Do you detect bit flips or bugs?</td>
+          <td><span class="cross">✘ Silent data corruption</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Operator Runbooks</td>
+          <td>How do operators recover from specific failure modes? Is recovery documented and tested?</td>
+          <td><span class="cross">✘ Extended downtime, human error</span></td>
+        </tr>
+      </table>
+
+      <h3>Further Exploration (Subsequent Chapters)</h3>
       <ul class="icon-list">
         <li>
-          <span class="il-icon">🔴</span>
-          <span class="il-text"><strong>Byzantine Fault</strong>Node deliberately sends faulty/corrupted responses; may claim to have received messages it didn't receive</span>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Chapter 4: Replication</strong>How to replicate data across nodes while maintaining consistency under partial failures. Addresses: leader-follower, multi-leader, leaderless approaches.</span>
         </li>
         <li>
           <span class="il-icon">🔵</span>
-          <span class="il-text"><strong>Byzantine Fault-Tolerant (BFT) System</strong>Continues operating correctly even if some nodes malfunction, disobey protocol, or are compromised by malicious attackers</span>
+          <span class="il-text"><strong>Chapter 5: Partitioning</strong>How to shard data across nodes for scalability. Introduces new failure modes (partition imbalance, rebalancing failures).</span>
         </li>
         <li>
-          <span class="il-icon">🟢</span>
-          <span class="il-text"><strong>DDIA Assumption: "Unreliable but Honest"</strong>Nodes may be slow/unresponsive/outdated, but don't lie if they respond</span>
-        </li>
-      </ul>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Chapter 9: Consistency &amp; Consensus</strong>Formal consistency models (linearizability, causal consistency, eventual consistency). Consensus algorithms (Paxos, Raft)
 
-      <h3>When BFT is Relevant (3 Cases)</h3>
-      <div class="approach-grid">
-        <div class="approach-card" style="border-color:rgba(247,129,102,.5)">
-          <h3 style="color:var(--accent3)">① Aerospace & Safety-Critical</h3>
-          <p><strong>Radiation-induced memory corruption</strong> in CPUs/registers → unpredictable node behavior. Examples: aircraft flight control, SpaceX rockets with fault-tolerant computing.</p>
-          <span class="pill pill-red">Rare but catastrophic</span>
-        </div>
-        <div class="approach-card" style="border-color:rgba(210,168,255,.5)">
-          <h3 style="color:var(--accent4)">② Multi-Org P2P Systems</h3>
-          <p><strong>Untrusting parties</strong> (Bitcoin, blockchains) need consensus without central authority. Nodes are adversaries; must tolerate deliberate deception.</p>
-          <span class="pill pill-purple">Consensus-critical</span>
-        </div>
-        <div class="approach-card" style="border-color:rgba(255,166,87,.5)">
-          <h3 style="color:var(--accent5)">③ NOT typical datacenters</h3>
-          <p>Single-org control + low radiation = cost of BFT protocols prohibitive. Traditional mechanisms (auth, encryption, firewalls) remain primary defense.</p>
-          <span class="pill pill-orange">Cost-prohibitive</span>
-        </div>
-      </div>
-
-      <h3>Why BFT is Impractical for Most Systems</h3>
-      <div class="insight-strip">
-        <div class="insight-card insight-red">
-          <span class="ic-icon">🔗</span>
-          <div class="ic-title">Supermajority Requirement</div>
-          <div class="ic-body">Need >2/3 nodes functional. 4-node system → max 1 failure tolerated. Expensive redundancy.</div>
-        </div>
-        <div class="insight-card insight-red">
-          <span class="ic-icon">🐛</span>
-          <div class="ic-title">Bug Immunity Illusion</div>
-          <div class="ic-body">Same software on all nodes → BFT can't protect against bugs. Need 4 independent implementations (cost explosion).</div>
-        </div>
-        <div class="insight-card insight-orange">
-          <span class="ic-icon">🔐</span>
-          <div class="ic-title">Security Dependency</div>
-          <div class="ic-body">If attacker compromises one node, likely compromises all (same software). Firewall & auth remain critical.</div>
-        </div>
-        <div class="insight-card insight-orange">
-          <span class="ic-icon">⚙️</span>
-          <div class="ic-title">Complexity</div>
-          <div class="ic-body">BFT protocols "quite complicated." Hardware support needed for fault-tolerant embedded systems.</div>
-        </div>
-      </div>
-
-      <h3>The Byzantine Generals Problem</h3>
-      <p><strong>Two Generals Problem:</strong> Two armies must agree on battle plan via unreliable messengers (messengers may be delayed/lost). Generalization → <strong>Byzantine Generals Problem</strong>: n generals must reach consensus; some are traitors sending false messages.</p>
-      
-      <div class="callout callout-info">
-        <strong>NAMING ETYMOLOGY</strong> "Byzantine" chosen to mean "excessively complicated, bureaucratic, devious" (political reference). Avoids offending any specific nationality—pure metaphor for systemic complexity and deception.
-      </div>
-    </section>
-
-    <!-- SECTION 06: WEAK FORMS OF LYING -->
-    <section id="mitigations" data-section-id="mitigations">
-      <h2><span class="section-num">06</span> Safeguards Against Weak Forms of Lying</h2>
-      
-      <p>Without full Byzantine Fault Tolerance, deployable mechanisms guard against non-adversarial faults:</p>
-
-      <h3>Network Packet Corruption</h3>
-      <div class="insight-card insight-orange">
-        <span class="ic-icon">💻</span>
-        <div class="ic-title">Problem</div>
-        <div class="ic-body">Hardware bugs, OS/driver/router bugs; corruption sometimes escapes TCP/UDP checksums (checksums imperfect).</div>
-      </div>
-      <div class="insight-card insight-green">
-        <span class="ic-icon">✅</span>
-        <div class="ic-title">Mitigation: Application-Level Checksums</div>
-        <div class="ic-body">Simple, pragmatic: add hash/CRC of payload at application layer. Catches errors checksums miss.</div>
-      </div>
-
-      <h3>Input Validation & Sanitization</h3>
-      <div class="pro-con-grid">
-        <div class="pro-card">
-          <h3>Publicly Accessible Apps</h3>
-          <ul>
-            <li><strong>Strict input validation</strong></li>
-            <li>Range checks on numeric inputs</li>
-            <li>String size limits (prevent DoS allocations)</li>
-            <li>Protocol parsing sanity checks</li>
-          </ul>
-        </div>
-        <div class="con-card">
-          <h3>Internal Services (Behind Firewall)</h3>
-          <ul>
-            <li>Can relax some checks (less hostile input)</li>
-            <li>BUT basic sanity-checking still needed</li>
-            <li>Protocol parsing must be robust</li>
-            <li>Still assume some inputs malformed</li>
-          </ul>
-        </div>
-      </div>
-
-      <h3>NTP Client Robustness</h3>
-      <div class="step-flow">
-        <div class="step-item">
-          <div class="step-num">1</div>
-          <div class="step-content">
-            <h4>Contact Multiple Servers</h4>
-            <p>NTP client queries multiple time servers simultaneously</p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">2</div>
-          <div class="step-content">
-            <h4>Estimate Errors</h4>
-            <p>Calculate error bounds on each response; track uncertainty</p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">3</div>
-          <div class="step-content">
-            <h4>Detect Outliers</h4>
-            <p>Misconfigured/incorrect servers identified as outliers in time range</p>
-          </div>
-        </div>
-        <div class="step-item">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <h4>Exclude Outliers</h4>
-            <p>Discard outlier responses; synchronize using consensus time range</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="highlight-band">
-        <h3>💡 Practical Insight</h3>
-        <p>NTP's multi-server approach is more robust than single-server trust. Consensus on time range (rather than exact value) naturally defends against Byzantine-like misbehavior without full BFT overhead.</p>
-      </div>
-    </section>
-
-    <!-- SECTION 07: SYSTEM MODELS -->
-    <section id="system-models" data-section-id="system-models">
-      <h2><span class="section-num">07</span> System Models: Timing & Fault Models</h2>
-      
-      <h3>Three Timing-Based System Models</h3>
-      <table>
-        <tr>
-          <th>Model</th>
-          <th>Characteristics</th>
-          <th>Realism</th>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent)">Synchronous</strong></td>
-          <td>Bounded network delay <code>d</code>, bounded process pauses, bounded clock error. Fixed upper bounds <em>provably</em> exist.</td>
-          <td><span class="cross">❌ Unrealistic</span><br/>Unbounded delays & pauses do occur</td>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent2)">Partially Synchronous</strong></td>
-          <td>System <em>normally</em> behaves synchronously (bounded delays) but occasionally exceeds bounds. Exceptions are transient.</td>
-          <td><span class="check">✅ Most Realistic</span><br/>Matches real systems</td>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent5)">Asynchronous</strong></td>
-          <td>No timing assumptions; no clock; no timeouts possible. Nodes operate without synchronized time.</td>
-          <td><span class="partial">⚠ Very Restrictive</span><br/>Rare in practice</td>
-        </tr>
-      </table>
-
-      <h3>Three Node Fault Models</h3>
-      <table>
-        <tr>
-          <th>Model</th>
-          <th>Behavior</th>
-          <th>Recovery</th>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent)">Crash-Stop</strong></td>
-          <td>Node suddenly stops, never returns</td>
-          <td>Gone forever</td>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent2)">Crash-Recovery</strong></td>
-          <td>Node crashes, may restart after unknown time; stable storage (disk) persists, in-memory state lost</td>
-          <td>Recovers; data survives</td>
-        </tr>
-        <tr>
-          <td><strong style="color:var(--accent3)">Byzantine (Arbitrary)</strong></td>
-          <td>Nodes can do anything: lie, trick, deceive, send corrupted data</td>
-          <td>Requires consensus algorithms</td>
-        </tr>
-      </table>
-
-      <div class="highlight-band">
-        <h3>🏆 Practical Recommendation</h3>
-        <p><strong>Partially Synchronous + Crash-Recovery Faults</strong> = most useful model for real systems. Assume bounded delays most of the time; design for occasional exceptions. Nodes crash but restart with disk data intact.</p>
-      </div>
-
-      <div class="data-bar-list">
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">How often to assume synchronous behavior</span>
-            <span class="data-bar-value">99%+ of time</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:99%;background:var(--accent2)"></div></div>
-        </div>
-        <div class="data-bar-item">
-          <div class="data-bar-header">
-            <span class="data-bar-label">Exceptions you must handle</span>
-            <span class="data-bar-value">1% of operations</span>
-          </div>
-          <div class="data-bar-track"><div class="data-bar-fill" style="width:1%;background:var(--accent3)"></div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 08: CORRECTNESS PROPERTIES -->
-    <section id="correctness" data-section-id="correctness">
-      <h2><span class="section-num">08</span> Correctness: Safety vs Liveness Properties</h2>
-      
-      <h3>Example: Fencing Token Algorithm</h3>
-      <div class="diagram-container">
-        <div class="diagram-title">Token Generation Properties</div>
-        <div style="font-size:13px; line-height:2; color:var(--text-muted); padding:0 8px;">
-          <div><strong style="color:var(--accent2)">1. Uniqueness (SAFETY):</strong> No two requests return same token value</div>
-          <div><strong style="color:var(--accent2)">2. Monotonic Sequence (SAFETY):</strong> If request x completes before request y begins, then token_x < token_y</div>
-          <div><strong style="color:var(--accent5)">3. Availability (LIVENESS):</strong> Node requesting token eventually receives response (if doesn't crash)</div>
-        </div>
-      </div>
-
-      <h3>Safety: "Nothing Bad Happens"</h3>
-      <div class="insight-card insight-red">
-        <span class="ic-icon">🔴</span>
-        <div class="ic-title">Safety Violation = Irreversible Damage</div>
-        <div class="ic-
-</main>
+</section>
+</div>
 <script>
 (function() {
   // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks

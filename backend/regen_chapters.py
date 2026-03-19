@@ -38,10 +38,11 @@ CHAPTER_REPORT_IDS = {
     3: "f89b7eda-4860-4990-8ad7-e75b086c3c91",
     5: "5dc368b0-1767-4f92-9449-7b7184049faf",
     7: "e8329553-6edf-44e7-8ae2-60c1b9a8c57a",
+    8: "69715efa-bef8-4ef8-83fc-336a312c1691",
 }
 
 # Which chapters to regenerate
-REGEN = [7]
+REGEN = [3, 8]
 
 
 class _FakeDoc:
