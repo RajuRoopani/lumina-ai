@@ -1,0 +1,1736 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DDIA Ch06: Partitioning — Technical Report</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --accent: #388bfd;
+      --accent2: #3fb950;
+      --accent3: #f78166;
+      --accent4: #d2a8ff;
+      --accent5: #ffa657;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #484f58;
+      --radius: 8px;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* PROGRESS BAR */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      z-index: 200;
+      transition: width 0.1s;
+    }
+
+    /* SIDEBAR */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      z-index: 100;
+      transition: transform 0.3s;
+    }
+
+    #sidebar-header {
+      padding: 20px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #sidebar-header h1 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent);
+    }
+
+    #sidebar-header p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    #sidebar nav {
+      padding: 8px 0;
+    }
+
+    #sidebar nav a {
+      display: block;
+      padding: 7px 16px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+
+    #sidebar nav a:hover,
+    #sidebar nav a.active {
+      color: var(--accent);
+      background: rgba(56, 139, 253, 0.07);
+      border-left-color: var(--accent);
+    }
+
+    #sidebar nav .section-label {
+      padding: 14px 16px 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-dim);
+    }
+
+    /* MAIN */
+    #main {
+      margin-left: 260px;
+      padding: 48px 48px 100px;
+      max-width: 960px;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #1a2332 0%, #0f1c2e 40%, #161b22 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(56, 139, 253, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 139, 253, 0.1);
+      border: 1px solid rgba(56, 139, 253, 0.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 600px;
+    }
+
+    .hero .meta {
+      display: flex;
+      gap: 20px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hero .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .hero .meta-item .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* SECTIONS */
+    section {
+      margin-bottom: 64px;
+      scroll-margin-top: 24px;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h2 .section-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(56, 139, 253, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent4);
+      margin: 24px 0 10px;
+    }
+
+    h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent5);
+      margin: 16px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    ul,
+    ol {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    em {
+      color: var(--text-muted);
+    }
+
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 0 48px;
+    }
+
+    /* CALLOUT */
+    .callout {
+      border-left: 3px solid;
+      padding: 12px 16px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .callout-info {
+      border-color: var(--accent);
+      background: rgba(56, 139, 253, 0.06);
+    }
+
+    .callout-warn {
+      border-color: var(--accent5);
+      background: rgba(255, 166, 87, 0.06);
+    }
+
+    .callout-success {
+      border-color: var(--accent2);
+      background: rgba(63, 185, 80, 0.06);
+    }
+
+    .callout-danger {
+      border-color: var(--accent3);
+      background: rgba(247, 129, 102, 0.06);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+
+    /* PILLS */
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    .pill-blue {
+      background: rgba(56, 139, 253, 0.1);
+      color: var(--accent);
+      border-color: rgba(56, 139, 253, 0.3);
+    }
+
+    .pill-green {
+      background: rgba(63, 185, 80, 0.1);
+      color: var(--accent2);
+      border-color: rgba(63, 185, 80, 0.3);
+    }
+
+    .pill-red {
+      background: rgba(247, 129, 102, 0.1);
+      color: var(--accent3);
+      border-color: rgba(247, 129, 102, 0.3);
+    }
+
+    .pill-purple {
+      background: rgba(210, 168, 255, 0.1);
+      color: var(--accent4);
+      border-color: rgba(210, 168, 255, 0.3);
+    }
+
+    .pill-orange {
+      background: rgba(255, 166, 87, 0.1);
+      color: var(--accent5);
+      border-color: rgba(255, 166, 87, 0.3);
+    }
+
+    .pill-teal {
+      background: rgba(57, 217, 217, 0.1);
+      color: #39d9d9;
+      border-color: rgba(57, 217, 217, 0.3);
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13.5px;
+    }
+
+    th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .check {
+      color: var(--accent2);
+    }
+
+    .cross {
+      color: var(--accent3);
+    }
+
+    .partial {
+      color: var(--accent5);
+    }
+
+    /* CODE */
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.6;
+      margin: 12px 0;
+      color: #e6edf3;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      background: rgba(110, 118, 129, 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* APPROACH CARDS */
+    .approach-grid {
+      display: grid;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .approach-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+    }
+
+    .approach-card .preferred-badge {
+      position: absolute;
+      top: -1px;
+      right: 16px;
+      background: var(--accent2);
+      color: #000;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 0 0 6px 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .approach-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .approach-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .approach-traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* BOX DIAGRAMS */
+    .diagram-container {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .diagram-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diagram-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .box-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    .box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-radius: 8px;
+      border: 1px solid;
+      padding: 10px 14px;
+      min-width: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .box small {
+      font-size: 10px;
+      font-weight: 400;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .box-blue {
+      background: rgba(56, 139, 253, 0.1);
+      border-color: rgba(56, 139, 253, 0.4);
+      color: var(--accent);
+    }
+
+    .box-green {
+      background: rgba(63, 185, 80, 0.1);
+      border-color: rgba(63, 185, 80, 0.4);
+      color: var(--accent2);
+    }
+
+    .box-orange {
+      background: rgba(255, 166, 87, 0.1);
+      border-color: rgba(255, 166, 87, 0.4);
+      color: var(--accent5);
+    }
+
+    .box-purple {
+      background: rgba(210, 168, 255, 0.1);
+      border-color: rgba(210, 168, 255, 0.4);
+      color: var(--accent4);
+    }
+
+    .box-red {
+      background: rgba(247, 129, 102, 0.1);
+      border-color: rgba(247, 129, 102, 0.4);
+      color: var(--accent3);
+    }
+
+    .box-gray {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+
+    .box-teal {
+      background: rgba(57, 217, 217, 0.1);
+      border-color: rgba(57, 217, 217, 0.4);
+      color: #39d9d9;
+    }
+
+    .arrow {
+      color: var(--text-dim);
+      font-size: 18px;
+      padding: 0 6px;
+      white-space: nowrap;
+    }
+
+    .arrow-down {
+      display: flex;
+      justify-content: center;
+      height: 30px;
+      align-items: center;
+    }
+
+    .arrow-down-line {
+      width: 2px;
+      height: 30px;
+      opacity: 0.4;
+    }
+
+    /* TIMELINE */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -25px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg);
+    }
+
+    .tl-item h4 {
+      margin: 0 0 4px;
+      font-size: 13.5px;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .tl-item p {
+      font-size: 13px;
+      margin: 0;
+    }
+
+    /* PRO/CON */
+    .pro-con-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .pro-card {
+      background: rgba(63, 185, 80, 0.05);
+      border: 1px solid rgba(63, 185, 80, 0.2);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .con-card {
+      background: rgba(247, 129, 102, 0.05);
+      border: 1px solid rgba(247, 129, 102, 0.2);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .pro-card h3 {
+      color: var(--accent2);
+      font-size: 14px;
+      margin: 0 0 10px;
+    }
+
+    .con-card h3 {
+      color: var(--accent3);
+      font-size: 14px;
+      margin: 0 0 10px;
+    }
+
+    .pro-card li,
+    .con-card li {
+      font-size: 13px;
+    }
+
+    /* TAGS */
+    .tag {
+      display: inline-block;
+      font-size: 10.5px;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .tag-new {
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--accent2);
+    }
+
+    .tag-change {
+      background: rgba(56, 139, 253, 0.15);
+      color: var(--accent);
+    }
+
+    .tag-risk {
+      background: rgba(247, 129, 102, 0.15);
+      color: var(--accent3);
+    }
+
+    /* STAT CARDS */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    /* SEQUENCE DIAGRAM */
+    .seq-diagram {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .seq-participants {
+      display: flex;
+      gap: 0;
+      justify-content: flex-start;
+      margin-bottom: 0;
+    }
+
+    .seq-actor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 120px;
+      flex: 1;
+    }
+
+    .seq-actor-box {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .seq-actor-line {
+      width: 2px;
+      background: var(--border);
+      flex: 1;
+      min-height: 24px;
+    }
+
+    .seq-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .seq-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-height: 40px;
+    }
+
+    .seq-spacer {
+      min-width: 120px;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .seq-spacer-line {
+      width: 2px;
+      background: var(--border);
+      height: 40px;
+    }
+
+    .seq-msg {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .seq-msg-arrow {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .seq-msg-line {
+      flex: 1;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.6;
+    }
+
+    .seq-msg-head {
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .seq-msg-head-left {
+      color: var(--accent2);
+      font-size: 14px;
+    }
+
+    .seq-msg-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 2px 0 4px;
+    }
+
+    .seq-note {
+      background: rgba(255, 214, 0, 0.07);
+      border: 1px solid rgba(255, 214, 0, 0.2);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: #e6c97a;
+      margin: 4px 0;
+      text-align: center;
+    }
+
+    /* VISUAL SUMMARY */
+    .visual-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .vs-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .vs-card:hover {
+      border-color: var(--accent);
+    }
+
+    .vs-icon {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .vs-body {
+      flex: 1;
+    }
+
+    .vs-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .vs-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .vs-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ICON LIST */
+    .icon-list {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+
+    .icon-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .icon-list li:last-child {
+      border-bottom: none;
+    }
+
+    .icon-list .il-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .icon-list .il-text strong {
+      display: block;
+      color: var(--text);
+      font-size: 13.5px;
+      margin-bottom: 2px;
+    }
+
+    /* DATA BAR */
+    .data-bar-list {
+      margin: 12px 0;
+    }
+
+    .data-bar-item {
+      margin-bottom: 10px;
+    }
+
+    .data-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 12.5px;
+    }
+
+    .data-bar-label {
+      color: var(--text-muted);
+    }
+
+    .data-bar-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .data-bar-track {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .data-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent);
+    }
+
+    /* INSIGHT CARD */
+    .insight-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .insight-card {
+      border-radius: 10px;
+      padding: 16px 18px;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .insight-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.08;
+      transform: translate(20px, -20px);
+      background: currentColor;
+    }
+
+    .insight-card .ic-icon {
+      font-size: 22px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .insight-card .ic-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      opacity: 0.7;
+    }
+
+    .insight-card .ic-body {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .insight-blue {
+      background: rgba(56, 139, 253, 0.07);
+      border-color: rgba(56, 139, 253, 0.25);
+      color: var(--accent);
+    }
+
+    .insight-green {
+      background: rgba(63, 185, 80, 0.07);
+      border-color: rgba(63, 185, 80, 0.25);
+      color: var(--accent2);
+    }
+
+    .insight-orange {
+      background: rgba(255, 166, 87, 0.07);
+      border-color: rgba(255, 166, 87, 0.25);
+      color: var(--accent5);
+    }
+
+    .insight-red {
+      background: rgba(247, 129, 102, 0.07);
+      border-color: rgba(247, 129, 102, 0.25);
+      color: var(--accent3);
+    }
+
+    .insight-purple {
+      background: rgba(210, 168, 255, 0.07);
+      border-color: rgba(210, 168, 255, 0.25);
+      color: var(--accent4);
+    }
+
+    .insight-teal {
+      background: rgba(57, 217, 217, 0.07);
+      border-color: rgba(57, 217, 217, 0.25);
+      color: #39d9d9;
+    }
+
+    /* STEP FLOW */
+    .step-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 16px 0;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    .step-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .step-item::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .step-item:last-child::after {
+      display: none;
+    }
+
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .step-content {
+      flex: 1;
+      padding-top: 8px;
+    }
+
+    .step-content h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .step-content p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* COMPARISON TABLE */
+    .compare-grid {
+      display: grid;
+      gap: 2px;
+      margin: 16px 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .compare-header {
+      display: grid;
+      background: var(--surface2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .compare-row {
+      display: grid;
+      background: var(--surface);
+      transition: background 0.15s;
+    }
+
+    .compare-row:hover {
+      background: var(--surface2);
+    }
+
+    .compare-cell {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-right: 1px solid var(--border);
+    }
+
+    .compare-cell:last-child {
+      border-right: none;
+    }
+
+    .compare-cell.good {
+      color: var(--accent2);
+    }
+
+    .compare-cell.bad {
+      color: var(--accent3);
+    }
+
+    .compare-cell.neutral {
+      color: var(--text-muted);
+    }
+
+    /* HIGHLIGHT BAND */
+    .highlight-band {
+      background: linear-gradient(135deg, rgba(56, 139, 253, 0.08) 0%, rgba(210, 168, 255, 0.06) 100%);
+      border: 1px solid rgba(56, 139, 253, 0.2);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    .highlight-band h3 {
+      color: var(--accent);
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    /* KEY TAKEAWAY */
+    .takeaway {
+      background: linear-gradient(135deg, rgba(63, 185, 80, 0.08), rgba(57, 217, 217, 0.05));
+      border: 1px solid rgba(63, 185, 80, 0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .takeaway-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .takeaway-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .takeaway-text strong {
+      color: var(--accent2);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      #sidebar {
+        transform: translateX(-260px);
+      }
+
+      #main {
+        margin-left: 0;
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <h1>📊 DDIA Ch06</h1>
+      <p>Partitioning Deep Dive</p>
+    </div>
+    <nav>
+      <div class="section-label">Core Concepts</div>
+      <a href="#visual-summary">At a Glance</a>
+      <a href="#partitioning-def">What is Partitioning</a>
+      <a href="#architecture">Architecture Overview</a>
+
+      <div class="section-label">Strategies</div>
+      <a href="#key-range">Key Range Partitioning</a>
+      <a href="#hash-partitioning">Hash Partitioning</a>
+      
+
+      <div class="section-label">Advanced Topics</div>
+      
+      
+      
+      
+      
+      
+    </nav>
+  </div>
+
+  <div id="main">
+    <div class="hero">
+      <div class="badge">📖 Database Systems Reference</div>
+      <h1>Partitioning & <span>Sharding</span></h1>
+      <p>Deep dive into breaking data across distributed systems for scalability, load distribution, and query independence — with mechanisms, trade-offs, and real-world systems.</p>
+      <div class="meta">
+        <div class="meta-item">
+          <span class="dot" style="background: var(--accent)"></span>
+          Source: Designing Data-Intensive Applications (DDIA) Chapter 6
+        </div>
+        <div class="meta-item">
+          <span class="dot" style="background: var(--accent2)"></span>
+          10+ Partitioning Strategies Covered
+        </div>
+        <div class="meta-item">
+          <span class="dot" style="background: var(--accent5)"></span>
+          Real System Examples: Cassandra, HBase, MongoDB, Riak
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────────────────────────── VISUAL SUMMARY ────────────────────────────────────── -->
+    <section id="visual-summary" data-section-id="visual-summary">
+      <h2><span class="section-num">01</span> At a Glance</h2>
+      <div class="visual-summary">
+        <div class="vs-card">
+          <div class="vs-icon">🎯</div>
+          <div class="vs-body">
+            <div class="vs-label">Primary Goal</div>
+            <div class="vs-value">Scale Data & Queries</div>
+            <div class="vs-sub">Distribute across N nodes → 10× capacity & throughput</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🔑</div>
+          <div class="vs-body">
+            <div class="vs-label">Key Insight</div>
+            <div class="vs-value">One Record = One Partition</div>
+            <div class="vs-sub">Each partition is independent small database</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">⚡</div>
+          <div class="vs-body">
+            <div class="vs-label">Main Challenge</div>
+            <div class="vs-value">Hot Spot & Skew</div>
+            <div class="vs-sub">Uneven data/query distribution = idle nodes</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🛠️</div>
+          <div class="vs-body">
+            <div class="vs-label">Three Core Strategies</div>
+            <div class="vs-value">Range | Hash | Hybrid</div>
+            <div class="vs-sub">Each with unique trade-offs</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">📊</div>
+          <div class="vs-body">
+            <div class="vs-label">Query Efficiency</div>
+            <div class="vs-value">Single-Partition > Multi-</div>
+            <div class="vs-sub">Range queries best for key-range; lost with hashing</div>
+          </div>
+        </div>
+        <div class="vs-card">
+          <div class="vs-icon">🌍</div>
+          <div class="vs-body">
+            <div class="vs-label">Common Synonyms</div>
+            <div class="vs-value">Shard, Region, Tablet</div>
+            <div class="vs-sub">MongoDB, HBase, Bigtable terminology varies</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────── DEFINITION & CORE CONCEPTS ────────────────────────────────────── -->
+    <section id="partitioning-def" data-section-id="partitioning-def">
+      <h2><span class="section-num">02</span> What is Partitioning?</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Single Table → Multiple Partitions</div>
+        <div class="box-row">
+          <div class="box box-gray">Single Table (All Data)<small>grows unbounded</small></div>
+          <div class="arrow">⇢</div>
+          <div class="box box-blue">Partition 1<small>Records A-F</small></div>
+          <div class="arrow">⇢</div>
+          <div class="box box-blue">Partition 2<small>Records G-M</small></div>
+          <div class="arrow">⇢</div>
+          <div class="box box-blue">Partition 3<small>Records N-Z</small></div>
+        </div>
+      </div>
+
+      <p><strong>Partitioning</strong> (also called <strong>sharding</strong>) is the technique of breaking data into partitions and distributing them across multiple nodes in a <strong>shared-nothing cluster</strong>.</p>
+
+      <h3>Core Properties</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>One Record = One Partition</strong>Each row/document/object belongs to exactly one partition — no duplication, no split ownership</span>
+        </li>
+        <li>
+          <span class="il-icon">🔵</span>
+          <span class="il-text"><strong>Independent Small Database</strong>Each partition behaves like a miniature database with its own schema, indexes, and storage</span>
+        </li>
+        <li>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>Distributed Storage</strong>Partitions span multiple physical machines, disks, and processors — each handles subset of total data</span>
+        </li>
+        <li>
+          <span class="il-icon">🟠</span>
+          <span class="il-text"><strong>Synonym Chaos</strong>Different systems use different terminology: Shard (MongoDB, Elasticsearch), Region (HBase), Tablet (Bigtable), vnode (Cassandra), vBucket (Couchbase)</span>
+        </li>
+      </ul>
+
+      <h3>Fundamental Goals</h3>
+      <div class="data-bar-list">
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">1. Data Scalability</span>
+            <span class="data-bar-value">Critical</span>
+          </div>
+          <div class="data-bar-track">
+            <div class="data-bar-fill" style="width: 100%; background: var(--accent3)"></div>
+          </div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">2. Query Load Distribution</span>
+            <span class="data-bar-value">Critical</span>
+          </div>
+          <div class="data-bar-track">
+            <div class="data-bar-fill" style="width: 100%; background: var(--accent3)"></div>
+          </div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">3. Independent Execution</span>
+            <span class="data-bar-value">High</span>
+          </div>
+          <div class="data-bar-track">
+            <div class="data-bar-fill" style="width: 85%; background: var(--accent5)"></div>
+          </div>
+        </div>
+        <div class="data-bar-item">
+          <div class="data-bar-header">
+            <span class="data-bar-label">4. Linear Throughput Scaling</span>
+            <span class="data-bar-value">Ideal</span>
+          </div>
+          <div class="data-bar-track">
+            <div class="data-bar-fill" style="width: 95%; background: var(--accent2)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>THROUGHPUT SCALING FORMULA</strong>
+        N nodes with no replication = ~N × single-node throughput. With replication factor R, effective scaling = N / R. Example: 10 nodes + 3-node replication = ~3.3× throughput.
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────── ARCHITECTURE OVERVIEW ────────────────────────────────────── -->
+    <section id="architecture" data-section-id="architecture">
+      <h2><span class="section-num">03</span> Architecture Overview</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Partitioned System Topology</div>
+        <div class="box-row" style="flex-wrap: wrap; justify-content: flex-start; gap: 8px;">
+          <div class="box box-blue">Client<small>sends query</small></div>
+        </div>
+        <div class="arrow-down">
+          <div class="arrow-down-line"></div>
+        </div>
+        <div class="box-row" style="flex-wrap: wrap; justify-content: flex-start; gap: 8px;">
+          <div class="box box-orange">Routing Layer<small>determines partition</small></div>
+        </div>
+        <div class="arrow-down">
+          <div class="arrow-down-line"></div>
+        </div>
+        <div class="box-row">
+          <div class="box box-green">Partition 1<small>Nodes A, B, C</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Partition 2<small>Nodes D, E, F</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Partition 3<small>Nodes G, H, I</small></div>
+        </div>
+      </div>
+
+      <p>A partitioned system splits responsibility across layers:</p>
+
+      <h3>Layer 1: Partition Assignment</h3>
+      <p>Each partition owns a range of keys (or hash bucket). Assignment can be static or dynamic based on rebalancing.</p>
+
+      <h3>Layer 2: Request Routing</h3>
+      <p>Client or middleware determines which partition to contact based on the query key. Three common approaches:</p>
+      <ul style="margin-left: 20px;">
+        <li><strong>Smart Client:</strong> Client library knows partition map, routes directly</li>
+        <li><strong>Routing Tier:</strong> Separate cluster layer forwards requests (HBase, Cassandra)</li>
+        <li><strong>First-Contact:</strong> Send to any node; it forwards to correct partition (older systems)</li>
+      </ul>
+
+      <h3>Layer 3: Execution</h3>
+      <p>Each partition processes independently. Single-partition queries require only local disk/memory. Multi-partition queries scatter across multiple nodes and gather results.</p>
+
+      <div class="highlight-band">
+        <h3>🎯 Architecture Insight: Shared-Nothing</h3>
+        <p>No shared disk, no shared memory. Each partition owns its data exclusively. This eliminates contention and allows horizontal scaling. Downside: cross-partition transactions are complex.</p>
+      </div>
+    </section>
+
+    <!-- ────────────────────────────────────── KEY-RANGE PARTITIONING ────────────────────────────────────── -->
+    <section id="key-range" data-section-id="key-range">
+      <h2><span class="section-num">04</span> Key-Range Partitioning</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Encyclopedia Model: Contiguous Key Ranges</div>
+        <div class="box-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+          <div style="width: 100%;">
+            <div class="box box-blue" style="width: 100%; text-align: left; padding: 8px; margin-bottom: 4px;">Vol. 1 (A–B) | Vol. 2 (C–D) | … | Vol. 12 (T–Z) | Vol. 13 (*)</div>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Continuous ranges of key values assigned to partitions</p>
+        </div>
+      </div>
+
+      <p>Assign a continuous range of keys to each partition. Example: encyclopedia volumes where partition 1 holds A–B, partition 2 holds C–D, and so on.</p>
+
+      <h3>How It Works</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Define Partition Boundaries</h4>
+            <p>Decide minimum and maximum key for each partition. Not necessarily evenly spaced — boundaries chosen to distribute load.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Direct Key Lookup</h4>
+            <p>Given a key, find which range it falls into and contact that partition directly. O(log N) with sorted boundaries.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Range Scan Efficiency</h4>
+            <p>Keys are sorted within each partition. Scan all records in range [K1, K2] by reading one partition sequentially.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Advantages</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>✅ Pros</h3>
+          <ul>
+            <li><strong>Efficient Range Scans:</strong> Adjacent keys stay together; scan is fast and sequential</li>
+            <li><strong>Concatenated Indexes:</strong> Multi-column compound keys support efficient queries on remaining columns</li>
+            <li><strong>Direct Access:</strong> Know partition boundaries → query one partition directly</li>
+            <li><strong>Hot Key Mitigation Possible:</strong> Can split boundaries dynamically (at cost of complexity)</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>❌ Cons</h3>
+          <ul>
+            <li><strong>Hot Spots from Monotonic Keys:</strong> Timestamp-based partitioning concentrates all writes to "today"</li>
+            <li><strong>Uneven Data Distribution:</strong> Some ranges may naturally have more data (alphabetically or otherwise)</li>
+            <li><strong>Rebalancing Complexity:</strong> Splitting/merging ranges requires data movement and coordination</li>
+            <li><strong>Partition Boundary Management:</strong> Manual or automatic, requires monitoring</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Canonical Example: Sensor Network with Compound Keys</h3>
+      <div class="callout callout-success">
+        <strong>USE CASE</strong>
+        Primary key = <code>(sensor_name, timestamp)</code>. Hash <code>sensor_name</code> for partition, sort by <code>timestamp</code> within partition. Query: "All readings from sensor X in range [T1, T2]" → single partition, sequential scan.
+      </div>
+
+      <h3>The Timestamp Hot Spot Problem</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-red">
+          <span class="ic-icon">🔥</span>
+          <div class="ic-title">Hot Spot Risk</div>
+          <div class="ic-body">All writes go to current time partition. Other partitions (past dates) sit idle. Single partition becomes bottleneck.</div>
+        </div>
+        <div class="insight-card insight-green">
+          <span class="ic-icon">✅</span>
+          <div class="ic-title">Mitigation: Prefix Key</div>
+          <div class="ic-body">Prepend sensor name or random value before timestamp: <code>(sensor_name, timestamp)</code>. Distributes writes across sensors. Trade-off: multi-sensor range queries now require scatter/gather.</div>
+        </div>
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">💡</span>
+          <div class="ic-title">Real-World Trade-Off</div>
+          <div class="ic-body">Distribute write load over read efficiency. Sensor writes are frequent; aggregate reads are rare. Makes sense to sacrifice range scan for load distribution.</div>
+        </div>
+      </div>
+
+      <h3>Systems Using Key-Range Partitioning</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">📊</span>
+          <span class="il-text"><strong>Bigtable (Google)</strong>Tablets assigned to ranges of row keys; automatic boundary management</span>
+        </li>
+        <li>
+          <span class="il-icon">📊</span>
+          <span class="il-text"><strong>HBase</strong>Regions (Bigtable's equivalent) with configurable key ranges and dynamic splits/merges</span>
+        </li>
+        <li>
+          <span class="il-icon">📊</span>
+          <span class="il-text"><strong>RethinkDB</strong>Automatic range-based sharding with rebalancing</span>
+        </li>
+        <li>
+          <span class="il-icon">📊</span>
+          <span class="il-text"><strong>MongoDB (pre-2.4)</strong>Used range-based sharding; later switched to hash</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ────────────────────────────────────── HASH PARTITIONING ────────────────────────────────────── -->
+    <section id="hash-partitioning" data-section-id="hash-partitioning">
+      <h2><span class="section-num">05</span> Hash Partitioning</h2>
+      <div class="diagram-container">
+        <div class="diagram-title">Hash Function: Skewed Keys → Uniform Distribution</div>
+        <div class="box-row">
+          <div class="box box-orange">Key: "user123"<small>highly skewed</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-purple">Hash(key)<small>e.g., MD5</small></div>
+          <div class="arrow">→</div>
+          <div class="box box-green">Bucket 7<small>evenly distributed</small></div>
+        </div>
+      </div>
+
+      <p>Use a hash function to transform skewed keys into a uniform distribution across partitions. Partitions are defined by ranges of hash values (not key values).</p>
+
+      <h3>Core Mechanism</h3>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Hash the Key</h4>
+            <p>Apply hash function (e.g., MD5, Fowler-Noll-Vo) to convert key to fixed-size hash digest.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Partition from Hash</h4>
+            <p>Partition = <code>hash(key) mod N_partitions</code>. Or: hash values divided into ranges; find range containing hash.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Direct Access</h4>
+            <p>Query knows hash value → direct to partition. No need to search boundaries.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Hash Function Requirements</h3>
+      <ul class="icon-list">
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>NOT Cryptographically Secure</strong>Speed is priority, not security. MD5 is acceptable; SHA-1 overkill.</span>
+        </li>
+        <li>
+          <span class="il-icon">🔴</span>
+          <span class="il-text"><strong>Consistent Across Processes</strong>Same key must hash identically across all nodes. Avoid Java <code>Object.hashCode()</code> or Ruby <code>Object#hash</code> (randomized per process).</span>
+        </li>
+        <li>
+          <span class="il-icon">🟢</span>
+          <span class="il-text"><strong>Common Choices</strong>MD5 (Cassandra, MongoDB), Fowler-Noll-Vo (Voldemort, Riak)</span>
+        </li>
+      </ul>
+
+      <h3>Advantages vs. Disadvantages</h3>
+      <div class="pro-con-grid">
+        <div class="pro-card">
+          <h3>✅ Pros</h3>
+          <ul>
+            <li><strong>Fair Distribution:</strong> Hash distributes keys fairly across partitions, reducing hot spots</li>
+            <li><strong>Evenly Spaced Boundaries:</strong> Can use simple mod arithmetic for partition assignment</li>
+            <li><strong>Reduced Skew:</strong> For uniform access patterns, hash shines</li>
+            <li><strong>Deterministic Routing:</strong> Any node can compute partition from key</li>
+          </ul>
+        </div>
+        <div class="con-card">
+          <h3>❌ Cons</h3>
+          <ul>
+            <li><strong>No Range Queries:</strong> Adjacent keys scattered across all partitions — sort order lost</li>
+            <li><strong>Scatter/Gather Required:</strong> Range query [K1, K2] must hit every partition and gather results</li>
+            <li><strong>Poor for Sorted Data:</strong> Inefficient for queries like "all updates between T1 and T2"</li>
+            <li><strong>Rebalancing Overhead:</strong> Adding/removing partitions requires re-hashing everything</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>RANGE QUERY PENALTY</strong>
+        Hash partitioning on timestamp means "all events in Q2" requires querying all N partitions in parallel, waiting for all to respond. With key-range, it's a single partition scan.
+      </div>
+
+      <h3>Consistent Hashing (Historical Note)</h3>
+      <div class="insight-strip">
+        <div class="insight-card insight-blue">
+          <span class="ic-icon">📚</span>
+          <div class="ic-title">Academic Definition</div>
+          <div class="ic-body">Karger et al. (1997): Randomly chosen partition boundaries placed on a hash ring. Minimizes data movement when nodes join/leave.</div>
+        </div>
+        <div class="insight-card insight-orange">
+          <span class="ic-icon">⚠️</span>
+          <div class="ic-title">Major Confusion</div>
+          <div class="ic-body">"Consistent" ≠ ACID consistency. Refers to rebalancing consistency (minimizing movement). Rarely used in practice — works poorly for databases.</div>
+        </div>
+        <div class="insight-card insight-green">
+          <span class="ic-icon">💡</span>
+          <div class="ic-title">Modern Approach</div>
+          <div class="ic-body">Simple hash + evenly-
+</main>
+<script>
+(function() {
+  // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks
+  document.querySelectorAll('#sidebar nav a').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = this.getAttribute('href').replace(/^#/, '');
+      var target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  // Progress bar
+  var bar = document.getElementById('progress-bar');
+  if (bar) {
+    window.addEventListener('scroll', function() {
+      var h = document.documentElement;
+      var pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = pct + '%';
+    });
+  }
+  // Active sidebar highlight
+  var sections = document.querySelectorAll('section[id]');
+  var links = document.querySelectorAll('#sidebar nav a');
+  if (sections.length && links.length && window.IntersectionObserver) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          links.forEach(function(l) {
+            l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(function(s) { obs.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>

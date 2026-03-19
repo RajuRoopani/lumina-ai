@@ -1,0 +1,86 @@
+[
+  {
+    "chapter": 1,
+    "title": "\ud83d\udcd8 DDIA Ch01",
+    "report_id": "9cee07b3-bde6-485b-a26f-ea2905fcf2b5",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch01-reliable-scalable-and-maintainable-appli.html",
+    "url": "http://localhost:5173/share/9cee07b3-bde6-485b-a26f-ea2905fcf2b5"
+  },
+  {
+    "chapter": 2,
+    "title": "\ud83d\uddc4\ufe0f DDIA Ch02",
+    "report_id": "b834669e-7058-47b2-93b7-b24a3005976a",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch02-data-models-and-query-languages.html",
+    "url": "http://localhost:5173/share/b834669e-7058-47b2-93b7-b24a3005976a"
+  },
+  {
+    "chapter": 3,
+    "title": "DDIA Ch03",
+    "report_id": "f89b7eda-4860-4990-8ad7-e75b086c3c91",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch03-storage-and-retrieval.html",
+    "url": "http://localhost:5173/share/f89b7eda-4860-4990-8ad7-e75b086c3c91"
+  },
+  {
+    "chapter": 4,
+    "title": "\ud83d\udcd6 DDIA Ch04",
+    "report_id": "fe34b216-af4a-4306-a6c8-03a92d790f96",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch04-encoding-and-evolution.html",
+    "url": "http://localhost:5173/share/fe34b216-af4a-4306-a6c8-03a92d790f96"
+  },
+  {
+    "chapter": 5,
+    "title": "DDIA Ch.5",
+    "report_id": "5dc368b0-1767-4f92-9449-7b7184049faf",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch05-replication.html",
+    "url": "http://localhost:5173/share/5dc368b0-1767-4f92-9449-7b7184049faf"
+  },
+  {
+    "chapter": 6,
+    "title": "\ud83d\udcca DDIA Ch06",
+    "report_id": "4479453e-6aa1-49e7-94ef-9b33d599beaf",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch06-partitioning.html",
+    "url": "http://localhost:5173/share/4479453e-6aa1-49e7-94ef-9b33d599beaf"
+  },
+  {
+    "chapter": 7,
+    "title": "DDIA Ch07",
+    "report_id": "e8329553-6edf-44e7-8ae2-60c1b9a8c57a",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch07-transactions.html",
+    "url": "http://localhost:5173/share/e8329553-6edf-44e7-8ae2-60c1b9a8c57a"
+  },
+  {
+    "chapter": 8,
+    "title": "DDIA Ch08",
+    "report_id": "69715efa-bef8-4ef8-83fc-336a312c1691",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch08-the-trouble-with-distributed-systems.html",
+    "url": "http://localhost:5173/share/69715efa-bef8-4ef8-83fc-336a312c1691"
+  },
+  {
+    "chapter": 9,
+    "title": "\ud83d\udcd6 DDIA Ch09",
+    "report_id": "556cd310-831d-4d9a-95a0-501f498d84bd",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch09-consistency-and-consensus.html",
+    "url": "http://localhost:5173/share/556cd310-831d-4d9a-95a0-501f498d84bd"
+  },
+  {
+    "chapter": 10,
+    "title": "DDIA Ch10",
+    "report_id": "eb1f1947-9795-4a1f-bf24-2587b0a15765",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch10-batch-processing.html",
+    "url": "http://localhost:5173/share/eb1f1947-9795-4a1f-bf24-2587b0a15765"
+  },
+  {
+    "chapter": 11,
+    "title": "\ud83d\udcda DDIA Ch11",
+    "report_id": "a87201fd-d37c-4dae-b287-7bdd10204113",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch11-stream-processing.html",
+    "url": "http://localhost:5173/share/a87201fd-d37c-4dae-b287-7bdd10204113"
+  },
+  {
+    "chapter": 12,
+    "title": "\ud83d\udcd6 DDIA Ch12",
+    "report_id": "fbb7e69b-c381-4d27-a023-684e7ce1f48c",
+    "file": "/Users/rajuroopani/Work6/experiments/design-and-explore/ddia-chapter-reports/ch12-the-future-of-data-systems.html",
+    "url": "http://localhost:5173/share/fbb7e69b-c381-4d27-a023-684e7ce1f48c"
+  }
+]

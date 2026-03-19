@@ -132,6 +132,32 @@ def _inject_nav_js(html: str) -> str:
     return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
 
 
+def _continue_html(client: anthropic.Anthropic, system_prompt: str,
+                   user_prompt: str, partial_html: str) -> str:
+    """If Claude was cut off (max_tokens), continue from the partial output."""
+    try:
+        cont = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=8000,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt},
+                {"role": "assistant", "content": partial_html},
+                {"role": "user", "content": (
+                    "Continue the HTML report exactly where you left off. "
+                    "Do NOT repeat anything already written. "
+                    "Pick up mid-sentence or mid-tag if needed and finish all open sections. "
+                    "End with </body></html>."
+                )},
+            ]
+        )
+        if cont.content and hasattr(cont.content[0], "text"):
+            return partial_html + cont.content[0].text
+    except Exception:
+        pass
+    return partial_html
+
+
 def generate_report_html(docs: list, signature_color: str, doc_context: str = None) -> str:
     """Generate a rich HTML report. If doc_context is provided (pre-built from chunks),
     use it directly instead of building from docs."""
@@ -155,19 +181,18 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
     ) if is_multi else ""
 
     learned_hints = get_prompt_hints()
+    system_prompt = get_report_prompt(signature_color, learned_hints=learned_hints)
+    user_prompt = (
+        f"Generate a rich HTML report for the following document(s):"
+        f"{multi_instruction}\n\n{doc_context}"
+    )
 
     try:
         message = client.messages.create(
             model="claude-haiku-4-5",
             max_tokens=16000,
-            system=get_report_prompt(signature_color, learned_hints=learned_hints),
-            messages=[{
-                "role": "user",
-                "content": (
-                    f"Generate a rich HTML report for the following document(s):"
-                    f"{multi_instruction}\n\n{doc_context}"
-                )
-            }]
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}]
         )
     except anthropic.APIError as exc:
         raise ValueError(f"Claude API error during report generation: {exc}") from exc
@@ -181,7 +206,14 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
             f"Claude returned unexpected content type '{type(first_block).__name__}' "
             "or empty text"
         )
-    html = _strip_orphan_nav_links(first_block.text)
+
+    raw_html = first_block.text
+
+    # If Claude hit the token limit, do a continuation pass to complete the report
+    if message.stop_reason == "max_tokens":
+        raw_html = _continue_html(client, system_prompt, user_prompt, raw_html)
+
+    html = _strip_orphan_nav_links(raw_html)
     html = _inject_nav_js(html)
 
     try:
@@ -189,4 +221,19 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
     except Exception:
         pass
 
+    return html
+
+
+def complete_truncated_report(partial_html: str, signature_color: str) -> str:
+    """Continuation pass for an already-saved report that was cut off at max_tokens.
+    Returns the completed HTML (post-processed and ready to save)."""
+    client = make_client()
+    learned_hints = get_prompt_hints()
+    system_prompt = get_report_prompt(signature_color, learned_hints=learned_hints)
+    # We don't have the original user prompt, so reconstruct a minimal one
+    user_prompt = "Generate a rich HTML report for the following document(s):\n\n[context provided above]"
+
+    raw_html = _continue_html(client, system_prompt, user_prompt, partial_html)
+    html = _strip_orphan_nav_links(raw_html)
+    html = _inject_nav_js(html)
     return html

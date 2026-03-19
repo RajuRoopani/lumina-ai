@@ -1,0 +1,862 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDIA Chapter 2: Data Models and Query Languages</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --surface2: #1c2128;
+      --border: #30363d; --accent: #3b82f6; --accent2: #3fb950;
+      --accent3: #f78166; --accent4: #d2a8ff; --accent5: #ffa657;
+      --text: #e6edf3; --text-muted: #8b949e; --text-dim: #484f58;
+      --radius: 8px; --font-mono: 'JetBrains Mono','Fira Code',monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height: 1.7; font-size: 15px; }
+    /* SIDEBAR */
+    #sidebar { position: fixed; top:0; left:0; width:260px; height:100vh; background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; z-index:100; transition:transform .3s; }
+    #sidebar-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); }
+    #sidebar-header h1 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent); }
+    #sidebar-header p { font-size:11px; color:var(--text-muted); margin-top:4px; }
+    #sidebar nav { padding:8px 0; }
+    #sidebar nav a { display:block; padding:7px 16px; font-size:12.5px; color:var(--text-muted); text-decoration:none; border-left:2px solid transparent; transition:all .15s; }
+    #sidebar nav a:hover, #sidebar nav a.active { color:var(--accent); background:rgba(56,139,253,.07); border-left-color:var(--accent); }
+    #sidebar nav .section-label { padding:14px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-dim); }
+    /* MAIN */
+    #main { margin-left:260px; padding:48px 48px 100px; max-width:960px; }
+    /* HERO */
+    .hero { background:linear-gradient(135deg,#1a2332 0%,#0f1c2e 40%,#161b22 100%); border:1px solid var(--border); border-radius:12px; padding:48px; margin-bottom:48px; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:-60px; right:-60px; width:300px; height:300px; background:radial-gradient(circle,rgba(56,139,253,.15) 0%,transparent 70%); pointer-events:none; }
+    .hero .badge { display:inline-flex; align-items:center; gap:6px; background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.3); color:var(--accent); font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; letter-spacing:.5px; margin-bottom:20px; }
+    .hero h1 { font-size:32px; font-weight:800; line-height:1.2; margin-bottom:12px; }
+    .hero h1 span { color:var(--accent); }
+    .hero p { color:var(--text-muted); font-size:15px; max-width:600px; }
+    .hero .meta { display:flex; gap:20px; margin-top:24px; flex-wrap:wrap; }
+    .hero .meta-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); }
+    .hero .meta-item .dot { width:8px; height:8px; border-radius:50%; }
+    /* SECTIONS */
+    section { margin-bottom:64px; scroll-margin-top:24px; }
+    h2 { font-size:22px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+    h2 .section-num { font-size:12px; font-weight:700; color:var(--accent); background:rgba(56,139,253,.1); padding:2px 8px; border-radius:4px; }
+    h3 { font-size:16px; font-weight:600; color:var(--accent4); margin:24px 0 10px; }
+    h4 { font-size:13px; font-weight:600; color:var(--accent5); margin:16px 0 8px; text-transform:uppercase; letter-spacing:.5px; }
+    p { margin-bottom:12px; color:var(--text); }
+    ul,ol { padding-left:20px; margin-bottom:12px; }
+    li { margin-bottom:6px; font-size:14px; color:var(--text-muted); }
+    strong { color:var(--text); }
+    em { color:var(--text-muted); }
+    .section-divider { height:1px; background:var(--border); margin:0 0 48px; }
+    /* CALLOUT */
+    .callout { border-left:3px solid; padding:12px 16px; border-radius:0 var(--radius) var(--radius) 0; margin:16px 0; font-size:14px; }
+    .callout-info { border-color:var(--accent); background:rgba(56,139,253,.06); }
+    .callout-warn { border-color:var(--accent5); background:rgba(255,166,87,.06); }
+    .callout-success { border-color:var(--accent2); background:rgba(63,185,80,.06); }
+    .callout-danger { border-color:var(--accent3); background:rgba(247,129,102,.06); }
+    .callout strong { display:block; margin-bottom:4px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; opacity:.8; }
+    /* PILLS */
+    .pill-list { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+    .pill { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:500; border:1px solid; }
+    .pill-blue { background:rgba(56,139,253,.1); color:var(--accent); border-color:rgba(56,139,253,.3); }
+    .pill-green { background:rgba(63,185,80,.1); color:var(--accent2); border-color:rgba(63,185,80,.3); }
+    .pill-red { background:rgba(247,129,102,.1); color:var(--accent3); border-color:rgba(247,129,102,.3); }
+    .pill-purple { background:rgba(210,168,255,.1); color:var(--accent4); border-color:rgba(210,168,255,.3); }
+    .pill-orange { background:rgba(255,166,87,.1); color:var(--accent5); border-color:rgba(255,166,87,.3); }
+    .pill-teal { background:rgba(57,217,217,.1); color:#39d9d9; border-color:rgba(57,217,217,.3); }
+    /* TABLE */
+    table { width:100%; border-collapse:collapse; margin:16px 0; font-size:13.5px; }
+    th { background:var(--surface2); padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); border-bottom:1px solid var(--border); }
+    td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+    .check { color:var(--accent2); } .cross { color:var(--accent3); } .partial { color:var(--accent5); }
+    /* CODE */
+    pre { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; overflow-x:auto; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; margin:12px 0; color:#e6edf3; }
+    code { font-family:var(--font-mono); font-size:12.5px; background:rgba(110,118,129,.2); padding:1px 6px; border-radius:4px; }
+    /* APPROACH CARDS */
+    .approach-grid { display:grid; gap:16px; margin:16px 0; }
+    .approach-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; }
+    .approach-card .preferred-badge { position:absolute; top:-1px; right:16px; background:var(--accent2); color:#000; font-size:10px; font-weight:800; padding:2px 10px; border-radius:0 0 6px 6px; letter-spacing:.5px; }
+    .approach-card h3 { margin:0 0 8px; font-size:15px; }
+    .approach-card p { font-size:13.5px; color:var(--text-muted); margin-bottom:12px; }
+    .approach-traits { display:flex; flex-wrap:wrap; gap:6px; }
+    /* BOX DIAGRAMS */
+    .diagram-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin:16px 0; overflow-x:auto; }
+    .diagram-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .diagram-title::after { content:''; flex:1; height:1px; background:var(--border); }
+    .box-row { display:flex; align-items:center; gap:0; justify-content:center; flex-wrap:nowrap; }
+    .box { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-radius:8px; border:1px solid; padding:10px 14px; min-width:100px; font-size:12px; font-weight:600; line-height:1.3; }
+    .box small { font-size:10px; font-weight:400; opacity:.7; margin-top:2px; }
+    .box-blue { background:rgba(56,139,253,.1); border-color:rgba(56,139,253,.4); color:var(--accent); }
+    .box-green { background:rgba(63,185,80,.1); border-color:rgba(63,185,80,.4); color:var(--accent2); }
+    .box-orange { background:rgba(255,166,87,.1); border-color:rgba(255,166,87,.4); color:var(--accent5); }
+    .box-purple { background:rgba(210,168,255,.1); border-color:rgba(210,168,255,.4); color:var(--accent4); }
+    .box-red { background:rgba(247,129,102,.1); border-color:rgba(247,129,102,.4); color:var(--accent3); }
+    .box-gray { background:rgba(255,255,255,.05); border-color:var(--border); color:var(--text-muted); }
+    .box-teal { background:rgba(57,217,217,.1); border-color:rgba(57,217,217,.4); color:#39d9d9; }
+    .arrow { color:var(--text-dim); font-size:18px; padding:0 6px; white-space:nowrap; }
+    .arrow-down { display:flex; justify-content:center; height:30px; align-items:center; }
+    .arrow-down-line { width:2px; height:30px; opacity:.4; }
+    /* TIMELINE */
+    .timeline { position:relative; padding-left:28px; }
+    .timeline::before { content:''; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--border); }
+    .tl-item { position:relative; margin-bottom:20px; }
+    .tl-item::before { content:''; position:absolute; left:-25px; top:5px; width:12px; height:12px; border-radius:50%; border:2px solid var(--accent); background:var(--bg); }
+    .tl-item h4 { margin:0 0 4px; font-size:13.5px; color:var(--text); text-transform:none; letter-spacing:0; }
+    .tl-item p { font-size:13px; margin:0; }
+    /* PRO/CON */
+    .pro-con-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+    .pro-card { background:rgba(63,185,80,.05); border:1px solid rgba(63,185,80,.2); border-radius:var(--radius); padding:16px; }
+    .con-card { background:rgba(247,129,102,.05); border:1px solid rgba(247,129,102,.2); border-radius:var(--radius); padding:16px; }
+    .pro-card h3 { color:var(--accent2); font-size:14px; margin:0 0 10px; }
+    .con-card h3 { color:var(--accent3); font-size:14px; margin:0 0 10px; }
+    .pro-card li,.con-card li { font-size:13px; }
+    /* TAGS */
+    .tag { display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:3px; font-weight:600; margin-right:4px; }
+    .tag-new { background:rgba(63,185,80,.15); color:var(--accent2); }
+    .tag-change { background:rgba(56,139,253,.15); color:var(--accent); }
+    .tag-risk { background:rgba(247,129,102,.15); color:var(--accent3); }
+    /* STAT CARDS */
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:16px 0; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+    .stat-card .stat-value { font-size:28px; font-weight:800; color:var(--accent); line-height:1; }
+    .stat-card .stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; text-transform:uppercase; letter-spacing:.5px; }
+    /* PROGRESS BAR */
+    #progress-bar { position:fixed; top:0; left:0; height:3px; background:var(--accent); z-index:200; transition:width .1s; }
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+    /* VISUAL SUMMARY */
+    .visual-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:24px 0; }
+    .vs-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; align-items:flex-start; gap:14px; transition:border-color .2s; }
+    .vs-card:hover { border-color:var(--accent); }
+    .vs-icon { font-size:28px; line-height:1; flex-shrink:0; }
+    .vs-body { flex:1; }
+    .vs-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px; }
+    .vs-value { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; }
+    .vs-sub { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    /* ICON LIST */
+    .icon-list { list-style:none; padding:0; margin:12px 0; }
+    .icon-list li { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-muted); }
+    .icon-list li:last-child { border-bottom:none; }
+    .icon-list .il-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+    .icon-list .il-text strong { display:block; color:var(--text); font-size:13.5px; margin-bottom:2px; }
+    /* DATA BAR */
+    .data-bar-list { margin:12px 0; }
+    .data-bar-item { margin-bottom:10px; }
+    .data-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:12.5px; }
+    .data-bar-label { color:var(--text-muted); }
+    .data-bar-value { color:var(--text); font-weight:600; }
+    .data-bar-track { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+    .data-bar-fill { height:100%; border-radius:3px; background:var(--accent); }
+    /* INSIGHT CARD */
+    .insight-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:16px 0; }
+    .insight-card { border-radius:10px; padding:16px 18px; border:1px solid; position:relative; overflow:hidden; }
+    .insight-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:.08; transform:translate(20px,-20px); background:currentColor; }
+    .insight-card .ic-icon { font-size:22px; margin-bottom:8px; display:block; }
+    .insight-card .ic-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; opacity:.7; }
+    .insight-card .ic-body { font-size:13px; line-height:1.5; }
+    .insight-blue { background:rgba(56,139,253,.07); border-color:rgba(56,139,253,.25); color:var(--accent); }
+    .insight-green { background:rgba(63,185,80,.07); border-color:rgba(63,185,80,.25); color:var(--accent2); }
+    .insight-orange { background:rgba(255,166,87,.07); border-color:rgba(255,166,87,.25); color:var(--accent5); }
+    .insight-red { background:rgba(247,129,102,.07); border-color:rgba(247,129,102,.25); color:var(--accent3); }
+    .insight-purple { background:rgba(210,168,255,.07); border-color:rgba(210,168,255,.25); color:var(--accent4); }
+    .insight-teal { background:rgba(57,217,217,.07); border-color:rgba(57,217,217,.25); color:#39d9d9; }
+    /* STEP FLOW */
+    .step-flow { display:flex; flex-direction:column; gap:0; margin:16px 0; }
+    .step-item { display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:24px; }
+    .step-item:last-child { padding-bottom:0; }
+    .step-item::after { content:''; position:absolute; left:19px; top:40px; bottom:0; width:2px; background:var(--border); }
+    .step-item:last-child::after { display:none; }
+    .step-num { width:40px; height:40px; border-radius:50%; background:var(--accent); color:#fff; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; z-index:1; }
+    .step-content { flex:1; padding-top:8px; }
+    .step-content h4 { margin:0 0 4px; font-size:14px; color:var(--text); text-transform:none; letter-spacing:0; }
+    .step-content p { margin:0; font-size:13px; color:var(--text-muted); }
+    /* COMPARISON TABLE */
+    .compare-grid { display:grid; gap:2px; margin:16px 0; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); }
+    .compare-header { display:grid; background:var(--surface2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
+    .compare-row { display:grid; background:var(--surface); transition:background .15s; }
+    .compare-row:hover { background:var(--surface2); }
+    .compare-cell { padding:10px 14px; font-size:13px; border-right:1px solid var(--border); }
+    .compare-cell:last-child { border-right:none; }
+    .compare-cell.good { color:var(--accent2); }
+    .compare-cell.bad { color:var(--accent3); }
+    .compare-cell.neutral { color:var(--text-muted); }
+    /* HIGHLIGHT BAND */
+    .highlight-band { background:linear-gradient(135deg,rgba(56,139,253,.08) 0%,rgba(210,168,255,.06) 100%); border:1px solid rgba(56,139,253,.2); border-radius:12px; padding:24px; margin:20px 0; }
+    .highlight-band h3 { color:var(--accent); margin:0 0 8px; font-size:16px; }
+    /* KEY TAKEAWAY */
+    .takeaway { background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(57,217,217,.05)); border:1px solid rgba(63,185,80,.25); border-radius:10px; padding:16px 20px; margin:16px 0; display:flex; gap:12px; align-items:flex-start; }
+    .takeaway-icon { font-size:20px; flex-shrink:0; }
+    .takeaway-text { font-size:13.5px; color:var(--text-muted); line-height:1.6; }
+    .takeaway-text strong { color:var(--accent2); }
+    /* RESPONSIVE */
+    @media (max-width:900px) { #sidebar { transform:translateX(-260px); } #main { margin-left:0; padding:24px; } }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>🗄️ DDIA Ch02</h1>
+    <p>Data Models & Query Languages</p>
+  </div>
+  <nav>
+    <div class="section-label">Core Concepts</div>
+    <a href="#visual-summary">At a Glance</a>
+    <a href="#layering">Data Model Layering</a>
+    <a href="#history">Relational vs NoSQL</a>
+    <a href="#impedance">Impedance Mismatch</a>
+
+    <div class="section-label">Data Relationships</div>
+    <a href="#relationships">One-to-Many Patterns</a>
+    <a href="#normalization">Normalization & IDs</a>
+    <a href="#joins">Join Problem</a>
+
+    <div class="section-label">Model Evolution</div>
+    <a href="#document-advantages">Document Model Benefits</a>
+    <a href="#tradeoffs">Model Tradeoffs</a>
+    
+
+    <div class="section-label">System Reference</div>
+    
+    
+    
+    
+  </nav>
+</div>
+
+<div id="main">
+
+  <div class="hero">
+    <div class="badge">📚 CHAPTER 2 ANALYSIS</div>
+    <h1>Data Models and <span>Query Languages</span></h1>
+    <p>The foundational patterns that shape how applications interact with data—from 4-layer abstractions and the relational model's 25-year dominance to the NoSQL revolution and impedance mismatch solved by document databases.</p>
+    <div class="meta">
+      <div class="meta-item"><span class="dot" style="background:#3fb950;"></span> Source: Designing Data-Intensive Applications (Kleppmann)</div>
+      <div class="meta-item"><span class="dot" style="background:#f78166;"></span> Era: 1970–2016</div>
+      <div class="meta-item"><span class="dot" style="background:#3b82f6;"></span> Focus: Architecture & Abstraction</div>
+    </div>
+  </div>
+
+  <!-- SECTION: VISUAL SUMMARY -->
+  <section id="visual-summary" data-section-id="visual-summary">
+    <h2><span class="section-num">01</span> At a Glance</h2>
+    <div class="visual-summary">
+      <div class="vs-card">
+        <div class="vs-icon">🏗️</div>
+        <div class="vs-body">
+          <div class="vs-label">Core Insight</div>
+          <div class="vs-value">4-Layer Stack</div>
+          <div class="vs-sub">Real world → Objects → Data model → Bytes → Hardware</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">⏱️</div>
+        <div class="vs-body">
+          <div class="vs-label">Relational Dominance</div>
+          <div class="vs-value">25–30 Years</div>
+          <div class="vs-sub">1970 (Codd) to 2000s (Web explosion)</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">🔄</div>
+        <div class="vs-body">
+          <div class="vs-label">NoSQL Era</div>
+          <div class="vs-value">2009–Present</div>
+          <div class="vs-sub">Polyglot persistence & multiple models coexist</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">🎯</div>
+        <div class="vs-body">
+          <div class="vs-label">Critical Decision Point</div>
+          <div class="vs-value">Model Choice</div>
+          <div class="vs-sub">Profoundly affects what software can do</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">⚙️</div>
+        <div class="vs-body">
+          <div class="vs-label">Impedance Gap</div>
+          <div class="vs-value">OOP ↔ Relational</div>
+          <div class="vs-sub">Document model offers native alignment</div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-icon">📊</div>
+        <div class="vs-body">
+          <div class="vs-label">Evolution Pattern</div>
+          <div class="vs-value">Tree → Graph</div>
+          <div class="vs-sub">One-to-many → Many-to-many relationships</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: DATA MODEL LAYERING -->
+  <section id="layering" data-section-id="layering">
+    <h2><span class="section-num">02</span> Data Model Layering: The 4-Layer Stack</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Abstraction Hierarchy</div>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
+          <div class="box box-blue" style="flex:1;">Real World<small>Business domain, users, entities</small></div>
+        </div>
+        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
+        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
+          <div class="box box-purple" style="flex:1;">Application Objects / APIs<small>Domain models, service contracts</small></div>
+        </div>
+        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
+        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
+          <div class="box box-orange" style="flex:1;">General-Purpose Data Model<small>JSON, XML, Relational, Graph, etc.</small></div>
+        </div>
+        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
+        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
+          <div class="box box-green" style="flex:1;">Bytes / Memory / Disk / Network<small>Index structures, storage format</small></div>
+        </div>
+        <div style="text-align:center; color:var(--text-dim); padding:8px 0; font-size:14px;">↓</div>
+        <div class="box-row" style="justify-content:flex-start; margin-bottom:0;">
+          <div class="box box-gray" style="flex:1;">Hardware Representation<small>CPU, RAM, disk controller logic</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>KEY PRINCIPLE</strong> Each layer hides complexity below via clean abstraction boundaries. Multiple teams (database vendors, application developers) coordinate through these boundaries without exposing lower-layer details.
+    </div>
+
+    <h3>Why Layering Matters</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔵</span>
+        <span class="il-text"><strong>Separation of Concerns</strong>Database engineers don't need to know application domain logic; application developers don't need to know disk I/O patterns</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Independent Evolution</strong>You can change query languages without rewriting applications; you can optimize storage engines without touching APIs</span>
+      </li>
+      <li>
+        <span class="il-icon">🟠</span>
+        <span class="il-text"><strong>Assumption Encapsulation</strong>Each layer embodies assumptions about usage patterns and performance; mismatches surface at layer boundaries</span>
+      </li>
+      <li>
+        <span class="il-icon">🟣</span>
+        <span class="il-text"><strong>Mental Model Alignment</strong>The data model chosen at layer 3 profoundly shapes what can be efficiently expressed and queried across all layers</span>
+      </li>
+    </ul>
+
+    <div class="highlight-band">
+      <h3>🏆 The Most Important Layer</h3>
+      <p>Data models are "perhaps the most important part of developing software." Model choice doesn't just affect performance—it shapes the <strong>conceptual boundaries</strong> of what the software can and cannot do. A poor model choice at this layer cascades problems through all layers above and below.</p>
+    </div>
+  </section>
+
+  <!-- SECTION: RELATIONAL VS NOSQL HISTORY -->
+  <section id="history" data-section-id="history">
+    <h2><span class="section-num">03</span> Relational Model Dominance & the NoSQL Revolution</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <h4>1970: Relational Model Born</h4>
+        <p><strong>Edgar Codd</strong> publishes foundational work. Becomes dominant paradigm for business transaction processing (sales, banking, reservations, inventory) and batch processing (invoicing, payroll, reporting).</p>
+      </div>
+      <div class="tl-item">
+        <h4>1970s–1980s: Network & Hierarchical Models</h4>
+        <p><strong>IMS (IBM's Information Management System, 1968)</strong> and <strong>CODASYL Model</strong> compete but fail to dethrone relational. Hierarchical model requires "programmer as navigator" pattern—developers manually traverse tree structures.</p>
+      </div>
+      <div class="tl-item">
+        <h4>Late 1980s–1990s: Object Databases Emerge</h4>
+        <p>Attempt to eliminate impedance mismatch by storing objects directly. Fail to gain traction due to lack of standardization and limited query flexibility.</p>
+      </div>
+      <div class="tl-item">
+        <h4>Early 2000s: XML Databases</h4>
+        <p>Promise native hierarchical data support; never achieve mainstream adoption. Relational model remains entrenched.</p>
+      </div>
+      <div class="tl-item">
+        <h4>2009: NoSQL Movement Begins</h4>
+        <p>Twitter hashtag (later "Not Only SQL") for open-source, distributed, nonrelational databases. Driven by three forces: <strong>scalability</strong>, <strong>open-source preference</strong>, <strong>specialized query operations</strong>.</p>
+      </div>
+      <div class="tl-item">
+        <h4>2010s–Present: Polyglot Persistence</h4>
+        <p>No single model wins. Organizations standardize on <strong>multiple datastores</strong>: relational for transactional consistency, document for schema flexibility, graph for relationships, time-series for metrics.</p>
+      </div>
+    </div>
+
+    <h3>Why NoSQL Emerged: Three Core Drivers</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-red">
+        <span class="ic-icon">📈</span>
+        <div class="ic-title">Scalability Gap</div>
+        <div class="ic-body">Relational databases struggled with massive datasets and high write throughput. NoSQL systems designed from ground up for horizontal scaling across clusters.</div>
+      </div>
+      <div class="insight-card insight-purple">
+        <span class="ic-icon">💰</span>
+        <div class="ic-title">Open-Source Economics</div>
+        <div class="ic-body">Free/open-source preference over proprietary relational engines. Cost-per-operation at scale made NoSQL attractive for startups and web companies.</div>
+      </div>
+      <div class="insight-card insight-blue">
+        <span class="ic-icon">🔍</span>
+        <div class="ic-title">Specialized Queries</div>
+        <div class="ic-body">Relational model's SQL didn't naturally express certain operations (full-text search, geospatial queries, time-series aggregations). NoSQL databases optimized for specific access patterns.</div>
+      </div>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">🎨</span>
+        <div class="ic-title">Schema Flexibility</div>
+        <div class="ic-body">Frustration with relational schema enforcement. Desire for <strong>schema-on-read</strong> (data structure inferred from application code) vs. <strong>schema-on-write</strong> (database enforces structure).</div>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <strong>OUTCOME</strong> <strong>Polyglot Persistence</strong> became the norm. Organizations deploy relational for ACID transactions, document databases for flexible schemas, graph databases for relationship-heavy queries, and time-series databases for metrics—all in the same architecture.
+    </div>
+  </section>
+
+  <!-- SECTION: IMPEDANCE MISMATCH -->
+  <section id="impedance" data-section-id="impedance">
+    <h2><span class="section-num">04</span> The Impedance Mismatch Problem</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Object-Relational Gap</div>
+      <div class="box-row" style="gap:30px; justify-content:center;">
+        <div class="box box-blue">
+          Object-Oriented Code<small>Classes, inheritance, polymorphism</small>
+        </div>
+        <div class="arrow" style="font-size:24px; color:#f78166;">🔗</div>
+        <div class="box box-red">
+          Relational Rows & Columns<small>Tables, primary/foreign keys, JOINs</small>
+        </div>
+      </div>
+    </div>
+
+    <p><strong>Impedance mismatch</strong> is the disconnect between object-oriented application code and relational's table/row/column structure. The term borrowed from electronics, where impedance mismatches cause signal reflections and power loss.</p>
+
+    <h3>Classic Example: User Profile (Résumé / LinkedIn Profile)</h3>
+
+    <h4>Relational Approach</h4>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Atomic fields as columns</strong><code>first_name</code>, <code>last_name</code>, <code>date_of_birth</code></span>
+      </li>
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>One-to-many relationships in separate tables</strong><code>positions</code>, <code>education</code>, <code>contact_info</code> each get their own table with foreign key to <code>users</code></span>
+      </li>
+      <li>
+        <span class="il-icon">🔴</span>
+        <span class="il-text"><strong>Requires multi-way JOINs</strong>To fetch a complete profile, must JOIN users → positions, users → education, users → contact_info in single query, or execute multiple queries</span>
+      </li>
+    </ul>
+
+    <pre><code>-- Relational: Multiple queries or complex JOIN
+SELECT u.*, p.*, e.*, c.*
+FROM users u
+LEFT JOIN positions p ON u.id = p.user_id
+LEFT JOIN education e ON u.id = e.user_id
+LEFT JOIN contact_info c ON u.id = c.user_id
+WHERE u.id = 251;</code></pre>
+
+    <h4>Document Model Approach (JSON)</h4>
+    <pre><code>{
+  "user_id": 251,
+  "first_name": "Bill",
+  "last_name": "Gates",
+  "positions": [
+    {
+      "job_title": "Founder & Chairman",
+      "organization": "Microsoft",
+      "start": 1975,
+      "end": 2000
+    },
+    {
+      "job_title": "Co-Chair",
+      "organization": "Bill & Melinda Gates Foundation",
+      "start": 2000
+    }
+  ],
+  "education": [
+    {
+      "school_name": "Harvard University",
+      "start": 1973,
+      "end": 1975
+    }
+  ],
+  "contact_info": {
+    "email": "bill@gates.com",
+    "phone": "+1-206-555-0100"
+  }
+}</code></pre>
+
+    <div class="pro-con-grid">
+      <div class="pro-card">
+        <h3>✅ Document Advantages</h3>
+        <ul>
+          <li><strong>Single query</strong>: One fetch returns entire nested structure</li>
+          <li><strong>Better locality</strong>: All data for entity lives in one place</li>
+          <li><strong>Native to OOP</strong>: Mirrors application's object graph (e.g., <code>user.positions[0].job_title</code>)</li>
+          <li><strong>Reduced mismatch</strong>: No translation layer needed from objects to rows</li>
+          <li><strong>Faster reads</strong>: No expensive JOINs</li>
+        </ul>
+      </div>
+      <div class="con-card">
+        <h3>❌ Document Tradeoffs</h3>
+        <ul>
+          <li><strong>Write overhead</strong>: Modify nested field? Rewrite entire document</li>
+          <li><strong>No native JOINs</strong>: Querying across documents requires app logic</li>
+          <li><strong>Denormalization risks</strong>: If data embedded in multiple places, must update all copies</li>
+          <li><strong>Schema flexibility ≠ no structure</strong>: Application still must handle variable schemas</li>
+          <li><strong>ORM still needed</strong>: Frameworks (ActiveRecord, Hibernate) reduce boilerplate but don't eliminate differences</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>ORM LIMITATION</strong> Even with ORM frameworks, the impedance mismatch is <em>reduced</em>, not eliminated. Deep structural differences remain. However, JSON representation can significantly reduce mismatch for document-like data that naturally nests.
+    </div>
+  </section>
+
+  <!-- SECTION: RELATIONSHIPS & NORMALIZATION -->
+  <section id="relationships" data-section-id="relationships">
+    <h2><span class="section-num">05</span> One-to-Many vs Many-to-Many: Tree vs Graph</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Data Structure Evolution</div>
+      <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px;">TREE (One-to-Many)</div>
+          <div style="background:rgba(56,139,253,.1); border:1px solid rgba(56,139,253,.3); padding:12px; border-radius:6px; font-size:12px; color:var(--accent); font-family:monospace;">
+User<br/>├── Position[]<br/>├── Education[]<br/>└── Contact Info<br/>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:10px;">GRAPH (Many-to-Many)</div>
+          <div style="background:rgba(210,168,255,.1); border:1px solid rgba(210,168,255,.3); padding:12px; border-radius:6px; font-size:12px; color:var(--accent4); font-family:monospace;">
+User ← recommends → User<br/>User → Company ← Industry<br/>User → Location ← Region
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>One-to-Many: Document Databases Excel</h3>
+    <p>JSON documents naturally represent trees of one-to-many relationships. A user's profile contains an array of positions—perfect fit for document model.</p>
+
+    <h3>Many-to-One & Many-to-Many: Complexity Increases</h3>
+    <p>When data becomes interconnected across multiple entities, the choice between <strong>using IDs (normalization)</strong> and <strong>using text (denormalization)</strong> becomes critical.</p>
+
+    <div class="approach-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="approach-card" style="border-color:rgba(63,185,80,.5);">
+        <div class="preferred-badge">★ NORMALIZED</div>
+        <h3 style="color:var(--accent2);">Using IDs (Normalization)</h3>
+        <p>Store <code>region_id: 2</code> instead of text region name.</p>
+        <h4 style="color:var(--accent2); text-transform:none; letter-spacing:0; font-size:12px; margin:10px 0 6px;">Benefits</h4>
+        <ul style="font-size:12px; padding-left:16px;">
+          <li>Avoids duplication (single source of truth)</li>
+          <li>ID never needs to change (even if name corrected)</li>
+          <li>Consistent spelling across records</li>
+          <li>Enables batch updates (rename region once in lookup table)</li>
+          <li>Supports localization (same ID, different language)</li>
+          <li>Intelligent search (region canonical name)</li>
+        </ul>
+      </div>
+      <div class="approach-card">
+        <h3 style="color:var(--accent3);">Using Text (Denormalization)</h3>
+        <p>Store <code>region: "Southeast Asia"</code> directly in document.</p>
+        <h4 style="color:var(--accent3); text-transform:none; letter-spacing:0; font-size:12px; margin:10px 0 6px;">Problems</h4>
+        <ul style="font-size:12px; padding-left:16px;">
+          <li>Duplication across records (inconsistency risk)</li>
+          <li>Global updates require touching multiple documents</li>
+          <li>Spelling variations ("Southeast Asia" vs "SE Asia")</li>
+          <li>Write overhead and coordination burden</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>KEY INSIGHT</strong> <strong>Normalization = removing duplication via ID references</strong>. Databases excel at following IDs to fetch referenced data. Applications must decide: pay cost now (normalize with IDs) or pay cost later (manage denormalized copies in application code).
+    </div>
+  </section>
+
+  <!-- SECTION: NORMALIZATION & IDS -->
+  <section id="normalization" data-section-id="normalization">
+    <h2><span class="section-num">06</span> Normalization & ID References</h2>
+    <div class="data-bar-list">
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>Normalization</strong> (IDs)</span>
+          <span class="data-bar-value">Upfront Cost</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:40%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="data-bar-item">
+        <div class="data-bar-header">
+          <span class="data-bar-label"><strong>Denormalization</strong> (Embedded Text)</span>
+          <span class="data-bar-value">Long-term Cost</span>
+        </div>
+        <div class="data-bar-track"><div class="data-bar-fill" style="width:75%;background:var(--accent3)"></div></div>
+      </div>
+    </div>
+
+    <h3>Why Normalization Matters: A Real Example</h3>
+    <p>Consider a user profile that records the user's organization:</p>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">❌</span>
+        <span class="il-text"><strong>Denormalized</strong> Store organization name: "Microsoft" inside user document. When Microsoft rebrands or needs logo update, must change it in thousands of user records.</span>
+      </li>
+      <li>
+        <span class="il-icon">✅</span>
+        <span class="il-text"><strong>Normalized</strong> Store <code>organization_id: 123</code> in user; maintain Organization table with logo, URL, etc. Change once, reflected everywhere instantly via ID reference.</span>
+      </li>
+    </ul>
+
+    <h3>The Trade-off Spectrum</h3>
+    <table>
+      <tr>
+        <th>Aspect</th>
+        <th>Normalized (IDs)</th>
+        <th>Denormalized (Embedded)</th>
+      </tr>
+      <tr>
+        <td><strong>Write Performance</strong></td>
+        <td><span class="partial">⚠ Slower</span> (indirect reference)</td>
+        <td><span class="check">✔ Faster</span> (self-contained)</td>
+      </tr>
+      <tr>
+        <td><strong>Update Consistency</strong></td>
+        <td><span class="check">✔ Single location</span></td>
+        <td><span class="cross">✘ Multiple locations</span></td>
+      </tr>
+      <tr>
+        <td><strong>Query Joins</strong></td>
+        <td><span class="partial">⚠ Required</span></td>
+        <td><span class="check">✔ Avoided</span></td>
+      </tr>
+      <tr>
+        <td><strong>Flexibility</strong></td>
+        <td><span class="check">✔ Resilient to schema changes</span></td>
+        <td><span class="partial">⚠ Brittle if reference changes</span></td>
+      </tr>
+      <tr>
+        <td><strong>Space</strong></td>
+        <td><span class="check">✔ Compact</span></td>
+        <td><span class="cross">✘ Redundant</span></td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- SECTION: JOINS & DOCUMENT LIMITATIONS -->
+  <section id="joins" data-section-id="joins">
+    <h2><span class="section-num">07</span> The Join Problem in Document Databases</h2>
+    <div class="insight-strip">
+      <div class="insight-card insight-red">
+        <span class="ic-icon">🚫</span>
+        <div class="ic-title">MongoDB Limitation</div>
+        <div class="ic-body">Initially, no native JOIN support. Applications must fetch documents separately and stitch data together in code.</div>
+      </div>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">📋</span>
+        <div class="ic-title">CouchDB Workaround</div>
+        <div class="ic-body">Joins only available through predeclared materialized views—requires up-front schema design and explicit view definition.</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">⚡</span>
+        <div class="ic-title">RethinkDB Solution</div>
+        <div class="ic-body">Native JOIN support in query language. Bridges gap between document and relational model, though joins still less optimized than dedicated SQL engines.</div>
+      </div>
+    </div>
+
+    <h3>Application-Level Join Emulation</h3>
+    <p>When database doesn't support joins, application code must handle it:</p>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Query Primary Document</h4>
+          <p>Fetch user document from collection: <code>db.users.findOne({id: 251})</code></p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Extract Foreign Keys</h4>
+          <p>Read arrays of IDs: <code>user.position_ids = [1, 2, 3]</code></p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Fetch Referenced Documents</h4>
+          <p>For each ID, query separate collection: <code>db.positions.find({id: {$in: [1,2,3]}})</code></p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Merge in Application Memory</h4>
+          <p>Loop through results and attach to user object: <code>user.positions = positions_docs</code></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-warn">
+      <strong>PERFORMANCE COST</strong> Moving join logic from database to application has profound effects: multiple round-trips to database, network latency multiplied, memory usage in application process, loss of database query optimizer's ability to choose efficient execution plans.
+    </div>
+
+    <h3>Evolution in Applications: When Document Model Breaks</h3>
+    <p>As applications mature, what began as trees become graphs:</p>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Users with Positions & Education</h4>
+          <p><strong>Perfect tree.</strong> Document model shines. User → array of positions and education records.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Organizations as First-Class Entities</h4>
+          <p><strong>Graph emerges.</strong> Organizations now have their own pages with logos, websites, descriptions. Many users reference same organization. Denormalizing org data into every user becomes untenable.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>User Recommendations & Social Graph</h4>
+          <p><strong>Complexity explodes.</strong> User A recommends User B; recommendations have author profiles; photos update and must propagate everywhere. Many-to-many relationships everywhere. Document model increasingly awkward.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>PATTERN</strong> Document databases work best for applications with <em>shallow trees</em>. As your data graph deepens and interconnects, the cost of application-level join emulation grows until you're better served by a relational or native graph database.
+    </div>
+  </section>
+
+  <!-- SECTION: DOCUMENT MODEL ADVANTAGES -->
+  <section id="document-advantages" data-section-id="document-advantages">
+    <h2><span class="section-num">08</span> Document Model: When It Excels</h2>
+    <div class="diagram-container">
+      <div class="diagram-title">Document Model Strengths</div>
+      <div class="box-row" style="gap:0; flex-wrap:wrap;">
+        <div class="box box-green" style="flex:1; min-width:120px;">
+          Nested Data
+          <small>One-to-many relationships</small>
+        </div>
+        <div class="arrow">+</div>
+        <div class="box box-green" style="flex:1; min-width:120px;">
+          Single Query
+          <small>Fetch entire structure at once</small>
+        </div>
+        <div class="arrow">+</div>
+        <div class="box box-green" style="flex:1; min-width:120px;">
+          Schema Flexibility
+          <small>Easy to add fields per record</small>
+        </div>
+        <div class="arrow">=</div>
+        <div class="box box-orange" style="flex:1; min-width:120px;">
+          High-Velocity Development
+          <small>Iterate fast; schema evolves with app</small>
+        </div>
+      </div>
+    </div>
+
+    <h3>The Benefits Breakdown</h3>
+    <ul class="icon-list">
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Faster Reads for Nested Data</strong>One database query returns complete nested structure (user with all positions, education, contacts). Relational requires multi-way JOIN or multiple queries.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Better Locality</strong>All data for an entity lives together on disk. Cache-friendly; fewer page faults; better I/O characteristics.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Natural Object Mapping</strong>JSON structure mirrors application objects. No impedance mismatch; <code>user.positions[0].job_title</code> works intuitively.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Schema Flexibility</strong>Add optional fields without schema migration. Different documents can have different structures. Useful during rapid prototyping.</span>
+      </li>
+      <li>
+        <span class="il-icon">🟢</span>
+        <span class="il-text"><strong>Developer Ergonomics</strong>Reduce translation layers (objects ↔ rows). Less boilerplate; faster iteration; fewer bugs from mapping logic.</span>
+      </li>
+    </ul>
+
+    <h3>When to Choose Document Model</h3>
+    <div class="insight-strip">
+      <div class="insight-card insight-green">
+        <span class="ic-icon">✅</span>
+        <div class="ic-title">Good Fit</div>
+        <div class="ic-body"><strong>One-to-many trees:</strong> User profiles, product catalogs, blog posts with comments. Data naturally nests; queries fetch complete subtree.</div>
+      </div>
+      <div class="insight-card insight-green">
+        <span class="ic-icon">✅</span>
+        <div class="ic-title">Good Fit</div>
+        <div class="ic-body"><strong>Schema-flexible data:</strong> Sensor readings, event logs, user-generated content. Records vary in structure; early-stage data models.</div>
+      </div>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">⚠️</span>
+        <div class="ic-title">Problematic</div>
+        <div class="ic-body"><strong>Many-to-many relationships:</strong> Once data graph becomes interconnected (organizations, recommendations, social links), document model loses advantage.</div>
+      </div>
+      <div class="insight-card insight-orange">
+        <span class="ic-icon">⚠️</span>
+        <div class="ic-title">Problematic</div>
+        <div class="ic-body"><strong>Complex transactions:</strong> ACID across multiple documents is hard. Relational ACID transactions preferred for critical business logic.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: TRADEOFFS -->
+  <section id="tradeoffs" data-section-id="tradeoffs">
+    <h2><span class="section-num">09</span> Model Tradeoffs: No Universal Winner</h2>
+    <div class="compare-grid" style="grid-template-columns:repeat(5,1fr);">
+      <div class="compare-header" style="grid-template-columns:repeat(5,1fr);">
+        <div class="compare-cell">Dimension</div>
+        <div class="compare-cell">Relational</div>
+        <div class="compare-cell
+</main>
+<script>
+(function() {
+  // Smooth scroll — works inside sandboxed srcdoc iframes where href="#id" breaks
+  document.querySelectorAll('#sidebar nav a').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = this.getAttribute('href').replace(/^#/, '');
+      var target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  // Progress bar
+  var bar = document.getElementById('progress-bar');
+  if (bar) {
+    window.addEventListener('scroll', function() {
+      var h = document.documentElement;
+      var pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+      bar.style.width = pct + '%';
+    });
+  }
+  // Active sidebar highlight
+  var sections = document.querySelectorAll('section[id]');
+  var links = document.querySelectorAll('#sidebar nav a');
+  if (sections.length && links.length && window.IntersectionObserver) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          links.forEach(function(l) {
+            l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(function(s) { obs.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
