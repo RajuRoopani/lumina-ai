@@ -15,10 +15,11 @@ interface Props {
   onUploadClick: () => void
   activeReportId?: string
   onActiveReportDeleted: () => void
+  onNavigateHome: () => void
 }
 
 export function HistorySidebar({
-  selectedDocIds, onDocSelect, onReportOpen, onGenerateReport, onUploadClick, activeReportId, onActiveReportDeleted
+  selectedDocIds, onDocSelect, onReportOpen, onGenerateReport, onUploadClick, activeReportId, onActiveReportDeleted, onNavigateHome
 }: Props) {
   const { documents, isLoading: docsLoading, deleteDoc } = useDocuments()
   const { reports, isLoading: reportsLoading, deleteReport } = useReports()
@@ -41,7 +42,12 @@ export function HistorySidebar({
   return (
     <aside className="w-52 flex-shrink-0 bg-[#0d1117] border-r border-[#21262d] flex flex-col h-full">
       <div className="p-3 border-b border-[#21262d]">
-        <div className="text-[#e6edf3] font-bold text-sm mb-0.5 tracking-tight">✦ Lumina</div>
+        <button
+          onClick={onNavigateHome}
+          className="text-[#e6edf3] font-bold text-sm mb-0.5 tracking-tight hover:text-[#58a6ff] transition-colors cursor-pointer text-left"
+        >
+          ✦ Lumina
+        </button>
         <div className="text-[#484f58] text-[9px] uppercase tracking-widest mb-2">Document Intelligence</div>
         <button
           onClick={onUploadClick}

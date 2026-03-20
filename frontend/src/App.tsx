@@ -123,6 +123,7 @@ export default function App() {
         onUploadClick={() => setShowUpload(true)}
         activeReportId={activeReportId}
         onActiveReportDeleted={() => setActiveReportId(undefined)}
+        onNavigateHome={() => setActiveReportId(undefined)}
       />
 
       <main className="flex-1 flex overflow-hidden">
