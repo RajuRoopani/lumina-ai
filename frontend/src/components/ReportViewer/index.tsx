@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import type { Report } from '../../types'
@@ -23,6 +23,27 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
   useEffect(() => {
     if (report) onReportLoaded?.(report)
   }, [report, onReportLoaded])
+
+  const printToPdf = useCallback(() => {
+    const win = iframeRef.current?.contentWindow
+    if (!win) return
+    const doc = win.document
+    const style = doc.createElement('style')
+    style.id = '__lumina-print-css__'
+    style.textContent = `
+      @media print {
+        nav, aside, [class*="sidebar"], [class*="nav"], [class*="toc"],
+        .progress-bar, #progress-bar, [id*="progress"] { display: none !important; }
+        body { margin: 0 !important; padding: 1cm !important; background: #fff !important; color: #111 !important; font-size: 11pt !important; }
+        a { color: inherit !important; text-decoration: none !important; }
+        @page { margin: 1.5cm; size: A4; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+    `
+    doc.head.appendChild(style)
+    win.print()
+    setTimeout(() => style.remove(), 1000)
+  }, [iframeRef])
 
   const copyShareLink = () => {
     navigator.clipboard.writeText(window.location.origin + api.reports.shareUrl(reportId))
@@ -49,8 +70,14 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
         </button>
         <a href={api.reports.exportUrl(reportId)} download
           className="text-xs bg-[#1c2128] hover:bg-[#2d333b] border border-[#30363d] rounded px-2 py-1 text-[#8b949e] transition-colors">
-          ⬇ Export
+          ⬇ HTML
         </a>
+        <button
+          onClick={printToPdf}
+          className="text-xs bg-[#1c2128] hover:bg-[#2d333b] border border-[#30363d] rounded px-2 py-1 text-[#8b949e] transition-colors"
+        >
+          🖨 PDF
+        </button>
       </div>
       <iframe
         ref={iframeRef}
