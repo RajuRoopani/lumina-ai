@@ -84,7 +84,7 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
         srcDoc={report.html_content}
         className="flex-1 w-full border-none"
         title="Report"
-        sandbox="allow-scripts allow-same-origin"
+        sandbox="allow-scripts allow-same-origin allow-modals"
       />
     </div>
   )
