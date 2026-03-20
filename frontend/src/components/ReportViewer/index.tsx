@@ -13,6 +13,7 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
   const internalRef = useRef<HTMLIFrameElement>(null)
   const iframeRef = externalRef ?? internalRef
   const [copied, setCopied] = useState(false)
+  const [exportingPdf, setExportingPdf] = useState(false)
 
   const { data: report, isLoading } = useQuery({
     queryKey: ['report', reportId],
@@ -24,26 +25,49 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
     if (report) onReportLoaded?.(report)
   }, [report, onReportLoaded])
 
-  const printToPdf = useCallback(() => {
-    const win = iframeRef.current?.contentWindow
-    if (!win) return
-    const doc = win.document
-    const style = doc.createElement('style')
-    style.id = '__lumina-print-css__'
-    style.textContent = `
-      @media print {
-        nav, aside, [class*="sidebar"], [class*="nav"], [class*="toc"],
-        .progress-bar, #progress-bar, [id*="progress"] { display: none !important; }
-        body { margin: 0 !important; padding: 1cm !important; background: #fff !important; color: #111 !important; font-size: 11pt !important; }
-        a { color: inherit !important; text-decoration: none !important; }
-        @page { margin: 1.5cm; size: A4; }
-        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  const exportPdf = useCallback(async () => {
+    const iframe = iframeRef.current
+    if (!iframe?.contentDocument?.body) return
+    setExportingPdf(true)
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ])
+      const body = iframe.contentDocument.body
+      const canvas = await html2canvas(body, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#0d1117',
+        width: body.scrollWidth,
+        height: body.scrollHeight,
+        windowWidth: body.scrollWidth,
+        windowHeight: body.scrollHeight,
+      })
+      const imgData = canvas.toDataURL('image/jpeg', 0.92)
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+      const pageW = pdf.internal.pageSize.getWidth()
+      const pageH = pdf.internal.pageSize.getHeight()
+      const imgH = (canvas.height * pageW) / canvas.width
+      let remaining = imgH
+      let offset = 0
+      pdf.addImage(imgData, 'JPEG', 0, offset, pageW, imgH)
+      remaining -= pageH
+      while (remaining > 0) {
+        offset -= pageH
+        pdf.addPage()
+        pdf.addImage(imgData, 'JPEG', 0, offset, pageW, imgH)
+        remaining -= pageH
       }
-    `
-    doc.head.appendChild(style)
-    win.print()
-    setTimeout(() => style.remove(), 1000)
-  }, [iframeRef])
+      const filename = report?.title
+        ? report.title.replace(/[^a-z0-9\s_-]/gi, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 50) + '.pdf'
+        : 'report.pdf'
+      pdf.save(filename)
+    } finally {
+      setExportingPdf(false)
+    }
+  }, [iframeRef, report?.title])
 
   const copyShareLink = () => {
     navigator.clipboard.writeText(window.location.origin + api.reports.shareUrl(reportId))
@@ -73,10 +97,11 @@ export function ReportViewer({ reportId, onReportLoaded, iframeRef: externalRef 
           ⬇ HTML
         </a>
         <button
-          onClick={printToPdf}
-          className="text-xs bg-[#1c2128] hover:bg-[#2d333b] border border-[#30363d] rounded px-2 py-1 text-[#8b949e] transition-colors"
+          onClick={exportPdf}
+          disabled={exportingPdf}
+          className="text-xs bg-[#1c2128] hover:bg-[#2d333b] border border-[#30363d] rounded px-2 py-1 text-[#8b949e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          🖨 PDF
+          {exportingPdf ? '⏳ Generating…' : '⬇ PDF'}
         </button>
       </div>
       <iframe
