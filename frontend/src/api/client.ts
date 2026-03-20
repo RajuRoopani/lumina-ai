@@ -59,6 +59,14 @@ export const api = {
         body: JSON.stringify({ section_id: sectionId, html }),
       }),
   },
+  visualize: {
+    generateStream: (query: string) =>
+      fetch(`${BASE}/visualize/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      }),
+  },
   chat: {
     getMessages: (reportId: string) => request<ChatMessage[]>(`/chat/${reportId}/messages`),
     streamMessage: (reportId: string, message: string) =>
