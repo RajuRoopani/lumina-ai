@@ -121,9 +121,18 @@ def generate_visualization(body: dict):
 
             html = _post_process(raw_html)
 
-            # Extract title from <h1> or use query
-            title_m = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.S)
-            title = re.sub(r'<[^>]+>', '', title_m.group(1)).strip() if title_m else query
+            # Extract title: prefer <title> tag (Claude puts the real topic there),
+            # fall back to <h1>, then the raw query
+            title_tag = re.search(r'<title[^>]*>(.*?)</title>', html, re.S)
+            if title_tag:
+                title = re.sub(r'<[^>]+>', '', title_tag.group(1)).strip()
+                title = re.sub(r'\s*[—–-]+\s*(Lumina.*)?$', '', title, flags=re.I).strip()
+            else:
+                h1_m = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.S)
+                title = re.sub(r'<[^>]+>', '', h1_m.group(1)).strip() if h1_m else query
+            # If title is still generic, fall back to query
+            if not title or title.lower() in ('visualize', '✦ visualize', 'lumina visualizer'):
+                title = query
 
             report_id = str(uuid.uuid4())
             orm = ReportORM(
