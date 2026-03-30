@@ -65,6 +65,57 @@ def build_chat_context(report: ReportORM, docs: list[DocumentORM]) -> str:
     )
 
 
+def _repair_section_html(html: str) -> str:
+    """Close any unclosed tags in a section HTML snippet."""
+    if not html:
+        return html
+    # Close unclosed <section> tags
+    n_open = len(re.findall(r'<section[^>]*>', html))
+    n_close = len(re.findall(r'</section>', html))
+    html += '\n</section>' * (n_open - n_close)
+    # Ensure section is closed at all
+    if not html.rstrip().endswith('</section>'):
+        html = html.rstrip() + '\n</section>'
+    return html
+
+
+def _continue_section_html(
+    client: anthropic.Anthropic,
+    context: str,
+    message: str,
+    section_id: str,
+    partial_html: str,
+) -> str:
+    """If the section HTML was cut off by max_tokens, continue it."""
+    try:
+        cont = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=8000,
+            system=SYSTEM_PROMPT_CHAT,
+            messages=[
+                {"role": "user", "content": f"{context}\n\nUser request: {message}"},
+                {
+                    "role": "assistant",
+                    "content": f"I'll update section {section_id} now.\n\n[partial html: {partial_html[:200]}...]",
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"The HTML for section '{section_id}' was cut off. "
+                        "Continue generating ONLY the remaining HTML from exactly where it stopped. "
+                        "Do NOT repeat anything. Do NOT include opening tags already written. "
+                        "Just output the continuation and close with </section>."
+                    ),
+                },
+            ],
+        )
+        if cont.content and hasattr(cont.content[0], "text"):
+            return partial_html + cont.content[0].text
+    except Exception:
+        pass
+    return _repair_section_html(partial_html)
+
+
 def stream_chat_response(
     report: ReportORM,
     docs: list[DocumentORM],
@@ -91,7 +142,7 @@ def stream_chat_response(
         # Non-streaming call so we can reliably inspect tool_use blocks
         response = client.messages.create(
             model="claude-haiku-4-5",
-            max_tokens=6000,
+            max_tokens=16000,
             system=SYSTEM_PROMPT_CHAT,
             tools=_TOOLS,  # type: ignore[arg-type]
             messages=messages,
@@ -104,14 +155,23 @@ def stream_chat_response(
         for block in response.content:
             if block.type == "text":
                 text_parts.append(block.text)
-                # Stream character-by-character would require streaming=True;
-                # for non-streaming emit as one chunk (still fast enough)
                 yield f"data: {json.dumps({'type': 'chunk', 'text': block.text})}\n\n"
             elif block.type == "tool_use" and block.name == "update_section":
+                section_html = block.input.get("html", "")
+                section_id = block.input.get("section_id", "")
+
+                # If response was cut off mid-HTML, continue it
+                if response.stop_reason == "max_tokens" or not section_html.rstrip().endswith("</section>"):
+                    section_html = _continue_section_html(
+                        client, context, message, section_id, section_html
+                    )
+                else:
+                    section_html = _repair_section_html(section_html)
+
                 tool_call = {
                     "action": "section_update",
-                    "section_id": block.input.get("section_id", ""),
-                    "html": block.input.get("html", ""),
+                    "section_id": section_id,
+                    "html": section_html,
                     "summary": block.input.get("summary", ""),
                 }
 
