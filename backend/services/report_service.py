@@ -208,30 +208,45 @@ def _inject_nav_js(html: str) -> str:
     return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
 
 
+_CONTINUATION_MODEL = "claude-sonnet-4-6"
+_CONTINUATION_MAX_TOKENS = 16000
+_MAX_CONTINUATION_PASSES = 5
+
+
+def _is_html_complete(html: str) -> bool:
+    return '</html>' in html
+
+
 def _continue_html(client: anthropic.Anthropic, system_prompt: str,
                    user_prompt: str, partial_html: str) -> str:
-    """If Claude was cut off (max_tokens), continue from the partial output."""
-    try:
-        cont = client.messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=8000,
-            system=system_prompt,
-            messages=[
-                {"role": "user", "content": user_prompt},
-                {"role": "assistant", "content": partial_html},
-                {"role": "user", "content": (
-                    "Continue the HTML report exactly where you left off. "
-                    "Do NOT repeat anything already written. "
-                    "Pick up mid-sentence or mid-tag if needed and finish all open sections. "
-                    "End with </body></html>."
-                )},
-            ]
-        )
-        if cont.content and hasattr(cont.content[0], "text"):
-            return partial_html + cont.content[0].text
-    except Exception:
-        pass
-    return partial_html
+    """Continue a truncated HTML response until </html> appears or max passes exceeded."""
+    accumulated = partial_html
+    for _ in range(_MAX_CONTINUATION_PASSES):
+        if _is_html_complete(accumulated):
+            break
+        try:
+            cont = client.messages.create(
+                model=_CONTINUATION_MODEL,
+                max_tokens=_CONTINUATION_MAX_TOKENS,
+                system=system_prompt,
+                messages=[
+                    {"role": "user", "content": user_prompt},
+                    {"role": "assistant", "content": accumulated},
+                    {"role": "user", "content": (
+                        "Continue the HTML report exactly where you left off. "
+                        "Do NOT repeat anything already written. "
+                        "Pick up mid-sentence or mid-tag if needed and finish all open sections. "
+                        "End with </body></html>."
+                    )},
+                ]
+            )
+            if cont.content and hasattr(cont.content[0], "text"):
+                accumulated = accumulated + cont.content[0].text
+            else:
+                break
+        except Exception:
+            break
+    return accumulated
 
 
 def generate_report_html(docs: list, signature_color: str, doc_context: str = None) -> str:
@@ -265,8 +280,8 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
 
     try:
         message = client.messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=16000,
+            model="claude-sonnet-4-6",
+            max_tokens=32000,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}]
         )

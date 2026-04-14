@@ -1,35 +1,37 @@
 {
   "report_stats": {
-    "total_generated": 31,
-    "avg_section_count": 10.0,
+    "total_generated": 35,
+    "avg_section_count": 10.4,
     "component_usage": {
-      "callout": 31,
-      "pill": 31,
-      "box-row": 31,
-      "box": 31,
-      "arrow": 31,
-      "timeline": 31,
-      "approach-card": 31,
-      "stat-grid": 31,
-      "pro-con-grid": 31,
-      "tag": 31,
-      "seq-row": 23
+      "callout": 35,
+      "pill": 35,
+      "box-row": 35,
+      "box": 35,
+      "arrow": 35,
+      "timeline": 35,
+      "approach-card": 35,
+      "stat-grid": 35,
+      "pro-con-grid": 34,
+      "tag": 35,
+      "seq-row": 25
     }
   },
   "chat_stats": {
-    "total_chats": 11,
-    "section_updates": 6,
+    "total_chats": 16,
+    "section_updates": 8,
     "most_updated_sections": {
       "architecture": 5,
-      "hybrid-approach": 1
+      "hybrid-approach": 1,
+      "system-tools": 1,
+      "attention-with-cache": 1
     },
-    "qa_count": 5
+    "qa_count": 8
   },
   "prompt_hints": [
-    "DEPTH: Good \u2014 keep 10.0+ sections per report.",
+    "DEPTH: Good \u2014 keep 10.4+ sections per report.",
     "VARIETY: These CSS components have NEVER appeared \u2014 use them: .seq-block.",
-    "RICHNESS: Users most often ask AI to improve: architecture, hybrid-approach. Make these sections exceptionally detailed in the initial report."
+    "RICHNESS: Users most often ask AI to improve: architecture, hybrid-approach, system-tools, attention-with-cache. Make these sections exceptionally detailed in the initial report."
   ],
   "version": 1,
-  "last_updated": "2026-03-20T18:02:51.487831+00:00"
+  "last_updated": "2026-04-09T23:30:56.336396+00:00"
 }
