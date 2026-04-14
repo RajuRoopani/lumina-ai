@@ -17,7 +17,9 @@ def pick_signature_color(report_index: int) -> str:
 def make_client() -> anthropic.Anthropic:
     if not ANTHROPIC_API_KEY:
         raise ValueError("ANTHROPIC_API_KEY is not configured")
-    return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    # max_retries=6: SDK uses exponential backoff for 429 rate-limit errors,
+    # so concurrent jobs will automatically wait and retry instead of failing.
+    return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, max_retries=6)
 
 
 def split_into_chunks(text: str, chunk_size: int = SUMMARY_CHUNK_SIZE) -> list:

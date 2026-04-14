@@ -50,6 +50,7 @@ export default function App() {
   // Shared loading state for both report generation + visualization
   const [busy, setBusy]         = useState(false)
   const [busyMsg, setBusyMsg]   = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
   const hadError = useRef(false)
 
   // Which "home" tab is shown when no report is active
@@ -67,13 +68,14 @@ export default function App() {
     if (!selectedDocIds.size) return
     setBusy(true)
     hadError.current = false
+    setErrorMsg('')
     setBusyMsg('Starting…')
     try {
       const res = await api.reports.generateStream(Array.from(selectedDocIds))
       const id = await readStream(
         res,
         msg => setBusyMsg(msg),
-        msg => { hadError.current = true; setBusyMsg(msg) },
+        msg => { hadError.current = true; setErrorMsg(msg) },
       )
       if (id) {
         setActiveReportId(id)
@@ -82,23 +84,24 @@ export default function App() {
       }
     } catch (err) {
       hadError.current = true
-      setBusyMsg('Generation failed')
+      setErrorMsg('Report generation failed — please try again')
     } finally {
       setBusy(false)
-      if (!hadError.current) setBusyMsg('')
+      setBusyMsg('')
     }
   }, [selectedDocIds, qc])
 
   const handleVisualize = useCallback(async (query: string) => {
     setBusy(true)
     hadError.current = false
+    setErrorMsg('')
     setBusyMsg(`✦ Building visualization…`)
     try {
       const res = await api.visualize.generateStream(query)
       const id = await readStream(
         res,
         msg => setBusyMsg(msg),
-        msg => { hadError.current = true; setBusyMsg(msg) },
+        msg => { hadError.current = true; setErrorMsg(msg) },
       )
       if (id) {
         setActiveReportId(id)
@@ -106,10 +109,10 @@ export default function App() {
       }
     } catch (err) {
       hadError.current = true
-      setBusyMsg('Visualization failed')
+      setErrorMsg('Visualization failed — please try again')
     } finally {
       setBusy(false)
-      if (!hadError.current) setBusyMsg('')
+      setBusyMsg('')
     }
   }, [qc])
 
@@ -136,6 +139,15 @@ export default function App() {
               <div className="absolute inset-0 flex items-center justify-center text-[#388bfd] text-lg">✦</div>
             </div>
             <div className="text-[#8b949e] text-sm max-w-xs text-center leading-relaxed">{busyMsg}</div>
+          </div>
+        )}
+
+        {/* Error banner — shown after a failed job, persists until next job */}
+        {!busy && errorMsg && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#2d1b1b] border border-[#f78166]/40 text-[#f78166] text-sm px-5 py-3 rounded-lg shadow-lg max-w-md">
+            <span>⚠</span>
+            <span className="flex-1">{errorMsg}</span>
+            <button onClick={() => setErrorMsg('')} className="opacity-60 hover:opacity-100 ml-2">✕</button>
           </div>
         )}
 
