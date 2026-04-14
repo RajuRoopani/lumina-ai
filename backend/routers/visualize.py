@@ -83,8 +83,8 @@ def generate_visualization(body: dict):
             yield f"data: {json.dumps({'event': 'progress', 'data': 'Generating diagrams and step-by-step walkthrough…'})}\n\n"
 
             message = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=32000,
+                model="claude-haiku-4-5",
+                max_tokens=8000,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_prompt}],
             )
@@ -96,13 +96,13 @@ def generate_visualization(body: dict):
 
             # Continuation loop — keep going until </html> is present or 5 passes exhausted
             pass_num = 0
-            while message.stop_reason == "max_tokens" and '</html>' not in raw_html and pass_num < 5:
+            while message.stop_reason == "max_tokens" and '</html>' not in raw_html and pass_num < 8:
                 pass_num += 1
                 yield f"data: {json.dumps({'event': 'progress', 'data': f'Completing remaining sections (pass {pass_num})…'})}\n\n"
                 try:
                     cont = client.messages.create(
-                        model="claude-sonnet-4-6",
-                        max_tokens=16000,
+                        model="claude-haiku-4-5",
+                        max_tokens=8000,
                         system=system_prompt,
                         messages=[
                             {"role": "user", "content": user_prompt},

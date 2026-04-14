@@ -210,9 +210,11 @@ def _inject_nav_js(html: str) -> str:
     return html.replace('</body>', _NAV_FIX_JS + '\n</body>', 1)
 
 
-_CONTINUATION_MODEL = "claude-sonnet-4-6"
-_CONTINUATION_MAX_TOKENS = 16000
-_MAX_CONTINUATION_PASSES = 5
+_GENERATION_MODEL = "claude-haiku-4-5"
+_GENERATION_MAX_TOKENS = 8000   # Haiku true output ceiling
+_CONTINUATION_MODEL = "claude-haiku-4-5"
+_CONTINUATION_MAX_TOKENS = 8000
+_MAX_CONTINUATION_PASSES = 8   # up to 8 × 8k = 64k tokens total
 
 
 def _is_html_complete(html: str) -> bool:
@@ -282,8 +284,8 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
 
     try:
         message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=32000,
+            model=_GENERATION_MODEL,
+            max_tokens=_GENERATION_MAX_TOKENS,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}]
         )
