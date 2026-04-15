@@ -94,12 +94,41 @@ def generate_visualization(body: dict):
 
             raw_html = message.content[0].text
 
-            # Continuation loop — keep going until </html> is present or 5 passes exhausted
+            def _section_count(html: str) -> int:
+                return len(re.findall(r'<section[^>]+id=', html))
+
+            # Continuation loop: fire when cut off (max_tokens) OR when Claude
+            # closed early but produced fewer than 10 sections (under-generated).
             pass_num = 0
-            while message.stop_reason == "max_tokens" and '</html>' not in raw_html and pass_num < 8:
+            while pass_num < 8:
+                has_closing = '</html>' in raw_html
+                enough_sections = _section_count(raw_html) >= 10
+                was_cut_off = message.stop_reason == "max_tokens"
+                if has_closing and enough_sections:
+                    break   # genuinely complete
+                if has_closing and not enough_sections:
+                    # Claude closed early — strip the closing tags and force expansion
+                    raw_html = re.sub(r'\s*</body>\s*</html>\s*$', '', raw_html.rstrip())
+                    yield f"data: {json.dumps({'event': 'progress', 'data': f'Expanding sections ({_section_count(raw_html)} so far, targeting 10+)…'})}\n\n"
+                elif was_cut_off:
+                    pass_num += 1
+                    yield f"data: {json.dumps({'event': 'progress', 'data': f'Completing remaining sections (pass {pass_num})…'})}\n\n"
+                else:
+                    break   # end_turn + enough sections or unknown state
                 pass_num += 1
-                yield f"data: {json.dumps({'event': 'progress', 'data': f'Completing remaining sections (pass {pass_num})…'})}\n\n"
                 try:
+                    cont_prompt = (
+                        "Continue the HTML exactly where you left off. "
+                        "Do NOT repeat anything already written. "
+                        "Add ALL remaining sections — you must reach at least 10 fully-written sections total. "
+                        "Each section must open with a visual component (diagram, grid, or step-flow), never a bare paragraph. "
+                        "End with </body></html> only after all sections are complete."
+                    ) if was_cut_off else (
+                        "The report is incomplete — only " + str(_section_count(raw_html)) + " sections were generated but the minimum is 10. "
+                        "Continue the HTML from where it left off. Add ALL remaining sections now. "
+                        "Each new section must open with a visual component. "
+                        "End with </body></html> after all sections are complete."
+                    )
                     cont = client.messages.create(
                         model="claude-haiku-4-5",
                         max_tokens=8000,
@@ -107,11 +136,7 @@ def generate_visualization(body: dict):
                         messages=[
                             {"role": "user", "content": user_prompt},
                             {"role": "assistant", "content": raw_html},
-                            {"role": "user", "content": (
-                                "Continue the HTML exactly where you left off. "
-                                "Do NOT repeat anything. Finish all open sections. "
-                                "End with </body></html>."
-                            )},
+                            {"role": "user", "content": cont_prompt},
                         ],
                     )
                     if cont.content and hasattr(cont.content[0], "text"):

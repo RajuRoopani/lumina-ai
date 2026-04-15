@@ -217,17 +217,38 @@ _CONTINUATION_MAX_TOKENS = 8000
 _MAX_CONTINUATION_PASSES = 8   # up to 8 × 8k = 64k tokens total
 
 
-def _is_html_complete(html: str) -> bool:
-    return '</html>' in html
+def _section_count(html: str) -> int:
+    return len(re.findall(r'<section[^>]+id=', html))
+
+
+def _is_report_complete(html: str) -> bool:
+    return '</html>' in html and _section_count(html) >= 8
 
 
 def _continue_html(client: anthropic.Anthropic, system_prompt: str,
                    user_prompt: str, partial_html: str) -> str:
-    """Continue a truncated HTML response until </html> appears or max passes exceeded."""
+    """Continue until the report has ≥8 sections and a closing </html> tag."""
     accumulated = partial_html
     for _ in range(_MAX_CONTINUATION_PASSES):
-        if _is_html_complete(accumulated):
+        if _is_report_complete(accumulated):
             break
+        # If Claude closed early with too few sections, strip the closing tags
+        # so we can append more content without producing malformed HTML.
+        if '</html>' in accumulated and _section_count(accumulated) < 8:
+            accumulated = re.sub(r'\s*</body>\s*</html>\s*$', '', accumulated.rstrip())
+            cont_instruction = (
+                f"The report has only {_section_count(accumulated)} sections but needs at least 8. "
+                "Continue adding the remaining sections now. "
+                "Each section must open with a visual component. "
+                "End with </body></html> after all sections are written."
+            )
+        else:
+            cont_instruction = (
+                "Continue the HTML report exactly where you left off. "
+                "Do NOT repeat anything already written. "
+                "Pick up mid-sentence or mid-tag if needed and finish all open sections. "
+                "End with </body></html>."
+            )
         try:
             cont = client.messages.create(
                 model=_CONTINUATION_MODEL,
@@ -236,12 +257,7 @@ def _continue_html(client: anthropic.Anthropic, system_prompt: str,
                 messages=[
                     {"role": "user", "content": user_prompt},
                     {"role": "assistant", "content": accumulated},
-                    {"role": "user", "content": (
-                        "Continue the HTML report exactly where you left off. "
-                        "Do NOT repeat anything already written. "
-                        "Pick up mid-sentence or mid-tag if needed and finish all open sections. "
-                        "End with </body></html>."
-                    )},
+                    {"role": "user", "content": cont_instruction},
                 ]
             )
             if cont.content and hasattr(cont.content[0], "text"):
@@ -304,8 +320,12 @@ def generate_report_html(docs: list, signature_color: str, doc_context: str = No
 
     raw_html = first_block.text
 
-    # If Claude hit the token limit, do a continuation pass to complete the report
-    if message.stop_reason == "max_tokens":
+    # Continue if cut off OR if Claude closed early with too few sections
+    needs_more = (
+        message.stop_reason == "max_tokens"
+        or (len(re.findall(r'<section[^>]+id=', raw_html)) < 8 and '</html>' in raw_html)
+    )
+    if needs_more:
         raw_html = _continue_html(client, system_prompt, user_prompt, raw_html)
 
     # Strip markdown code fences Claude sometimes wraps around the HTML
