@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumina — AI Document Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   VIEWPORT FITTING: MANDATORY BASE STYLES
+   =========================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.slide {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.slide-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 100%;
+  overflow: hidden;
+  padding: var(--slide-padding);
+  position: relative;
+  z-index: 2;
+}
+
+:root {
+  /* Neon Cyber palette */
+  --bg-deep:       #04071a;
+  --bg-mid:        #070d2a;
+  --bg-card:       #0d1535;
+  --bg-card-hover: #111c42;
+  --cyan:          #00e5ff;
+  --cyan-dim:      rgba(0,229,255,0.15);
+  --magenta:       #ff2d78;
+  --magenta-dim:   rgba(255,45,120,0.15);
+  --violet:        #7c3aed;
+  --white:         #f0f6ff;
+  --muted:         rgba(240,246,255,0.5);
+  --grid-line:     rgba(0,229,255,0.07);
+  --glow-cyan:     0 0 30px rgba(0,229,255,0.4), 0 0 60px rgba(0,229,255,0.15);
+  --glow-mag:      0 0 30px rgba(255,45,120,0.4), 0 0 60px rgba(255,45,120,0.15);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono:    'Space Mono', monospace;
+
+  /* Sizing */
+  --title-size:   clamp(2rem, 6vw, 5rem);
+  --h2-size:      clamp(1.4rem, 3.5vw, 2.8rem);
+  --h3-size:      clamp(1rem, 2.2vw, 1.6rem);
+  --body-size:    clamp(0.8rem, 1.4vw, 1.05rem);
+  --small-size:   clamp(0.65rem, 1vw, 0.85rem);
+  --mono-size:    clamp(0.7rem, 1.2vw, 0.9rem);
+  --label-size:   clamp(0.6rem, 0.9vw, 0.75rem);
+
+  --slide-padding: clamp(2rem, 5vw, 5rem);
+  --content-gap:   clamp(0.75rem, 2vw, 2rem);
+  --element-gap:   clamp(0.4rem, 1vw, 0.8rem);
+}
+
+body {
+  background: var(--bg-deep);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: var(--body-size);
+}
+
+/* =========================================
+   GRID BACKGROUND
+   ========================================= */
+.grid-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: clamp(30px, 5vw, 60px) clamp(30px, 5vh, 60px);
+  pointer-events: none;
+}
+
+/* =========================================
+   DECORATIVE GLOWS
+   ========================================= */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+.glow-cyan  { background: var(--cyan);    }
+.glow-mag   { background: var(--magenta); }
+.glow-violet{ background: #7c3aed; }
+
+/* =========================================
+   SCAN LINE OVERLAY
+   ========================================= */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* =========================================
+   NAV DOTS
+   ========================================= */
+#nav-dots {
+  position: fixed;
+  right: clamp(12px, 2vw, 24px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0,229,255,0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,229,255,0.4);
+}
+
+.nav-dot.active {
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  transform: scale(1.4);
+}
+
+/* =========================================
+   PROGRESS BAR
+   ========================================= */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  z-index: 100;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* =========================================
+   SLIDE COUNTER
+   ========================================= */
+#slide-counter {
+  position: fixed;
+  bottom: clamp(12px, 2vh, 24px);
+  right: clamp(16px, 2.5vw, 32px);
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* =========================================
+   KEYBOARD HINT
+   ========================================= */
+#keyboard-hint {
+  position: fixed;
+  bottom: clamp(12px, 2vh, 24px);
+  left: clamp(16px, 2.5vw, 32px);
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+/* =========================================
+   TYPOGRAPHY
+   ========================================= */
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: clamp(0.4rem, 1vh, 0.8rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.label::before {
+  content: '';
+  display: inline-block;
+  width: 2em;
+  height: 1px;
+  background: var(--cyan);
+  opacity: 0.7;
+}
+
+h1.title {
+  font-size: var(--title-size);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+h2.heading {
+  font-size: var(--h2-size);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h3.sub-heading {
+  font-size: var(--h3-size);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+p.body-text {
+  font-size: var(--body-size);
+  line-height: 1.65;
+  color: rgba(240,246,255,0.78);
+}
+
+.highlight-cyan    { color: var(--cyan); }
+.highlight-mag     { color: var(--magenta); }
+.highlight-violet  { color: #a78bfa; }
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--mono-size);
+  color: var(--cyan);
+}
+
+/* =========================================
+   CYBER BADGE
+   ========================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.25em 0.75em;
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--cyan);
+  background: rgba(0,229,255,0.06);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badge.mag {
+  border-color: rgba(255,45,120,0.4);
+  color: var(--magenta);
+  background: rgba(255,45,120,0.06);
+}
+
+.badge.violet {
+  border-color: rgba(124,58,237,0.4);
+  color: #a78bfa;
+  background: rgba(124,58,237,0.06);
+}
+
+/* =========================================
+   CARDS
+   ========================================= */
+.cyber-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 4px;
+  padding: clamp(0.75rem, 1.5vw, 1.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0.5;
+}
+
+.cyber-card.mag-card {
+  border-color: rgba(255,45,120,0.2);
+}
+
+.cyber-card.mag-card::before {
+  background: linear-gradient(90deg, transparent, var(--magenta), transparent);
+}
+
+/* =========================================
+   REVEAL ANIMATIONS
+   ========================================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* =========================================
+   SHORT SCREENS
+   ========================================= */
+@media (max-height: 700px) {
+  :root {
+    --slide-padding: clamp(1rem, 3vw, 2.5rem);
+    --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+    --title-size: clamp(1.5rem, 4.5vw, 3rem);
+    --h2-size: clamp(1.2rem, 3vw, 2rem);
+  }
+}
+
+@media (max-height: 600px) {
+  :root {
+    --slide-padding: clamp(0.75rem, 2.5vw, 1.5rem);
+    --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+    --title-size: clamp(1.25rem, 4vw, 2.2rem);
+    --body-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  }
+  #nav-dots, #keyboard-hint { display: none; }
+}
+
+@media (max-height: 500px) {
+  :root {
+    --slide-padding: clamp(0.5rem, 2vw, 1rem);
+    --title-size: clamp(1rem, 3.5vw, 1.6rem);
+    --h2-size: clamp(0.9rem, 2.5vw, 1.3rem);
+    --body-size: clamp(0.65rem, 1vw, 0.8rem);
+  }
+}
+
+@media (max-width: 600px) {
+  :root { --title-size: clamp(1.5rem, 8vw, 2.8rem); }
+  .two-col { grid-template-columns: 1fr !important; }
+  .three-col { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.2s !important;
+  }
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .particle { display: none !important; }
+}
+
+/* =========================================
+   PARTICLES CANVAS
+   ========================================= */
+#particles-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* =========================================
+   SLIDE 1 – TITLE
+   ========================================= */
+#slide-1 {
+  background: var(--bg-deep);
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.title-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 1.5rem);
+  margin-bottom: clamp(0.75rem, 2vh, 1.5rem);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 11vw, 9rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--cyan) 0%, #ffffff 40%, var(--magenta) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px rgba(0,229,255,0.3));
+}
+
+.title-tagline {
+  font-size: clamp(0.9rem, 2vw, 1.4rem);
+  font-weight: 400;
+  color: rgba(240,246,255,0.65);
+  letter-spacing: 0.02em;
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.title-stats {
+  display: flex;
+  gap: clamp(1rem, 3vw, 3rem);
+  margin-top: clamp(1.5rem, 4vh, 3rem);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.stat-number {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.stat-label {
+  font-size: var(--label-size);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* =========================================
+   SLIDE 2 – PROBLEM
+   ========================================= */
+#slide-2 { background: var(--bg-mid); }
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-top: clamp(1rem, 3vh, 2rem);
+}
+
+.problem-item {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.6rem, 1.2vw, 1rem);
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+  background: rgba(255,45,120,0.04);
+  border: 1px solid rgba(255,45,120,0.15);
+  border-radius: 4px;
+  border-left: 2px solid var(--magenta);
+}
+
+.problem-icon {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.problem-text h4 {
+  font-size: var(--body-size);
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 0.25em;
+}
+
+.problem-text p {
+  font-size: var(--small-size);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* =========================================
+   SLIDE 3 – SOLUTION
+   ========================================= */
+#slide-3 { background: var(--bg-deep); }
+
+.solution-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  margin-top: clamp(1rem, 2.5vh, 2rem);
+}
+
+.solution-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--element-gap);
+}
+
+.solution-visual {
+  position: relative;
+  height: clamp(180px, 30vh, 320px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doc-transform {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  width: 100%;
+  justify-content: center;
+}
+
+.doc-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 4px;
+  padding: clamp(0.75rem, 1.5vw, 1.25rem) clamp(1rem, 2vw, 1.75rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  align-items: center;
+  min-width: clamp(80px, 12vw, 130px);
+}
+
+.doc-box .icon {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.doc-box span {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.arrow-transform {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  flex-shrink: 0;
+}
+
+.arrow-line {
+  width: clamp(40px, 6vw, 80px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  position: relative;
+}
+
+.arrow-line::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  border-left: 5px solid var(--magenta);
+}
+
+.arrow-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.doc-box.result {
+  background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(255,45,120,0.05));
+  border-color: rgba(0,229,255,0.35);
+  box-shadow: 0 0 20px rgba(0,229,255,0.1);
+}
+
+/* =========================================
+   SLIDE 4 – HOW IT WORKS
+   ========================================= */
+#slide-4 { background: var(--bg-mid); }
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.5vh, 1rem);
+  margin-top: clamp(1rem, 2.5vh, 2rem);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  align-items: center;
+  padding: clamp(0.6rem, 1.2vw, 1rem);
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.12);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.step::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--cyan);
+  opacity: 0.6;
+}
+
+.step.step-2::after { background: #a78bfa; }
+.step.step-3::after { background: var(--magenta); }
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--cyan);
+  width: clamp(36px, 5vw, 56px);
+  text-align: center;
+  opacity: 0.8;
+}
+
+.step-2 .step-num { color: #a78bfa; }
+.step-3 .step-num { color: var(--magenta); }
+
+.step-info h4 {
+  font-size: var(--h3-size);
+  font-weight: 600;
+  margin-bottom: 0.2em;
+  letter-spacing: -0.01em;
+}
+
+.step-info p {
+  font-size: var(--small-size);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.step-tags {
+  display: flex;
+  gap: 0.4em;
+  margin-top: 0.4em;
+  flex-wrap: wrap;
+}
+
+.mini-tag {
+  font-family: var(--font-mono);
+  font-size: clamp(0.55rem, 0.8vw, 0.68rem);
+  padding: 0.15em 0.5em;
+  border: 1px solid rgba(0,229,255,0.25);
+  border-radius: 2px;
+  color: var(--cyan);
+  background: rgba(0,229,255,0.05);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* =========================================
+   SLIDE 5 – VISUAL INTELLIGENCE
+   ========================================= */
+#slide-5 { background: var(--bg-deep); }
+
+.vis-split {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  margin-top: clamp(0.75rem, 2vh, 1.5rem);
+}
+
+.big-stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.mega-stat {
+  font-family: var(--font-mono);
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(0,229,255,0.3));
+}
+
+.mega-label {
+  font-size: var(--body-size);
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+.component-pills {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1vh, 0.7rem);
+}
+
+.pill-row {
+  display: flex;
+  gap: clamp(0.4rem, 1vw, 0.6rem);
+  flex-wrap: wrap;
+}
+
+.component-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 0.8em;
+  border-radius: 100px;
+  font-size: var(--small-size);
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.cp-cyan   { border-color: rgba(0,229,255,0.35);  color: var(--cyan);    background: rgba(0,229,255,0.07); }
+.cp-mag    { border-color: rgba(255,45,120,0.35);  color: var(--magenta); background: rgba(255,45,120,0.07); }
+.cp-violet { border-color: rgba(167,139,250,0.35); color: #a78bfa;        background: rgba(167,139,250,0.07); }
+
+/* =========================================
+   SLIDE 6 – COMPONENT SHOWCASE
+   ========================================= */
+#slide-6 { background: var(--bg-mid); }
+
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(0.5rem, 1.2vw, 1rem);
+  margin-top: clamp(1rem, 2.5vh, 2rem);
+}
+
+.comp-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.1);
+  border-radius: 4px;
+  padding: clamp(0.6rem, 1.2vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: default;
+}
+
+.comp-card:hover {
+  border-color: rgba(0,229,255,0.3);
+  background: var(--bg-card-hover);
+}
+
+.comp-icon {
+  font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+}
+
+.comp-name {
+  font-size: var(--small-size);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.3;
+}
+
+.comp-desc {
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* =========================================
+   SLIDE 7 – CHAT INTERFACE
+   ========================================= */
+#slide-7 { background: var(--bg-deep); }
+
+.chat-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  margin-top: clamp(1rem, 2.5vh, 2rem);
+}
+
+.chat-mockup {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  height: clamp(200px, 32vh, 320px);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 0.6em 1em;
+  background: rgba(0,229,255,0.06);
+  border-bottom: 1px solid rgba(0,229,255,0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--cyan);
+}
+
+.chat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 0.75em 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  overflow: hidden;
+}
+
+.chat-msg {
+  max-width: 80%;
+  padding: 0.5em 0.75em;
+  border-radius: 4px;
+  font-size: var(--small-size);
+  line-height: 1.5;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  background: rgba(0,229,255,0.1);
+  border: 1px solid rgba(0,229,255,0.2);
+  color: var(--white);
+}
+
+.chat-msg.ai {
+  align-self: flex-start;
+  background: rgba(255,45,120,0.07);
+  border: 1px solid rgba(255,45,120,0.15);
+  color: rgba(240,246,255,0.85);
+}
+
+.chat-input-bar {
+  padding: 0.5em 0.75em;
+  border-top: 1px solid rgba(0,229,255,0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.chat-input-pill {
+  flex: 1;
+  height: 1.8em;
+  background: rgba(0,229,255,0.04);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 100px;
+}
+
+.chat-send {
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 50%;
+  background: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  flex-shrink: 0;
+}
+
+.chat-features {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.2vh, 0.9rem);
+}
+
+.chat-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.6em 0.8em;
+  background: var(--bg-card);
+  border: 1px solid rgba(255,45,120,0.12);
+  border-radius: 4px;
+  border-left: 2px solid var(--magenta);
+}
+
+.cf-icon {
+  font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+  flex-shrink: 0;
+  margin-top: 0.05em;
+}
+
+.cf-text h4 {
+  font-size: var(--body-size);
+  font-weight: 600;
+  margin-bottom: 0.15em;
+}
+
+.cf-text p {
+  font-size: var(--small-size);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* =========================================
+   SLIDE 8 – RETRO LOOP
+   ========================================= */
+#slide-8 { background: var(--bg-mid); }
+
+.loop-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  margin-top: clamp(0.75rem, 2vh, 1.5rem);
+  flex-wrap: wrap;
+}
+
+.loop-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  flex-shrink: 0;
+}
+
+.loop-circle {
+  width: clamp(64px, 9vw, 100px);
+  height: clamp(64px, 9vw, 100px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  position: relative;
+}
+
+.lc-1 {
+  background: rgba(0,229,255,0.08);
+  border: 1.5px solid rgba(0,229,255,0.4);
+  box-shadow: 0 0 16px rgba(0,229,255,0.15);
+}
+
+.lc-2 {
+  background: rgba(167,139,250,0.08);
+  border: 1.5px solid rgba(167,139,250,0.4);
+  box-shadow: 0 0 16px rgba(167,139,250,0.15);
+}
+
+.lc-3 {
+  background: rgba(255,45,120,0.08);
+  border: 1.5px solid rgba(255,45,120,0.4);
+  box-shadow: 0 0 16px rgba(255,45,120,0.15);
+}
+
+.lc-4 {
+  background: rgba(16,185,129,0.08);
+  border: 1.5px solid rgba(16,185,129,0.4);
+  box-shadow: 0 0 16px rgba(16,185,129,0.15);
+}
+
+.loop-node-label {
+  font-size: var(--small-size);
+  font-weight: 600;
+  text-align: center;
+  max-width: clamp(70px, 10vw, 110px);
+  line-height: 1.3;
+}
+
+.loop-arrow {
+  display: flex;
+  align-items: center;
+  color: rgba(0,229,255,0.4);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  flex-shrink: 0;
+}
+
+.loop-return {
+  width: 100%;
+  height: clamp(32px, 4vh, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-top: 0.25em;
+}
+
+.return-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), #a78bfa, var(--magenta), #10b981);
+  opacity: 0.3;
+}
+
+.return-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--bg-mid);
+  padding: 0 0.75em;
+  position: relative;
+  z-index: 1;
+}
+
+.loop-insight {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: clamp(0.5rem, 1.2vw, 1rem);
+  margin-top: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.insight-box {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.1);
+  border-radius: 4px;
+  padding: clamp(0.6rem, 1.2vw, 1rem);
+}
+
+.insight-box .ib-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.35em;
+}
+
+.insight-box .ib-value {
+  font-size: var(--h3-size);
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+/* =========================================
+   SLIDE 9 – TECH STACK
+   ========================================= */
+#slide-9 { background: var(--bg-deep); }
+
+.stack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-top: clamp(1rem, 2.5vh, 2rem);
+}
+
+.stack-layer {
+  background: var(--bg-card);
+  border: 1px solid rgba(0,229,255,0.12);
+  border-radius: 4px;
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.stack-layer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.sl-frontend::before { background: linear-gradient(90deg, var(--cyan), #a78bfa); }
+.sl-backend::before  { background: linear-gradient(90deg, var(--magenta), #f97316); }
+.sl-ai::before       { background: linear-gradient(90deg, #10b981, var(--cyan)); }
+.sl-data::before     { background: linear-gradient(90deg, #a78bfa, var(--magenta)); }
+
+.stack-layer-title {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.6em;
+  color: var(--muted);
+}
+
+.stack-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.stack-tag {
+  font-family: var(--font-mono);
+  font-size: var(--small-size);
+  padding: 0.2em 0.6em;
+  border-radius: 2px;
+  border: 1px solid;
+  font-weight: 500;
+}
+
+.st-cyan   { border-color: rgba(0,229,255,0.3);   color: var(--cyan);    background: rgba(0,229,255,0.05); }
+.st-mag    { border-color: rgba(255,45,120,0.3);   color: var(--magenta); background: rgba(255,45,120,0.05); }
+.st-green  { border-color: rgba(16,185,129,0.3);   color: #10b981;        background: rgba(16,185,129,0.05); }
+.st-violet { border-color: rgba(167,139,250,0.3);  color: #a78bfa;        background: rgba(167,139,250,0.05); }
+.st-orange { border-color: rgba(249,115,22,0.3);   color: #fb923c;        background: rgba(249,115,22,0.05); }
+
+/* =========================================
+   SLIDE 10 – CLOSING / DEMO
+   ========================================= */
+#slide-10 {
+  background: var(--bg-deep);
+  align-items: center;
+  text-align: center;
+}
+
+.closing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.5vh, 2rem);
+  max-width: min(90vw, 800px);
+  margin: 0 auto;
+}
+
+.closing-tagline {
+  font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+  font-weight: 500;
+  color: rgba(240,246,255,0.75);
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.cta-group {
+  display: flex;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cta-btn {
+  padding: 0.6em 1.6em;
+  border-radius: 3px;
+  font-family: var(--font-display);
+  font-size: var(--body-size);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  transition: all 0.2s ease;
+}
+
+.cta-primary {
+  background: var(--cyan);
+  color: var(--bg-deep);
+  box-shadow: 0 0 20px rgba(0,229,255,0.3);
+}
+
+.cta-secondary {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(240,246,255,0.3);
+}
+
+.built-with {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ─── PARTICLES ─────────────────────────────── -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ─── PROGRESS BAR ──────────────────────────── -->
+<div id="progress-bar" style="width: 10%;"></div>
+
+<!-- ─── NAV DOTS ──────────────────────────────── -->
+<nav id="nav-dots" aria-label="Slide navigation"></nav>
+
+<!-- ─── SLIDE COUNTER ─────────────────────────── -->
+<div id="slide-counter">01 / 10</div>
+
+<!-- ─── KEYBOARD HINT ─────────────────────────── -->
+<div id="keyboard-hint">↑↓ or space to navigate</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 1 — TITLE
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-1" data-index="0">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <!-- glow orbs -->
+  <div class="glow-orb glow-cyan"  style="width:clamp(200px,35vw,500px);height:clamp(200px,35vw,500px);top:-10%;right:-5%;"></div>
+  <div class="glow-orb glow-mag"   style="width:clamp(150px,25vw,380px);height:clamp(150px,25vw,380px);bottom:-15%;left:5%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Document Intelligence Platform</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <div class="wordmark">Lumina</div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <p class="title-tagline">
+        Upload any document. Get a visually rich, interactive engineering report in seconds — then <em>talk to it</em>.
+      </p>
+    </div>
+    <div class="title-stats reveal reveal-delay-3">
+      <div class="stat-item">
+        <span class="stat-number">15+</span>
+        <span class="stat-label">Visual Components</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number highlight-mag">∞</span>
+        <span class="stat-label">Doc Formats</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number highlight-violet">0</span>
+        <span class="stat-label">Templates Needed</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">~5s</span>
+        <span class="stat-label">Report Time</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 2 — PROBLEM
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-2" data-index="1">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-mag" style="width:clamp(150px,22vw,320px);height:clamp(150px,22vw,320px);top:10%;left:-5%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">The Problem</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2 class="heading">Documents are dense.<br><span class="highlight-mag">Time is scarce.</span></h2>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-item reveal reveal-delay-2">
+        <span class="problem-icon">📄</span>
+        <div class="problem-text">
+          <h4>Wall-of-text AI outputs</h4>
+          <p>LLMs produce dense paragraphs. Nobody has time to read 3,000-word summaries.</p>
+        </div>
+      </div>
+      <div class="problem-item reveal reveal-delay-3">
+        <span class="problem-icon">🖼️</span>
+        <div class="problem-text">
+          <h4>Humans think visually</h4>
+          <p>We process images 60,000× faster than text. Yet most AI tools ignore this completely.</p>
+        </div>
+      </div>
+      <div class="problem-item reveal reveal-delay-4">
+        <span class="problem-icon">🔧</span>
+        <div class="problem-text">
+          <h4>Manual formatting tax</h4>
+          <p>Engineers waste hours reformatting outputs for stakeholders and presentations.</p>
+        </div>
+      </div>
+      <div class="problem-item reveal reveal-delay-5">
+        <span class="problem-icon">💬</span>
+        <div class="problem-text">
+          <h4>Static, one-shot outputs</h4>
+          <p>Can't ask follow-up questions. Can't refine a section. Can't iterate on the report.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 3 — SOLUTION
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-3" data-index="2">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-cyan"   style="width:clamp(120px,20vw,280px);height:clamp(120px,20vw,280px);bottom:10%;right:10%;"></div>
+  <div class="glow-orb glow-violet" style="width:clamp(100px,16vw,220px);height:clamp(100px,16vw,220px);top:15%;left:45%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">The Solution</div>
+    </div>
+    <div class="solution-split two-col">
+      <div class="solution-text">
+        <div class="reveal reveal-delay-1">
+          <h2 class="heading">Any document.<br><span class="highlight-cyan">Production-grade</span> report.<br>Instantly.</h2>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <p class="body-text" style="margin-top: clamp(0.5rem,1.5vh,1rem);">
+            Lumina eliminates the formatting gap between raw AI output and stakeholder-ready intelligence.
+            No templates. No manual work. No CDN dependencies — everything runs offline.
+          </p>
+        </div>
+        <div class="reveal reveal-delay-3" style="margin-top: clamp(0.5rem,1.5vh,1rem); display:flex; gap:0.5em; flex-wrap:wrap;">
+          <span class="badge">PDF</span>
+          <span class="badge">Word</span>
+          <span class="badge">URL</span>
+          <span class="badge">Raw Text</span>
+          <span class="badge mag">Multi-Doc</span>
+        </div>
+      </div>
+      <div class="solution-visual reveal reveal-delay-2">
+        <div class="doc-transform">
+          <div class="doc-box">
+            <span class="icon">📄</span>
+            <span>Any Doc</span>
+          </div>
+          <div class="arrow-transform">
+            <div class="arrow-line"></div>
+            <span class="arrow-label">Claude AI</span>
+          </div>
+          <div class="doc-box result">
+            <span class="icon">✨</span>
+            <span>Rich Report</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 4 — HOW IT WORKS
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-4" data-index="3">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-violet" style="width:clamp(150px,22vw,320px);height:clamp(150px,22vw,320px);top:-5%;right:5%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">How It Works</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2 class="heading">Three steps from <span class="highlight-cyan">document</span> to <span class="highlight-mag">insight</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal reveal-delay-2">
+        <span class="step-num">01</span>
+        <div class="step-info">
+          <h4>Upload &amp; Parse</h4>
+          <p>Drop a PDF, Word doc, paste a URL, or type raw text. Lumina handles extraction automatically.</p>
+          <div class="step-tags">
+            <span class="mini-tag">PyMuPDF</span>
+            <span class="mini-tag">python-docx</span>
+            <span class="mini-tag">BeautifulSoup4</span>
+            <span class="mini-tag">httpx</span>
+          </div>
+        </div>
+      </div>
+      <div class="step step-2 reveal reveal-delay-3">
+        <span class="step-num">02</span>
+        <div class="step-info">
+          <h4>AI Generates Report</h4>
+          <p>Claude Haiku produces a complete HTML report with 15+ visual components — architecture diagrams, stat cards, timelines, comparison tables — no templates.</p>
+          <div class="step-tags">
+            <span class="mini-tag" style="border-color:rgba(167,139,250,0.3);color:#a78bfa;background:rgba(167,139,250,0.05);">Claude Haiku</span>
+            <span class="mini-tag" style="border-color:rgba(167,139,250,0.3);color:#a78bfa;background:rgba(167,139,250,0.05);">16K context</span>
+            <span class="mini-tag" style="border-color:rgba(167,139,250,0.3);color:#a78bfa;background:rgba(167,139,250,0.05);">Pure CSS</span>
+          </div>
+        </div>
+      </div>
+      <div class="step step-3 reveal reveal-delay-4">
+        <span class="step-num">03</span>
+        <div class="step-info">
+          <h4>Interact &amp; Refine</h4>
+          <p>Chat with your document. Ask questions, request edits ("expand the architecture section"), and watch sections update live — no page refresh.</p>
+          <div class="step-tags">
+            <span class="mini-tag" style="border-color:rgba(255,45,120,0.3);color:#ff2d78;background:rgba(255,45,120,0.05);">SSE Streaming</span>
+            <span class="mini-tag" style="border-color:rgba(255,45,120,0.3);color:#ff2d78;background:rgba(255,45,120,0.05);">Tool Use</span>
+            <span class="mini-tag" style="border-color:rgba(255,45,120,0.3);color:#ff2d78;background:rgba(255,45,120,0.05);">Live Re-render</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 5 — VISUAL INTELLIGENCE
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-5" data-index="4">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-cyan" style="width:clamp(150px,25vw,360px);height:clamp(150px,25vw,360px);bottom:-5%;right:15%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Design Philosophy</div>
+    </div>
+    <div class="vis-split two-col">
+      <div class="big-stat-block">
+        <div class="reveal reveal-delay-1">
+          <h2 class="heading">Reports that<br><span class="highlight-cyan">show</span>, not just tell</h2>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="mega-stat">60,000×</div>
+          <p class="mega-label">faster — how quickly humans process visuals vs plain text. Every Lumina section opens with a visual component. Never bare paragraphs.</p>
+        </div>
+      </div>
+      <div class="component-pills reveal reveal-delay-3">
+        <div class="pill-row">
+          <span class="component-pill cp-cyan">📊 Stat Cards</span>
+          <span class="component-pill cp-mag">🏗️ Architecture</span>
+        </div>
+        <div class="pill-row">
+          <span class="component-pill cp-violet">🔀 Sequence Flows</span>
+          <span class="component-pill cp-cyan">⏱️ Timelines</span>
+        </div>
+        <div class="pill-row">
+          <span class="component-pill cp-mag">⚠️ Risk Callouts</span>
+          <span class="component-pill cp-violet">📋 Comparison Tables</span>
+        </div>
+        <div class="pill-row">
+          <span class="component-pill cp-cyan">📈 Data Bars</span>
+          <span class="component-pill cp-mag">💡 Insight Strips</span>
+        </div>
+        <div class="pill-row">
+          <span class="component-pill cp-violet">🗂️ Icon Lists</span>
+          <span class="component-pill cp-cyan">🎯 Highlight Bands</span>
+        </div>
+        <div style="margin-top:0.4em;">
+          <span class="badge">15+ components total</span>
+          <span class="badge mag" style="margin-left:0.4em;">100% offline</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 6 — COMPONENT SHOWCASE
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-6" data-index="5">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-mag"    style="width:clamp(120px,18vw,260px);height:clamp(120px,18vw,260px);top:5%;right:10%;"></div>
+  <div class="glow-orb glow-violet" style="width:clamp(100px,15vw,200px);height:clamp(100px,15vw,200px);bottom:10%;left:5%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Visual Component System</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2 class="heading">Pure CSS. <span class="highlight-mag">Zero dependencies.</span> Works offline.</h2>
+    </div>
+    <div class="component-grid">
+      <div class="comp-card reveal reveal-delay-1">
+        <span class="comp-icon">📊</span>
+        <span class="comp-name">Stat Cards</span>
+        <span class="comp-desc">KPI numbers with delta indicators and trend bars</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-2">
+        <span class="comp-icon">🏗️</span>
+        <span class="comp-name">Architecture Diagrams</span>
+        <span class="comp-desc">System topology rendered entirely in CSS</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-3">
+        <span class="comp-icon">🔀</span>
+        <span class="comp-name">Sequence Flows</span>
+        <span class="comp-desc">Actor-to-actor interaction timelines</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-4">
+        <span class="comp-icon">⚠️</span>
+        <span class="comp-name">Risk Callouts</span>
+        <span class="comp-desc">Severity-coded alert blocks with context</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-2">
+        <span class="comp-icon">📋</span>
+        <span class="comp-name">Comparison Tables</span>
+        <span class="comp-desc">Side-by-side option analysis grids</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-3">
+        <span class="comp-icon">⏱️</span>
+        <span class="comp-name">Timelines</span>
+        <span class="comp-desc">Chronological event and milestone tracks</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-4">
+        <span class="comp-icon">📈</span>
+        <span class="comp-name">Data Bars</span>
+        <span class="comp-desc">Proportional bar comparisons with labels</span>
+      </div>
+      <div class="comp-card reveal reveal-delay-5">
+        <span class="comp-icon">💡</span>
+        <span class="comp-name">Insight Strips</span>
+        <span class="comp-desc">Highlighted key takeaways and recommendations</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 7 — CHAT / LIVE EDITING
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-7" data-index="6">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-cyan" style="width:clamp(120px,18vw,260px);height:clamp(120px,18vw,260px);top:5%;left:5%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Conversational Interface</div>
+    </div>
+    <div class="chat-split two-col">
+      <div style="display:flex;flex-direction:column;gap:var(--content-gap);">
+        <div class="reveal reveal-delay-1">
+          <h2 class="heading">Talk to your<br><span class="highlight-mag">documents.</span></h2>
+        </div>
+        <div class="chat-features">
+          <div class="chat-feature-item reveal reveal-delay-2">
+            <span class="cf-icon">💬</span>
+            <div class="cf-text">
+              <h4>Ask anything</h4>
+              <p>Q&amp;A over the full document with streaming markdown responses</p>
+            </div>
+          </div>
+          <div class="chat-feature-item reveal reveal-delay-3">
+            <span class="cf-icon">✏️</span>
+            <div class="cf-text">
+              <h4>Request live edits</h4>
+              <p>Claude calls <code class="mono">update_section</code> to rewrite exact HTML sections in-place</p>
+            </div>
+          </div>
+          <div class="chat-feature-item reveal reveal-delay-4">
+            <span class="cf-icon">🔄</span>
+            <div class="cf-text">
+              <h4>Instant re-render</h4>
+              <p>No page refresh — the report updates in the sandboxed iframe live</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="chat-mockup">
+          <div class="chat-header">
+            <span class="chat-dot"></span>
+            lumina·chat
+          </div>
+          <div class="chat-messages">
+            <div class="chat-msg user">Expand the architecture section and add a sequence diagram</div>
+            <div class="chat-msg ai">Updating architecture section with a full request-response sequence flow... ✓ Section rewritten with actor diagram.</div>
+            <div class="chat-msg user">What are the top 3 risks identified?</div>
+            <div class="chat-msg ai">Based on the report: 1) Single point of failure at the auth gateway, 2) Missing rate limiting on public endpoints, 3) No fallback for the cache layer.</div>
+          </div>
+          <div class="chat-input-bar">
+            <div class="chat-input-pill"></div>
+            <div class="chat-send">→</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 8 — RETRO LOOP LEARNING
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-8" data-index="7">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-violet" style="width:clamp(150px,22vw,320px);height:clamp(150px,22vw,320px);top:-10%;right:-5%;"></div>
+  <div class="glow-orb glow-cyan"   style="width:clamp(100px,16vw,220px);height:clamp(100px,16vw,220px);bottom:5%;left:10%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Self-Improving AI</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2 class="heading">The <span class="highlight-violet">Retro Loop</span> — reports that<br>get better automatically</h2>
+    </div>
+    <div class="loop-container reveal reveal-delay-2">
+      <div class="loop-node">
+        <div class="loop-circle lc-1">📄</div>
+        <span class="loop-node-label" style="color:var(--cyan);">Generate Report</span>
+      </div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-node">
+        <div class="loop-circle lc-2">💬</div>
+        <span class="loop-node-label" style="color:#a78bfa;">User Edits</span>
+      </div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-node">
+        <div class="loop-circle lc-3">🧠</div>
+        <span class="loop-node-label" style="color:var(--magenta);">Extract Hints</span>
+      </div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-node">
+        <div class="loop-circle lc-4">📈</div>
+        <span class="loop-node-label" style="color:#10b981;">Better Next Time</span>
+      </div>
+    </div>
+    <div class="loop-return reveal reveal-delay-3">
+      <div class="return-line"></div>
+      <span class="return-label">auto-compounding quality</span>
+    </div>
+    <div class="loop-insight reveal reveal-delay-4">
+      <div class="insight-box">
+        <div class="ib-label">Tracks</div>
+        <div class="ib-value" style="color:var(--cyan);">Edits</div>
+      </div>
+      <div class="insight-box">
+        <div class="ib-label">Learns</div>
+        <div class="ib-value" style="color:#a78bfa;">Patterns</div>
+      </div>
+      <div class="insight-box">
+        <div class="ib-label">Improves</div>
+        <div class="ib-value" style="color:#10b981;">Reports</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 9 — TECH STACK
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-9" data-index="8">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-mag" style="width:clamp(120px,18vw,260px);height:clamp(120px,18vw,260px);bottom:5%;right:10%;"></div>
+
+  <div class="slide-content">
+    <div class="reveal">
+      <div class="label">Tech Stack</div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2 class="heading">Modern. Lightweight.<br><span class="highlight-cyan">Offline-capable.</span></h2>
+    </div>
+    <div class="stack-grid two-col">
+      <div class="stack-layer sl-frontend reveal reveal-delay-2">
+        <div class="stack-layer-title">Frontend</div>
+        <div class="stack-items">
+          <span class="stack-tag st-cyan">React 19</span>
+          <span class="stack-tag st-cyan">TypeScript</span>
+          <span class="stack-tag st-cyan">TailwindCSS</span>
+          <span class="stack-tag st-cyan">Vite</span>
+          <span class="stack-tag st-violet">React Query v5</span>
+          <span class="stack-tag st-violet">SSE Streaming</span>
+        </div>
+      </div>
+      <div class="stack-layer sl-backend reveal reveal-delay-3">
+        <div class="stack-layer-title">Backend</div>
+        <div class="stack-items">
+          <span class="stack-tag st-mag">FastAPI</span>
+          <span class="stack-tag st-mag">Python 3.9+</span>
+          <span class="stack-tag st-orange">SQLAlchemy</span>
+          <span class="stack-tag st-orange">SQLite</span>
+          <span class="stack-tag st-mag">httpx</span>
+        </div>
+      </div>
+      <div class="stack-layer sl-ai reveal reveal-delay-4">
+        <div class="stack-layer-title">AI Layer</div>
+        <div class="stack-items">
+          <span class="stack-tag st-green">Claude Haiku</span>
+          <span class="stack-tag st-green">Native Tool Use</span>
+          <span class="stack-tag st-green">16K Context</span>
+          <span class="stack-tag st-cyan">Retro Loop</span>
+        </div>
+      </div>
+      <div class="stack-layer sl-data reveal reveal-delay-5">
+        <div class="stack-layer-title">Document Parsing</div>
+        <div class="stack-items">
+          <span class="stack-tag st-violet">PyMuPDF</span>
+          <span class="stack-tag st-violet">python-docx</span>
+          <span class="stack-tag st-violet">BeautifulSoup4</span>
+          <span class="stack-tag st-mag">URL Fetching</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 10 — CLOSE / DEMO
+     ══════════════════════════════════════════════ -->
+<section class="slide" id="slide-10" data-index="9">
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <div class="glow-orb glow-cyan"  style="width:clamp(200px,32vw,450px);height:clamp(200px,32vw,450px);top:-10%;left:50%;transform:translateX(-50%);"></div>
+  <div class="glow-orb glow-mag"   style="width:clamp(150px,24vw,340px);height:clamp(150px,24vw,340px);bottom:-10%;left:10%;"></div>
+  <div class="glow-orb glow-violet" style="width:clamp(120px,18vw,260px);height:clamp(120px,18vw,260px);bottom:-5%;right:10%;"></div>
+
+  <div class="slide-content" style="align-items:center;text-align:center;">
+    <div class="closing-content">
+      <div class="reveal">
+        <div class="wordmark" style="font-size:clamp(2.5rem,8vw,6rem);">Lumina</div>
+      </div>
+      <div class="reveal reveal-delay-1">
+        <p class="closing-tagline">
+          From any document to a stakeholder-ready,<br>
+          visually rich report — in seconds. Then ask it anything.
+        </p>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="cta-group">
+          <span class="cta-btn cta-primary">▶ Live Demo</span>
+          <span class="cta-btn cta-secondary">📖 View Code</span>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-3" style="display:flex;gap:0.75em;justify-content:center;flex-wrap:wrap;">
+        <span class="badge">React 19</span>
+        <span class="badge">FastAPI</span>
+        <span class="badge mag">Claude Haiku</span>
+        <span class="badge violet">Retro Loop</span>
+      </div>
+      <div class="reveal reveal-delay-4">
+        <span class="built-with">Built with Claude Code · 2026</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<script>
+// ─── PRESENTATION CONTROLLER ──────────────────────────────────
+
+class PresentationController {
+  constructor() {
+    this.slides = Array.from(document.querySelectorAll('.slide'));
+    this.totalSlides = this.slides.length;
+    this.currentIndex = 0;
+
+    this.progressBar  = document.getElementById('progress-bar');
+    this.slideCounter = document.getElementById('slide-counter');
+    this.navDotsEl    = document.getElementById('nav-dots');
+    this.keyHint      = document.getElementById('keyboard-hint');
+
+    this.buildNavDots();
+    this.setupObserver();
+    this.setupNavigation();
+    this.hideHintAfterDelay();
+  }
+
+  buildNavDots() {
+    this.slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      dot.addEventListener('click', () => this.goTo(i));
+      this.navDotsEl.appendChild(dot);
+    });
+    this.dots = Array.from(this.navDotsEl.querySelectorAll('.nav-dot'));
+  }
+
+  setupObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = parseInt(entry.target.dataset.index);
+          this.onSlideEnter(idx, entry.target);
+        }
+      });
+    }, { threshold: 0.6 });
+
+    this.slides.forEach(s => observer.observe(s));
+  }
+
+  onSlideEnter(idx, slideEl) {
+    this.currentIndex = idx;
+
+    // Update nav dots
+    this.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+
+    // Update progress bar
+    const pct = Math.round(((idx + 1) / this.totalSlides) * 100);
+    this.progressBar.style.width = pct + '%';
+
+    // Update counter
+    const cur  = String(idx + 1).padStart(2, '0');
+    const tot  = String(this.totalSlides).padStart(2, '0');
+    this.slideCounter.textContent = cur + ' / ' + tot;
+
+    // Trigger reveals
+    slideEl.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+  }
+
+  goTo(idx) {
+    if (idx < 0 || idx >= this.totalSlides) return;
+    this.slides[idx].scrollIntoView({ behavior: 'smooth' });
+  }
+
+  setupNavigation() {
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowDown', 'ArrowRight', 'Space', 'PageDown'].includes(e.code)) {
+        e.preventDefault();
+        this.goTo(this.currentIndex + 1);
+      } else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.code)) {
+        e.preventDefault();
+        this.goTo(this.currentIndex - 1);
+      } else if (e.code === 'Home') {
+        this.goTo(0);
+      } else if (e.code === 'End') {
+        this.goTo(this.totalSlides - 1);
+      }
+    });
+
+    // Touch swipe
+    let touchStartY = 0;
+    document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dy = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 50) this.goTo(dy > 0 ? this.currentIndex + 1 : this.currentIndex - 1);
+    }, { passive: true });
+  }
+
+  hideHintAfterDelay() {
+    setTimeout(() => {
+      if (this.keyHint) this.keyHint.style.opacity = '0';
+    }, 4000);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────
+
+function initParticles() {
+  // Respect reduced motion preference
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.getElementById('particles-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function makeParticle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r:  Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.5 + 0.1,
+      color: Math.random() > 0.6 ? '#00e5ff' : Math.random() > 0.5 ? '#ff2d78' : '#a78bfa'
+    };
+  }
+
+  function init() {
+    resize();
+    const count = Math.min(Math.floor((W * H) / 18000), 80);
+    particles = Array.from({ length: count }, makeParticle);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Connection lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0,229,255,${0.06 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Dots
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', init);
+  init();
+  draw();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+  new PresentationController();
+  initParticles();
+
+  // Reveal first slide immediately
+  document.querySelector('#slide-1').querySelectorAll('.reveal')
+    .forEach(el => el.classList.add('visible'));
+});
+</script>
+</body>
+</html>
